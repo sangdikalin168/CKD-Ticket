@@ -56,7 +56,8 @@ const HoldRequest = () => {
     const [checkerApprove] = useCheckHoldRequestMutation();
     const [approveHold] = useApproveHoldRequestMutation();
 
-
+    console.log(localStorage.getItem("role"));
+    
     const CheckApproverRole = async () => {
         //TODO: Check Permission
         const userRole = localStorage.getItem("role");
@@ -267,135 +268,15 @@ const HoldRequest = () => {
             {!loading ? (
                 <div className="grid grid-cols-1 gap-6 mb-6">
                     <div className="bg-white border border-gray-200 shadow-md shadow-black/5 p-2 rounded-md">
-                        {/* <div className="flex items-center mb-4">
+                        <div className="flex items-center mb-4">
                             <button type="button" className=" bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 rounded-tl-md rounded-bl-md hover:text-gray-600 active">Pending</button>
                             <button type="button" className="bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 hover:text-gray-600">Approved</button>
                             <button type="button" className="bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 hover:text-gray-600">Rejected</button>
                             <button type="button" className="bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 rounded-tr-md rounded-br-md hover:text-gray-600">All</button>
-                        </div> */}
+                        </div>
 
 
                         <DataTable data={data?.HoldRequests} columns={columns} />
-
-
-
-                        {/* <div className="overflow-x-auto">
-                            <table className="w-full min-w-[540px]">
-                                <thead>
-                                    <tr className="w-full">
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-left rounded-tl-md rounded-bl-md">ឈ្មោះអតិថិជន</th>
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-left">មូលហេតុ</th>
-
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-center">ស្ថានភាព</th>
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-center rounded-tr-md rounded-br-md">សកម្មភាព</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        data?.HoldRequests.map((request) => {
-                                            return (
-                                                <tr key={request.request_id}>
-                                                    <td className="py-2 px-2 border-b border-b-gray-50 w-10">
-                                                        <div className="flex items-center"
-                                                            onClick={() => {
-                                                                CheckApproverRole()
-                                                                setRequestInfo({
-                                                                    request_id: request.request_id,
-                                                                    customer_id: request.customer_id,
-                                                                    customer_name: request.customer_name,
-                                                                    phone: request.phone,
-                                                                    end_membership_date: request.old_end,
-                                                                    reason: request.reason,
-                                                                    from_date: request.from_date,
-                                                                    to_date: request.to_date,
-                                                                    new_end: request.new_end,
-                                                                    checker_status: request.checker_status
-                                                                })
-                                                            }}
-                                                        >
-                                                            <a href="#" className="text-gray-600 text-sm font-medium hover:text-blue-500 ml-2 truncate">{request.customer_name}</a>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-2 px-4 border-b border-b-gray-50 text-left w-10">
-                                                        <span className="text-[13px] font-medium text-black">{request.reason}</span>
-                                                    </td>
-
-                                                    <td className="py-2 px-4 border-b border-b-gray-50 text-center w-10" >
-                                                        {
-                                                            request.checker_status === "Approved" ?
-                                                                <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none">
-                                                                    Approved
-                                                                </span>
-                                                                :
-                                                                <>
-                                                                    {
-                                                                        request.checker_status === "Rejected" ?
-                                                                            <span className="inline-block p-1 rounded bg-rose-500/10 text-red-500 font-medium text-[12px] leading-none">
-                                                                                Rejected
-                                                                            </span>
-                                                                            :
-                                                                            <span className="inline-block p-1 rounded bg-emerald-500/10 text-yellow-500 font-medium text-[12px] leading-none">
-                                                                                មានទាន់ពិនិត្យ
-                                                                            </span>
-                                                                    }
-
-                                                                </>
-
-                                                        }
-                                                    </td>
-                                                    <td className="py-2 px-4 border-b border-b-gray-50 text-center w-4">
-                                                        {
-                                                            request.checker_status === "Approved" ?
-                                                                <>
-                                                                    {
-                                                                        request.process === "Pending" ?
-                                                                            <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none" onClick={() => {
-                                                                                setOpenPrint(true)
-                                                                                setInvoiceDetail({
-                                                                                    invoice_id: 0,
-                                                                                    payment_date: datetime_format(new Date()),
-                                                                                    cashier: localStorage.getItem("display_name"),
-                                                                                    customer_name: request.customer_name,
-                                                                                    phone: request.phone,
-                                                                                    start_date: date_format(request.from_date),
-                                                                                    end_date: date_format(request.to_date),
-                                                                                    old_end: date_format(request.old_end),
-                                                                                    new_end: date_format(request.new_end)
-                                                                                })
-                                                                            }}
-                                                                            >
-                                                                                <PrinterIcon
-                                                                                    className="h-4 w-4 text-gray-500"
-                                                                                    aria-hidden="true"
-                                                                                />
-                                                                            </span>
-                                                                            :
-                                                                            <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none">
-                                                                                <CheckCircleIcon
-                                                                                    className="h-4 w-4 text-emerald-500"
-                                                                                    aria-hidden="true"
-                                                                                />
-                                                                            </span>
-
-                                                                    }
-
-                                                                </>
-                                                                :
-                                                                <span className="inline-block p-1 rounded bg-emerald-500/10 text-yellow-500 font-medium text-[12px] leading-none">
-                                                                    <XCircleIcon
-                                                                        className="h-4 w-4 text-red-500"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                </span>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
-                                    }
-                                </tbody>
-                            </table>
-                        </div> */}
                     </div>
 
                 </div>
