@@ -2,6 +2,7 @@ import { Customer } from "../Entities/Customer";
 import {
     Arg,
     Field,
+    Int,
     InterfaceType,
     Mutation,
     ObjectType,
@@ -23,8 +24,21 @@ export class CustomerMutationResponse extends MutationResponseBase {}
 export class CustomerResolver {
     @UseMiddleware(checkAuth)
     @Query((_return) => [Customer])
-    async GetCustomers(): Promise<Customer[]> {
-        return await Customer.find({ order: { customer_id: "DESC" } });
+    async GetCustomers(
+        @Arg("limit", () => Int) limit: number,
+        @Arg("offset", () => Int) offset: number,
+    ): Promise<Customer[]> {
+        return await Customer.find({
+            order: { customer_id: "DESC" },
+            take: limit,
+            skip: offset,
+        });
+    }
+
+    @UseMiddleware(checkAuth)
+    @Query((_return) => Int)
+    async GetCustomersCount(): Promise<number> {
+        return await Customer.count();
     }
 
     @UseMiddleware(checkAuth)

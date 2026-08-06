@@ -125,21 +125,38 @@ interface IChildProps {
   button?: React.ReactNode;
   data: RowData[];
   columns: any;
+  /** Set true to disable client-side pagination and drive it from the parent */
+  manualPagination?: boolean;
+  /** Total page count — required when manualPagination=true */
+  pageCount?: number;
+  /** Total row count for the display label — required when manualPagination=true */
+  totalRows?: number;
+  /** Called whenever pageIndex or pageSize changes in server-side mode */
+  onPageChange?: (pageIndex: number, pageSize: number) => void;
 }
 
-export default function DataTable({ columns, data, button }: IChildProps) {
+export default function DataTable({
+  columns, data, button,
+  manualPagination, pageCount: serverPageCount, totalRows: serverTotalRows, onPageChange,
+}: IChildProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
+  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 20 });
 
   const table = useReactTable({
     data,
     columns,
     filterFns: { fuzzy: fuzzyFilter },
-    state: { columnFilters, globalFilter, columnVisibility },
+    state: { columnFilters, globalFilter, columnVisibility, pagination },
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      const next = typeof updater === "function" ? updater(pagination) : updater;
+      setPagination(next);
+      if (manualPagination) onPageChange?.(next.pageIndex, next.pageSize);
+    },
     globalFilterFn: fuzzyFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -148,12 +165,14 @@ export default function DataTable({ columns, data, button }: IChildProps) {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    manualPagination: !!manualPagination,
+    pageCount: manualPagination ? (serverPageCount ?? -1) : undefined,
   });
 
-  useEffect(() => { table.setPageSize(20); }, [table]);
-
-  const { pageIndex, pageSize } = table.getState().pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
+  const { pageIndex, pageSize } = pagination;
+  const totalRows = manualPagination
+    ? (serverTotalRows ?? 0)
+    : table.getFilteredRowModel().rows.length;
   const from = pageIndex * pageSize + 1;
   const to = Math.min((pageIndex + 1) * pageSize, totalRows);
 

@@ -744,6 +744,7 @@ export type Query = {
   GetCouponPayments: Array<CouponType>;
   GetCustomerDetail: Array<Customer>;
   GetCustomers: Array<Customer>;
+  GetCustomersCount: Scalars['Int'];
   GetFruitPayment: Array<FruitPayment>;
   GetFruitPriceTable: Array<FruitPrice>;
   GetHoldRequest: Array<HoldRequest>;
@@ -1153,7 +1154,7 @@ export type GetCustomerDetailQueryVariables = Exact<{
 
 export type GetCustomerDetailQuery = { __typename?: 'Query', GetCustomerDetail: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path: string, fingerprint: string, end_membership_date: string, end_fruit_date: string, key_status: string, towel_status: string, shift: string }> };
 
-export type GetCustomersQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetCustomersQueryVariables = Exact<{ limit: Scalars['Int']; offset: Scalars['Int']; }>;
 
 
 export type GetCustomersQuery = { __typename?: 'Query', GetCustomers: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path: string, fingerprint: string, end_membership_date: string, key_status: string, towel_status: string }> };
@@ -1571,8 +1572,8 @@ export type GetCustomerDetailQueryHookResult = ReturnType<typeof useGetCustomerD
 export type GetCustomerDetailLazyQueryHookResult = ReturnType<typeof useGetCustomerDetailLazyQuery>;
 export type GetCustomerDetailQueryResult = Apollo.QueryResult<GetCustomerDetailQuery, GetCustomerDetailQueryVariables>;
 export const GetCustomersDocument = gql`
-    query GetCustomers {
-  GetCustomers {
+    query GetCustomers($limit: Int!, $offset: Int!) {
+  GetCustomers(limit: $limit, offset: $offset) {
     customer_id
     created_date
     created_by
@@ -1615,6 +1616,28 @@ export function useGetCustomersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type GetCustomersQueryHookResult = ReturnType<typeof useGetCustomersQuery>;
 export type GetCustomersLazyQueryHookResult = ReturnType<typeof useGetCustomersLazyQuery>;
 export type GetCustomersQueryResult = Apollo.QueryResult<GetCustomersQuery, GetCustomersQueryVariables>;
+
+export type GetCustomersCountQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetCustomersCountQuery = { __typename?: 'Query', GetCustomersCount: number };
+
+export const GetCustomersCountDocument = gql`
+    query GetCustomersCount {
+  GetCustomersCount
+}
+    `;
+
+export function useGetCustomersCountQuery(baseOptions?: Apollo.QueryHookOptions<GetCustomersCountQuery, GetCustomersCountQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCustomersCountQuery, GetCustomersCountQueryVariables>(GetCustomersCountDocument, options);
+      }
+export function useGetCustomersCountLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCustomersCountQuery, GetCustomersCountQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCustomersCountQuery, GetCustomersCountQueryVariables>(GetCustomersCountDocument, options);
+        }
+export type GetCustomersCountQueryHookResult = ReturnType<typeof useGetCustomersCountQuery>;
+export type GetCustomersCountLazyQueryHookResult = ReturnType<typeof useGetCustomersCountLazyQuery>;
+export type GetCustomersCountQueryResult = Apollo.QueryResult<GetCustomersCountQuery, GetCustomersCountQueryVariables>;
+
 export const UpdateCustomerDocument = gql`
     mutation UpdateCustomer($phone: String!, $customerId: Float!) {
   UpdateCustomer(phone: $phone, customer_id: $customerId) {

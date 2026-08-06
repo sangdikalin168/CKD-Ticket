@@ -50,6 +50,14 @@ export class CheckIn extends BaseEntity {
     @Column({ length: 255, nullable: true })
     note?: string;
 
+    @Field()
+    @Column({ default: false })
+    key_taken!: boolean;
+
+    @Field()
+    @Column({ default: false })
+    towel_taken!: boolean;
+
     // DB-only FK relations (no @Field).
     @ManyToOne(() => Customer, { nullable: true, onDelete: "SET NULL" })
     @JoinColumn({ name: "customer_id" })

@@ -1,5 +1,5 @@
-query GetCustomers {
-  GetCustomers {
+query GetCustomers($limit: Int!, $offset: Int!) {
+  GetCustomers(limit: $limit, offset: $offset) {
     customer_id
     created_date
     created_by

@@ -30,6 +30,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   CameraIcon,
@@ -43,8 +45,10 @@ import {
   PhoneIcon,
   CalendarDaysIcon,
   ClockIcon,
+  FingerPrintIcon,
 } from "@heroicons/react/24/outline";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
+import { EnrollFingerprintModal } from "../EnrollFingerprint/EnrollFingerprintModal";
 
 const MemberProfile = ({ ID }: any) => {
   const { data, loading: loading_member_detail, refetch: refetchMemberDetail } = useGetCustomerDetailQuery({
@@ -91,6 +95,8 @@ const MemberProfile = ({ ID }: any) => {
   const [open_transfer, setOpenTransfer] = useState(false);
   const [open_webcam, setOpenWebcam] = useState(false);
   const [open_preview, setOpenPreview] = useState(false);
+  const [open_fingerprint, setOpenFingerprint] = useState(false);
+  const [open_fingerprint_confirm, setOpenFingerprintConfirm] = useState(false);
 
   const [updateCustomerPhoto] = useMutation(UPDATE_CUSTOMER_PHOTO);
 
@@ -263,7 +269,7 @@ const MemberProfile = ({ ID }: any) => {
                 }`}
               >
                 <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`} />
-                {isActive ? "សក្តិសិទ្ធ" : "ផុតសុពលភាព"}
+                {isActive ? "មានសុពលភាព" : "ផុតសុពលភាព"}
               </span>
 
               <div className="mt-3 space-y-2 text-sm text-gray-700">
@@ -347,6 +353,19 @@ const MemberProfile = ({ ID }: any) => {
               >
                 <BiTransfer className="h-3.5 w-3.5" />
                 ផ្ទេរ
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1 w-full"
+                onClick={() =>
+                  details?.fingerprint
+                    ? setOpenFingerprintConfirm(true)
+                    : setOpenFingerprint(true)
+                }
+              >
+                <FingerPrintIcon className="h-3.5 w-3.5" />
+                {details?.fingerprint ? "ប្តូរម្រាមដៃ" : "ចុះម្រាមដៃ"}
               </Button>
             </div>
           </CardContent>
@@ -460,6 +479,42 @@ const MemberProfile = ({ ID }: any) => {
       />
 
       <Transfer open={open_transfer} setOpen={setOpenTransfer} sender_data={details} />
+
+      <Dialog open={open_fingerprint_confirm} onOpenChange={setOpenFingerprintConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>ម្រាមដៃមានស្រាប់</DialogTitle>
+            <DialogDescription>
+              អតិថិជន <span className="font-semibold text-foreground">{details?.customer_name}</span> មានស្នាមម្រាមដៃចុះឈ្មោះរួចហើយ។
+              តើអ្នកចង់លុបចោល ហើយចុះម្រាមដៃថ្មីមែនទេ?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setOpenFingerprintConfirm(false)}
+            >
+              បោះបង់
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setOpenFingerprintConfirm(false);
+                setOpenFingerprint(true);
+              }}
+            >
+              លុប និងចុះថ្មី
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <EnrollFingerprintModal
+        open={open_fingerprint}
+        setOpen={setOpenFingerprint}
+        customerId={details?.customer_id ?? ID}
+        onSaved={refetchMemberDetail}
+      />
 
       <WebcamCapture
         open={open_webcam}

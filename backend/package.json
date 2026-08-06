@@ -45,7 +45,12 @@
     "dev": "dotenv -e dev.env nodemon src/index.ts",
     "start": "dotenv -e prod.env nodemon src/index.ts",
     "build": "tsc -p .",
-    "type-check": "tsc --noEmit -p ."
+    "type-check": "tsc --noEmit -p .",
+    "migration:generate": "dotenv -e dev.env typeorm-ts-node-commonjs migration:generate -d src/data-source.ts",
+    "migration:run": "dotenv -e dev.env typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
+    "migration:run:prod": "dotenv -e prod.env typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
+    "migration:revert": "dotenv -e dev.env typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
+    "migration:show": "dotenv -e dev.env typeorm-ts-node-commonjs migration:show -d src/data-source.ts"
   },
   "exports": {
     "./GraphQLUpload.js": "./GraphQLUpload.js",

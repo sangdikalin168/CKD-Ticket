@@ -29,7 +29,11 @@ export const permissions = shield(
     },
   },
   {
+    // NOTE: do NOT set `fallbackRule: isAuthenticated` here. The `"*"` rules
+    // above already gate every query/mutation; a global fallback also clamps
+    // every *response* object subfield, which makes `login` impossible (the
+    // client can't read the access token without already having one).
+    // graphql-shield's default fallbackRule is `allow`, which is what we want.
     allowExternalErrors: true,
-    fallbackRule: isAuthenticated,
   }
 );

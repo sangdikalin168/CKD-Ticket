@@ -6,3 +6,5 @@ Images/
 tmp/
 temp/
 dist/
+uploads/members/*
+!uploads/members/.gitkeep

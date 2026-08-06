@@ -52,12 +52,18 @@ export const MysqlDataSource = new DataSource({
   // auto-alter the live DB — use migrations (and ensure prod schema exists first).
   synchronize: !isProd,
   entities: [...entities],
+  migrations: isProd ? ["dist/migrations/*.js"] : [],
+  migrationsTableName: "typeorm_migrations",
 });
 
 const main = async () => {
   MysqlDataSource.initialize()
     .then(async () => {
       console.log("Database Connected");
+      if (isProd) {
+        const ran = await MysqlDataSource.runMigrations();
+        if (ran.length) console.log(`Applied ${ran.length} migration(s)`);
+      }
       await ensureDefaultFacilities();
     })
     .catch((err) => {
@@ -71,8 +77,8 @@ const main = async () => {
   app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 
   app.use(cookieParser());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: "20mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "20mb" }));
   app.use("/refresh_token", refreshTokenRouter);
 
   const httpServer = createServer(app);

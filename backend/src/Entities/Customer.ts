@@ -43,9 +43,9 @@ export class Customer extends BaseEntity {
     @Column({ length: 50 })
     gender: string;
 
-    @Field()
-    @Column({ length: 50 })
-    image_path: string;
+    @Field(() => String, { nullable: true })
+    @Column({ type: "varchar", length: 200, nullable: true, default: null })
+    image_path: string | null;
 
     @Field()
     @Column({ length: 2000 })
