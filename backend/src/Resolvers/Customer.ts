@@ -20,11 +20,12 @@ import * as path from "path";
 export class CustomerMutationResponse extends MutationResponseBase {}
 
 /**
- * WHERE clause for the member search box. The list is paginated server-side
- * (20 rows/page over ~3.7k members), so filtering has to happen here — a
- * client-side filter would only ever see the current page.
+ * WHERE clause for the member search box: staff search by name, phone or ID.
+ * The list is paginated server-side (20 rows/page over ~3.7k members), so
+ * filtering has to happen here — a client-side filter would only ever see the
+ * current page.
  *
- * Returns an array, which TypeORM treats as OR across name / phone / code.
+ * Returns an array, which TypeORM treats as OR across the fields.
  * `undefined` means "no filter", i.e. the plain paginated list.
  */
 const customerSearchWhere = (search?: string | null) => {
@@ -33,11 +34,20 @@ const customerSearchWhere = (search?: string | null) => {
     // Escape LIKE wildcards so a literal % or _ typed by the user isn't a wildcard.
     const escaped = term.replace(/[\\%_]/g, (ch) => `\\${ch}`);
     const pattern = `%${escaped}%`;
-    return [
+    const where: Record<string, unknown>[] = [
         { customer_name: Like(pattern) },
         { phone: Like(pattern) },
         { customer_code: Like(pattern) },
     ];
+    // A digits-only term is also matched against the numeric member ID. Exact
+    // rather than LIKE: customer_id is the indexed PK, and a substring match
+    // would make typing "1" return every id containing a 1. Phone stays a
+    // substring match above, so digits still find partial phone numbers.
+    if (/^\d+$/.test(term)) {
+        const id = Number(term);
+        if (Number.isSafeInteger(id)) where.push({ customer_id: id });
+    }
+    return where;
 };
 
 

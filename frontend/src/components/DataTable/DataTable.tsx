@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ColumnFiltersState,
   FilterFn,
@@ -90,10 +90,19 @@ function DebouncedInput({
   debounce?: number;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   const [value, setValue] = useState(initial);
+  // What we last handed to the parent. Without this the effect below fires once
+  // on mount (emitting the empty term) and again every time the parent echoes
+  // the value back through `initial` — each emit costing a server round-trip and
+  // a page reset. Only a genuinely new term should reach onChange.
+  const lastEmitted = useRef(initial);
 
   useEffect(() => { setValue(initial); }, [initial]);
   useEffect(() => {
-    const t = setTimeout(() => onChange(value), debounce);
+    if (value === lastEmitted.current) return;
+    const t = setTimeout(() => {
+      lastEmitted.current = value;
+      onChange(value);
+    }, debounce);
     return () => clearTimeout(t);
   }, [value]);
 
@@ -205,7 +214,13 @@ export default function DataTable({
           onChange={(v) => {
             const term = String(v);
             setGlobalFilter(term);
-            onSearchChange?.(term);
+            if (onSearchChange) {
+              // The parent restarts its query at offset 0, so the pager here has
+              // to follow. Otherwise searching from page 12 fetches page 1 while
+              // the footer still reads "page 13" and Next jumps from the stale index.
+              setPagination((p) => ({ ...p, pageIndex: 0 }));
+              onSearchChange(term);
+            }
           }}
           placeholder="ស្វែងរក..."
         />
