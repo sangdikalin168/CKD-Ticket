@@ -588,7 +588,6 @@ export type MutationCreateHoldRequestArgs = {
 
 
 export type MutationCreateTicketPaymentArgs = {
-  facility_id?: InputMaybe<Scalars['Float']>;
   price: Scalars['Float'];
   ticket_code: Scalars['String'];
   user_id: Scalars['Float'];
@@ -1312,7 +1311,6 @@ export type CreateTicketPaymentMutationVariables = Exact<{
   ticketCode: Scalars['String'];
   price: Scalars['Float'];
   userId: Scalars['Float'];
-  facilityId?: InputMaybe<Scalars['Float']>;
 }>;
 
 
@@ -2433,12 +2431,11 @@ export type MemberPaymentDetailQueryHookResult = ReturnType<typeof useMemberPaym
 export type MemberPaymentDetailLazyQueryHookResult = ReturnType<typeof useMemberPaymentDetailLazyQuery>;
 export type MemberPaymentDetailQueryResult = Apollo.QueryResult<MemberPaymentDetailQuery, MemberPaymentDetailQueryVariables>;
 export const CreateTicketPaymentDocument = gql`
-    mutation CreateTicketPayment($ticketCode: String!, $price: Float!, $userId: Float!, $facilityId: Float) {
+    mutation CreateTicketPayment($ticketCode: String!, $price: Float!, $userId: Float!) {
   CreateTicketPayment(
     ticket_code: $ticketCode
     price: $price
     user_id: $userId
-    facility_id: $facilityId
   ) {
     payment_id
     code
@@ -2465,7 +2462,6 @@ export type CreateTicketPaymentMutationFn = Apollo.MutationFunction<CreateTicket
  *      ticketCode: // value for 'ticketCode'
  *      price: // value for 'price'
  *      userId: // value for 'userId'
- *      facilityId: // value for 'facilityId'
  *   },
  * });
  */
