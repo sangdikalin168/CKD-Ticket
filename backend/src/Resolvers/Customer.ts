@@ -10,6 +10,7 @@ import {
     Resolver,
     UseMiddleware,
 } from "type-graphql";
+import { Like } from "typeorm";
 import { checkAuth } from "../MiddleWare/checkAuth";
 import { MutationResponseBase } from "../Types/MutationResponse";
 import * as fs from "fs";
@@ -17,6 +18,27 @@ import * as path from "path";
 
 @ObjectType()
 export class CustomerMutationResponse extends MutationResponseBase {}
+
+/**
+ * WHERE clause for the member search box. The list is paginated server-side
+ * (20 rows/page over ~3.7k members), so filtering has to happen here — a
+ * client-side filter would only ever see the current page.
+ *
+ * Returns an array, which TypeORM treats as OR across name / phone / code.
+ * `undefined` means "no filter", i.e. the plain paginated list.
+ */
+const customerSearchWhere = (search?: string | null) => {
+    const term = search?.trim();
+    if (!term) return undefined;
+    // Escape LIKE wildcards so a literal % or _ typed by the user isn't a wildcard.
+    const escaped = term.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+    const pattern = `%${escaped}%`;
+    return [
+        { customer_name: Like(pattern) },
+        { phone: Like(pattern) },
+        { customer_code: Like(pattern) },
+    ];
+};
 
 
 
@@ -27,8 +49,10 @@ export class CustomerResolver {
     async GetCustomers(
         @Arg("limit", () => Int) limit: number,
         @Arg("offset", () => Int) offset: number,
+        @Arg("search", () => String, { nullable: true }) search?: string,
     ): Promise<Customer[]> {
         return await Customer.find({
+            where: customerSearchWhere(search),
             order: { customer_id: "DESC" },
             take: limit,
             skip: offset,
@@ -37,8 +61,12 @@ export class CustomerResolver {
 
     @UseMiddleware(checkAuth)
     @Query((_return) => Int)
-    async GetCustomersCount(): Promise<number> {
-        return await Customer.count();
+    // Must take the same search term as GetCustomers, otherwise the pager would
+    // still show page counts for the full 3.7k list while the table shows matches.
+    async GetCustomersCount(
+        @Arg("search", () => String, { nullable: true }) search?: string,
+    ): Promise<number> {
+        return await Customer.count({ where: customerSearchWhere(search) });
     }
 
     @UseMiddleware(checkAuth)

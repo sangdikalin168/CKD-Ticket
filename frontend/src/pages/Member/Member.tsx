@@ -151,11 +151,15 @@ export const Member = () => {
   const [pageSize, setPageSize] = useState(PAGE_SIZE);
 
   const [customer_id, setCustomerID] = useState(0);
+  // Searched on the server: the list is paginated 20 at a time, so filtering in
+  // the browser would only ever match the page you happen to be looking at.
+  const [search, setSearch] = useState("");
   const { data, loading: member_loading, refetch } = useGetCustomersQuery({
-    variables: { limit: pageSize, offset: pageIndex * pageSize },
+    variables: { limit: pageSize, offset: pageIndex * pageSize, search },
     fetchPolicy: "no-cache",
   });
   const { data: countData, refetch: refetchCount } = useGetCustomersCountQuery({
+    variables: { search },
     fetchPolicy: "no-cache",
   });
   const [createCustomer] = useCreateCustomerMutation();
@@ -231,6 +235,12 @@ export const Member = () => {
             onPageChange={(idx, size) => {
               setPageIndex(idx);
               setPageSize(size);
+            }}
+            onSearchChange={(term) => {
+              setSearch(term);
+              // A new search must start at page 1, otherwise a 3-match result
+              // viewed from page 12 renders empty.
+              setPageIndex(0);
             }}
           />
         </CardContent>

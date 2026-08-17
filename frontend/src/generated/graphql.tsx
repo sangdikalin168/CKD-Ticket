@@ -1153,7 +1153,7 @@ export type GetCustomerDetailQueryVariables = Exact<{
 
 export type GetCustomerDetailQuery = { __typename?: 'Query', GetCustomerDetail: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path: string, fingerprint: string, end_membership_date: string, end_fruit_date: string, key_status: string, towel_status: string, shift: string }> };
 
-export type GetCustomersQueryVariables = Exact<{ limit: Scalars['Int']; offset: Scalars['Int']; }>;
+export type GetCustomersQueryVariables = Exact<{ limit: Scalars['Int']; offset: Scalars['Int']; search?: InputMaybe<Scalars['String']>; }>;
 
 
 export type GetCustomersQuery = { __typename?: 'Query', GetCustomers: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path: string, fingerprint: string, end_membership_date: string, key_status: string, towel_status: string }> };
@@ -1570,8 +1570,8 @@ export type GetCustomerDetailQueryHookResult = ReturnType<typeof useGetCustomerD
 export type GetCustomerDetailLazyQueryHookResult = ReturnType<typeof useGetCustomerDetailLazyQuery>;
 export type GetCustomerDetailQueryResult = Apollo.QueryResult<GetCustomerDetailQuery, GetCustomerDetailQueryVariables>;
 export const GetCustomersDocument = gql`
-    query GetCustomers($limit: Int!, $offset: Int!) {
-  GetCustomers(limit: $limit, offset: $offset) {
+    query GetCustomers($limit: Int!, $offset: Int!, $search: String) {
+  GetCustomers(limit: $limit, offset: $offset, search: $search) {
     customer_id
     created_date
     created_by
@@ -1615,12 +1615,12 @@ export type GetCustomersQueryHookResult = ReturnType<typeof useGetCustomersQuery
 export type GetCustomersLazyQueryHookResult = ReturnType<typeof useGetCustomersLazyQuery>;
 export type GetCustomersQueryResult = Apollo.QueryResult<GetCustomersQuery, GetCustomersQueryVariables>;
 
-export type GetCustomersCountQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetCustomersCountQueryVariables = Exact<{ search?: InputMaybe<Scalars['String']>; }>;
 export type GetCustomersCountQuery = { __typename?: 'Query', GetCustomersCount: number };
 
 export const GetCustomersCountDocument = gql`
-    query GetCustomersCount {
-  GetCustomersCount
+    query GetCustomersCount($search: String) {
+  GetCustomersCount(search: $search)
 }
     `;
 

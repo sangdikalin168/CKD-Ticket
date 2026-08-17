@@ -133,22 +133,39 @@ interface IChildProps {
   totalRows?: number;
   /** Called whenever pageIndex or pageSize changes in server-side mode */
   onPageChange?: (pageIndex: number, pageSize: number) => void;
+  /**
+   * Pass this to search on the SERVER instead of in the browser. Required
+   * alongside manualPagination: the client-side filter can only see the rows of
+   * the current page, so on a paginated list it silently misses everything else.
+   */
+  onSearchChange?: (term: string) => void;
 }
 
 export default function DataTable({
   columns, data, button,
   manualPagination, pageCount: serverPageCount, totalRows: serverTotalRows, onPageChange,
+  onSearchChange,
 }: IChildProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 20 });
 
+  // With server-side search the rows arriving are already filtered, so running
+  // the fuzzy filter over them again would only drop valid matches (e.g. a phone
+  // hit whose column the fuzzy matcher scores poorly).
+  const serverSearch = !!onSearchChange;
+
   const table = useReactTable({
     data,
     columns,
     filterFns: { fuzzy: fuzzyFilter },
-    state: { columnFilters, globalFilter, columnVisibility, pagination },
+    state: {
+      columnFilters,
+      globalFilter: serverSearch ? "" : globalFilter,
+      columnVisibility,
+      pagination,
+    },
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
@@ -185,7 +202,11 @@ export default function DataTable({
 
         <DebouncedInput
           value={globalFilter}
-          onChange={(v) => setGlobalFilter(String(v))}
+          onChange={(v) => {
+            const term = String(v);
+            setGlobalFilter(term);
+            onSearchChange?.(term);
+          }}
           placeholder="ស្វែងរក..."
         />
 
