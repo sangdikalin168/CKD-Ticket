@@ -40,15 +40,18 @@ administrator rights (``mklink /J`` requires it).
 
     pip install paramiko
 
-    # PowerShell — Read-Host keeps the password out of history and off disk
+    # Preferred: key auth. With your public key in the server's
+    # ProgramData\\ssh\\administrators_authorized_keys, no password exists
+    # anywhere in the command.
     $env:CKD_SSH_HOST = '<server>'
     $env:CKD_SSH_USER = '<user>'
+    python scripts/migrate-uploads.py --dry-run   # inspect, change nothing
+    python scripts/migrate-uploads.py
+
+    # Fallback: password auth. Read-Host keeps it out of shell history.
     $env:CKD_SSH_PASS = Read-Host 'SSH password'
     python scripts/migrate-uploads.py
     $env:CKD_SSH_PASS = $null
-
-    # dry run — inspect and verify, change nothing
-    python scripts/migrate-uploads.py --dry-run
 
 The script is idempotent: if the junction already exists it reports that and
 exits without touching anything.
@@ -211,7 +214,7 @@ Write-Output "  junction  : $uploads -> $($link.Target)"
 Write-Output "  original  : $aside  (delete once satisfied)"
 Write-Output "  backup    : $backup"
 Write-Output ''
-Write-Output '  rollback  : rmdir "'"$uploads"'" ; Rename-Item "'"$aside"'" uploads'
+Write-Output "  rollback  : rmdir `"$uploads`" ; Rename-Item `"$aside`" uploads"
 """
 
 
@@ -236,20 +239,26 @@ def main() -> int:
     try:
         host = os.environ["CKD_SSH_HOST"]
         user = os.environ["CKD_SSH_USER"]
-        password = os.environ["CKD_SSH_PASS"]
     except KeyError as missing:
         print(
             f"missing environment variable {missing}. "
-            "Set CKD_SSH_HOST, CKD_SSH_USER and CKD_SSH_PASS.",
+            "Set CKD_SSH_HOST and CKD_SSH_USER (CKD_SSH_PASS only if the "
+            "server has no key for you).",
             file=sys.stderr,
         )
         return 2
+
+    # Key auth is the default and the point: with a key installed, no password
+    # is present in the environment, the process table, or shell history.
+    password = os.environ.get("CKD_SSH_PASS")
+    using_key = password is None
+    print(f"connecting to {user}@{host} via {'key' if using_key else 'password'} auth\n")
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(
         host, username=user, password=password, timeout=20,
-        allow_agent=False, look_for_keys=False,
+        allow_agent=using_key, look_for_keys=using_key,
     )
 
     try:
