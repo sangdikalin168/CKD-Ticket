@@ -2,7 +2,7 @@ import { EyeIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { UsersIcon } from "@heroicons/react/24/outline";
 import { createColumnHelper } from "@tanstack/react-table";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import DataTable from "../../components/DataTable/DataTable";
 import {
@@ -170,6 +170,11 @@ export const Member = () => {
   const totalCount = countData?.GetCustomersCount ?? 0;
   const serverPageCount = Math.ceil(totalCount / pageSize);
 
+  // Whether the first page of results has ever arrived. Used to keep the table
+  // mounted across later refetches — see the loading guard below.
+  const hasLoadedOnce = useRef(false);
+  if (data) hasLoadedOnce.current = true;
+
   const handleSubmit = async (formData: any) => {
     const { data: result } = await createCustomer({
       variables: {
@@ -190,7 +195,11 @@ export const Member = () => {
     }
   };
 
-  if (member_loading && data_table.length === 0) return <LoadingPage message="Loading" />;
+  // Only blank the page on the very first load. Every search re-runs the query,
+  // and with fetchPolicy "no-cache" that empties `data` while in flight — so the
+  // old condition swapped the table for a spinner on each keystroke-batch,
+  // unmounting DataTable and wiping the search box the user was typing into.
+  if (member_loading && !hasLoadedOnce.current) return <LoadingPage message="Loading" />;
 
   if (showProfile) return <MemberProfile ID={customer_id} />;
 
@@ -236,6 +245,7 @@ export const Member = () => {
               setPageIndex(idx);
               setPageSize(size);
             }}
+            searchValue={search}
             onSearchChange={(term) => {
               setSearch(term);
               // A new search must start at page 1, otherwise a 3-match result

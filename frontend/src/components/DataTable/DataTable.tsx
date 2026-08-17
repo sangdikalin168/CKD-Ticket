@@ -90,13 +90,20 @@ function DebouncedInput({
   debounce?: number;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   const [value, setValue] = useState(initial);
-  // What we last handed to the parent. Without this the effect below fires once
-  // on mount (emitting the empty term) and again every time the parent echoes
-  // the value back through `initial` — each emit costing a server round-trip and
-  // a page reset. Only a genuinely new term should reach onChange.
+  // The term we last handed to the parent. Guards both directions: without it
+  // the emit effect fires on mount with the empty term, and the sync effect
+  // below rewinds the box whenever the parent echoes a term back.
   const lastEmitted = useRef(initial);
 
-  useEffect(() => { setValue(initial); }, [initial]);
+  // Accept a genuine external change (parent cleared it, or we remounted), but
+  // ignore the parent echoing back what we just emitted — that echo can land
+  // after the user has typed further and would rewind the box mid-word.
+  useEffect(() => {
+    if (initial === lastEmitted.current) return;
+    lastEmitted.current = initial;
+    setValue(initial);
+  }, [initial]);
+
   useEffect(() => {
     if (value === lastEmitted.current) return;
     const t = setTimeout(() => {
@@ -148,12 +155,18 @@ interface IChildProps {
    * the current page, so on a paginated list it silently misses everything else.
    */
   onSearchChange?: (term: string) => void;
+  /**
+   * Current search term, owned by the parent in server-side mode. Passing it
+   * keeps the box filled if this component ever remounts mid-search (a refetch
+   * that briefly renders a loading state will do exactly that).
+   */
+  searchValue?: string;
 }
 
 export default function DataTable({
   columns, data, button,
   manualPagination, pageCount: serverPageCount, totalRows: serverTotalRows, onPageChange,
-  onSearchChange,
+  onSearchChange, searchValue,
 }: IChildProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
@@ -210,7 +223,7 @@ export default function DataTable({
         {button}
 
         <DebouncedInput
-          value={globalFilter}
+          value={searchValue ?? globalFilter}
           onChange={(v) => {
             const term = String(v);
             setGlobalFilter(term);
