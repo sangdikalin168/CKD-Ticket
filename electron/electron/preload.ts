@@ -166,5 +166,15 @@ const { ipcRenderer } = require('electron');
     const response = await ipcRenderer.invoke('previewComponent', url);
     callback(response);
   },
+
+  // Fingerprint enrollment (drives the Python ZKFinger sidecar in main).
+  fpBegin: (customerId: number) => ipcRenderer.invoke('fp-begin', customerId),
+  fpCancel: () => ipcRenderer.invoke('fp-cancel'),
+  // Subscribe to fingerprint events; returns an unsubscribe function.
+  onFpEvent: (cb: (evt: any) => void) => {
+    const listener = (_e: any, evt: any) => cb(evt);
+    ipcRenderer.on('fp-event', listener);
+    return () => ipcRenderer.removeListener('fp-event', listener);
+  },
 };
 

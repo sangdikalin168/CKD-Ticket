@@ -6,6 +6,7 @@
 const { app, ipcMain, BrowserWindow, systemPreferences } = require('electron');
 
 import path from 'node:path'
+import { initFingerprint, fpBegin, fpCancel, disposeFingerprint } from './fingerprint'
 
 // The built directory structure
 //
@@ -95,38 +96,20 @@ function createWindow() {
     frame: true
   })
 
-  // Handle permission requests - approve media access
+  // Bind the fingerprint sidecar's events to this window.
+  initFingerprint(win);
+
+  // Grant all media permission requests (camera, microphone).
   win.webContents.session.setPermissionRequestHandler((_webContents: any, permission: any, callback: any) => {
-    console.log('Permission requested:', permission);
     callback(true);
   });
 
-  // Inject navigator.mediaDevices polyfill for HTTP
+  // Also handle synchronous permission checks — required in Electron 13+ for
+  // getUserMedia to pass before the async request handler is even invoked.
+  win.webContents.session.setPermissionCheckHandler(() => true);
+
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
-    
-    // Enable fake device for getUserMedia - this makes Electron expose the real camera
-    win?.webContents.executeJavaScript(`
-      console.log('Checking navigator.mediaDevices:', navigator.mediaDevices);
-      
-      // Test if getUserMedia is available
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        console.log('getUserMedia is available natively');
-        
-        // Test camera access
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-          .then(stream => {
-            console.log('Camera access successful!', stream.getVideoTracks());
-            stream.getTracks().forEach(track => track.stop());
-          })
-          .catch(err => {
-            console.error('Camera access error:', err);
-          });
-      } else {
-        console.error('navigator.mediaDevices.getUserMedia is not available');
-        console.log('Available navigator properties:', Object.keys(navigator));
-      }
-    `);
   })
 
   // Load the app - use localhost in dev, file in production
@@ -142,14 +125,20 @@ function createWindow() {
 
   // Emitted when the window is closed.
   win.on('closed', () => {
+    disposeFingerprint()
     win = null
   })
 }
 
 
 app.on('window-all-closed', () => {
+  disposeFingerprint()
   app.quit()
 })
+
+// Fingerprint enrollment IPC — drives the Python ZKFinger sidecar.
+ipcMain.handle('fp-begin', (_event: any, customerId: any) => fpBegin(Number(customerId)));
+ipcMain.handle('fp-cancel', () => fpCancel());
 
 // app.whenReady().then(createWindow)
 
