@@ -35,10 +35,6 @@ yarn-error.log*
 *.zip
 *.blockmap
 
-# Database
-*.sqlite
-*.db
-
 # Uploads (except .gitkeep)
 server/uploads/**/*
 !server/uploads/.gitkeep
