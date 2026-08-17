@@ -72,20 +72,40 @@ const main = async () => {
 
   await apolloServer.start();
 
+  // Origins allowed to call the API with credentials.
+  const ALLOWED_ORIGINS = [
+    "https://studio.apollographql.com",
+    "https://ckd-ticket.sangdikalin.org",
+    "http://110.235.252.175:5173",
+    "http://110.235.252.175:5174",
+  ];
+
+  // In-office clients are served by the Vite dev server on the LAN, so their origin
+  // is whatever IP the machine happens to have that day (192.168.1.20, 192.168.100.30,
+  // ...). Match the private ranges by pattern instead of listing every address, so a
+  // subnet change does not silently break login.
+  const PRIVATE_LAN_ORIGIN =
+    /^http:\/\/(localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+
   apolloServer.applyMiddleware({
     app,
     cors: {
-      origin: [
-        "https://studio.apollographql.com",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://192.168.100.30:5173",
-        "http://192.168.100.30:5174",
-        "http://110.235.252.175:5173",
-        "http://110.235.252.175:5174",
-      ],
+      origin: (origin, callback) => {
+        // No Origin header: same-origin request or a non-browser client (curl, Electron).
+        if (!origin) return callback(null, true);
+        const allowed =
+          ALLOWED_ORIGINS.includes(origin) || PRIVATE_LAN_ORIGIN.test(origin);
+        return callback(null, allowed);
+      },
       credentials: true,
     },
+  });
+
+  // SPA fallback: the client uses createBrowserRouter (path-based routes), so any
+  // non-API GET that isn't a static file must return index.html. Registered AFTER
+  // the /graphql, /refresh_token and /uploads handlers so it never shadows them.
+  app.get("*", (_req, res) => {
+    res.sendFile(path.resolve(__dirname, "../../client/dist/index.html"));
   });
 
   const PORT = process.env.PORT || 4000;

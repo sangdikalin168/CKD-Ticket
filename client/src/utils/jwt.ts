@@ -1,4 +1,5 @@
 import jwtDecode, { JwtPayload } from "jwt-decode";
+import { API_BASE } from "../config";
 const JWTManager = () => {
   const LOGOUT_EVENT_NAME = "jwt-logout";
 
@@ -85,7 +86,7 @@ const JWTManager = () => {
     console.log("Get Refresh Token");
     try {
       const response = await fetch(
-        process.env.REACT_APP_BASE_URL + "/refresh_token",
+        `${API_BASE}/refresh_token`,
         {
           credentials: "include",
         }

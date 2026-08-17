@@ -14,6 +14,7 @@ import AuthContextProvider from "./context/AuthContext";
 import JWTManager from "./utils/jwt";
 import { toastify } from "./utils/toastify.tsx";
 import SideBarContextProvider from "./context/SideBarContext.tsx";
+import { API_URL } from "./config";
 
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -29,7 +30,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 const httpLink = createHttpLink({
-  uri: `http://${window.location.hostname}:4000/graphql`,
+  uri: API_URL,
   credentials: "include",
 });
 

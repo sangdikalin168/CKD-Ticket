@@ -18,6 +18,7 @@ import FruitPaymentTable from "./FruitPaymentTable";
 import { FruitPayment } from "../FruitPayment/FruitPayment";
 import { UpdateProfile } from "./UpdateProfile";
 import Notifications from "../../../../components/Notification";
+import { API_BASE } from "../../../../config";
 import HoldForm from "../Hold/HoldForm";
 import Transfer from "../Transfer/Transfer";
 import { BiTransfer } from "react-icons/bi";
@@ -214,7 +215,7 @@ const MemberProfile = ({ ID }: any) => {
                     className="h-24 w-24 flex-none rounded-full bg-gray-50 transition-opacity group-hover:opacity-75"
                     src={
                       details?.image_path 
-                        ? `http://${window.location.hostname}:4000${details.image_path}`
+                        ? `${API_BASE}${details.image_path}`
                         : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                     }
                     alt={details?.customer_name || "Profile"}
@@ -551,7 +552,7 @@ const MemberProfile = ({ ID }: any) => {
                       className="w-full h-auto rounded-lg"
                       src={
                         details?.image_path 
-                          ? `http://${window.location.hostname}:4000${details.image_path}`
+                          ? `${API_BASE}${details.image_path}`
                           : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                       }
                       alt={details?.customer_name || "Profile Preview"}
