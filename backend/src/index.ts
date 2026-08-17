@@ -71,8 +71,11 @@ const main = async () => {
     });
 
   const app = express();
-  app.use(express.static(path.resolve(__dirname, "../../client/dist")));
-  
+  // Built SPA. Only used when Node fronts the app directly (Cloudflare Tunnel ->
+  // localhost:4000); under docker-compose nginx serves these files instead.
+  const SPA_DIR = path.resolve(__dirname, "../../frontend/dist");
+  app.use(express.static(SPA_DIR));
+
   // Serve uploaded files
   app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 
@@ -135,6 +138,13 @@ const main = async () => {
       origin: corsOrigin,
       credentials: true,
     },
+  });
+
+  // SPA fallback: the client uses path-based routes, so any non-API GET that isn't
+  // a static file must return index.html. Registered AFTER /graphql, /refresh_token
+  // and /uploads so it never shadows them.
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(SPA_DIR, "index.html"));
   });
 
   const PORT = process.env.PORT || 4000;
