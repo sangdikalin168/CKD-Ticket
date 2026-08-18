@@ -1,0 +1,12 @@
+# Local build environment — recreate with:
+#   py -3 -m venv .venv && .venv\Scripts\pip install -r requirements.txt
+.venv/
+__pycache__/
+*.pyc
+
+# PyInstaller output
+build/
+dist/
+
+# Per-machine settings (which server URL this counter points at)
+config.json

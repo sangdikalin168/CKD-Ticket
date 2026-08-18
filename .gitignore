@@ -39,3 +39,6 @@ yarn-error.log*
 server/uploads/**/*
 !server/uploads/.gitkeep
 !server/uploads/members/.gitkeep
+
+# Server-owned: published desktop builds (exe + manifest), not source.
+backend/desktop/

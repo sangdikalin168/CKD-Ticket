@@ -32,6 +32,9 @@ import { TicketPriceConfig } from "./TicketPriceConfig";
 import { FruitPayment } from "./FruitPayment";
 import { FruitPrice } from "./FruitPrice";
 
+// Server-side print queue
+import { PrintJob } from "./PrintJob";
+
 // Ensure registerEnumType() runs for the GraphQL schema.
 import "./enums";
 
@@ -48,4 +51,6 @@ export const entities = [
   TrainningPayment, TrainningPrice,
   TicketPayment, TicketPriceConfig,
   FruitPayment, FruitPrice,
+  // print queue
+  PrintJob,
 ];

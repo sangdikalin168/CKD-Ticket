@@ -131,12 +131,26 @@ export class UserResolver {
     };
   }
 
+  /**
+   * Log the CALLER out. Requires a valid access token.
+   *
+   * This used to be `logout: allow` in permissions.ts while taking whatever
+   * user_id the caller passed, then bumping that user's tokenVersion — which
+   * invalidates their refresh token. Anyone who could reach /graphql (the
+   * Cloudflare tunnel makes that the public internet) could therefore log out
+   * any user by id, in a loop, without ever authenticating.
+   *
+   * The id now comes from the verified token via checkAuth, so a session can
+   * only ever end itself. The argument is kept, optional and ignored, so any
+   * older client still sending it does not break.
+   */
   @Mutation((_return) => UserMutationResponse)
+  @UseMiddleware(checkAuth)
   async logout(
-    @Arg("user_id", (_type) => ID) user_id: number,
-    @Ctx() { res }: Context
+    @Arg("user_id", (_type) => ID, { nullable: true }) _user_id: number | null,
+    @Ctx() { res, user }: Context
   ): Promise<UserMutationResponse> {
-    const existingUser = await Users.findOne({ where: { user_id: user_id } });
+    const existingUser = await Users.findOne({ where: { user_id: user.user_id } });
 
     if (!existingUser) {
       return {

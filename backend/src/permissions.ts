@@ -23,9 +23,15 @@ export const permissions = shield(
     },
     Mutation: {
       "*": isAuthenticated,
-      // Public — no token needed
+      // Public — no token needed. `login` is the ONLY unauthenticated mutation:
+      // it is the one operation that cannot require a token, because obtaining
+      // the token is its whole purpose.
+      //
+      // `logout` used to be listed here too. It took a caller-supplied user_id
+      // and bumped that user's tokenVersion, so anyone on the internet could
+      // invalidate any user's session without logging in. It now authenticates
+      // like everything else and derives the id from the token.
       login: allow,
-      logout: allow,
     },
   },
   {

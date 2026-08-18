@@ -100,8 +100,8 @@
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
 import { IoMenu } from "react-icons/io5";
-import { useSideBarContext } from "../../context/SideBarContext";
-import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/Button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -109,9 +109,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export default function NavBar() {
-    const { setExpanded } = useSideBarContext();
+    // toggleSidebar, not the raw desktop flag: it routes to the offcanvas panel
+    // on desktop and the Sheet on mobile, which a plain setExpanded cannot do.
+    const { toggleSidebar } = useSidebar();
     const { setIsAuthenticated } = useAuthContext();
     const display_name = localStorage.getItem("display_name");
 
@@ -135,20 +138,26 @@ export default function NavBar() {
                 variant="ghost"
                 size="icon"
                 className="text-gray-600 sidebar-toggle"
-                onClick={() => setExpanded((curr: boolean) => !curr)}
+                onClick={toggleSidebar}
             >
                 <IoMenu className="text-lg" />
             </Button>
 
             <ul className="flex items-center text-sm ml-4">
                 <li className="mr-2">
-                    <a href="#" className="text-gray-400 hover:text-gray-600 font-medium">Dashboard</a>
+                    <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">Dashboard</a>
                 </li>
                 <li className="text-gray-600 mr-2 font-medium">/</li>
                 <li className="text-gray-600 mr-2 font-medium">Home</li>
             </ul>
 
             <ul className="ml-auto flex items-center gap-3">
+                {/* The login page has its own picker; this is the only way to change
+                    language once the app shell has taken over. */}
+                <LanguageSwitcher align="end" />
+
+                <Separator orientation="vertical" className="h-6" />
+
                 <div className="text-center hidden sm:block">
                     <p className="text-sm text-black">{display_name}</p>
                 </div>

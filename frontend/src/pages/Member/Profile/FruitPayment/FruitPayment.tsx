@@ -10,7 +10,7 @@ import {
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
     Dialog,
     DialogContent,

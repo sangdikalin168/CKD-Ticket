@@ -3,9 +3,9 @@ import { Fragment, useRef, useState } from "react";
 import { DateTimePicker } from "../../../../components/DateTimePicker/DateTimePicker";
 import { useCreateHoldRequestMutation } from "../../../../generated/graphql";
 import Notifications from "../../../../components/Notification";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 
 const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);

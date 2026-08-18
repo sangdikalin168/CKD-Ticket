@@ -5,7 +5,7 @@
 // @ts-nocheck
 import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "../../Component/DataTable";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 type TrainningPayment = {
   payment_id: number;

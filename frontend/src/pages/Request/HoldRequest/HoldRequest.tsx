@@ -1,15 +1,15 @@
 import LoadingPage from "../../../components/LoadingPage/LoadingPage"
 import { useApproveHoldRequestMutation, useCheckHoldRequestMutation, useCreateHoldMutation, useGetCustomerDetailLazyQuery, useGetMemberPaymentLazyQuery, useHoldRequestsQuery } from "../../../generated/graphql";
 import { CheckCircleIcon, PrinterIcon, XCircleIcon } from "@heroicons/react/20/solid";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Notifications from "../../../components/Notification";
 import { HoldInvoice } from "../../../components/ComponentToPrint/HoldInvoice";
 import { useReactToPrint } from "react-to-print";
-import DataTable from "../../../components/DataTable/DataTable";
-import { createColumnHelper } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { DataTable } from "@/components/ui/DataTable";
+import type { ColumnDef } from "@/types/datatable";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import {
     Dialog,
     DialogContent,
@@ -18,7 +18,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/Card";
 
 
 type HoldRequestType = {
@@ -159,48 +159,73 @@ const HoldRequest = () => {
         }
     }, [invoice_detail]);
 
-    const columnHelper = createColumnHelper<HoldRequestType>();
-    const columns = [
-        columnHelper.accessor((row) => row.customer_name, {
-            id: "អតិថិជន",
-            cell: (info) => <div className="flex items-center"
+    // Table state — the new DataTable only reports search/page changes;
+    // the parent filters and slices the rows itself.
+    const [search, setSearch] = useState("")
+    const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(20)
+
+    const requests = useMemo(
+        () => (data?.HoldRequests ?? []) as HoldRequestType[],
+        [data]
+    );
+
+    // The old table's global search covered the column values (customer name + reason).
+    const filtered = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        if (!term) return requests;
+        return requests.filter((row) =>
+            row.customer_name.toLowerCase().includes(term)
+            || row.reason.toLowerCase().includes(term)
+        );
+    }, [requests, search]);
+
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const pagedRequests = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+    const columns: ColumnDef<HoldRequestType>[] = [
+        {
+            key: "customer_name",
+            header: "អតិថិជន",
+            sortable: true,
+            render: (row) => <div className="flex items-center"
                 onClick={() => {
                     CheckApproverRole()
                     setRequestInfo({
-                        request_id: info.row.original.request_id,
-                        customer_id: info.row.original.customer_id,
-                        customer_name: info.row.original.customer_name,
-                        phone: info.row.original.phone,
-                        end_membership_date: info.row.original.old_end,
-                        reason: info.row.original.reason,
-                        from_date: info.row.original.from_date,
-                        to_date: info.row.original.to_date,
-                        new_end: info.row.original.new_end,
-                        checker_status: info.row.original.checker_status
+                        request_id: row.request_id,
+                        customer_id: row.customer_id,
+                        customer_name: row.customer_name,
+                        phone: row.phone,
+                        end_membership_date: row.old_end,
+                        reason: row.reason,
+                        from_date: row.from_date,
+                        to_date: row.to_date,
+                        new_end: row.new_end,
+                        checker_status: row.checker_status
                     })
                 }}
             >
-                <a href="#" className="text-gray-600 text-sm font-medium hover:text-blue-500 truncate">{info.row.original.customer_name}</a>
+                <a href="#" className="text-gray-600 text-sm font-medium hover:text-blue-500 truncate">{row.customer_name}</a>
             </div>,
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.reason, {
-            id: "មូលហេតុ",
-            cell: (info) => info.getValue(),
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.reason, {
-            id: "ស្ថានភាព",
-            cell: (info) => <>
+        },
+        {
+            key: "reason",
+            header: "មូលហេតុ",
+            sortable: true,
+        },
+        {
+            key: "checker_status",
+            header: "ស្ថានភាព",
+            sortable: true,
+            render: (row) => <>
                 {
-                    info.row.original.checker_status === "Approved" ?
+                    row.checker_status === "Approved" ?
                         <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600">Approved</Badge>
                         :
                         <>
                             {
-                                info.row.original.checker_status === "Rejected" ?
+                                row.checker_status === "Rejected" ?
                                     <Badge variant="destructive" className="bg-rose-500/10 text-red-500">Rejected</Badge>
                                     :
                                     <Badge variant="outline" className="text-yellow-600">មានទាន់ពិនិត្យ</Badge>
@@ -210,30 +235,30 @@ const HoldRequest = () => {
 
                 }
             </>,
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.reason, {
-            id: "Process",
-            cell: (info) => <>
+        },
+        {
+            key: "process",
+            header: "Process",
+            sortable: false,
+            render: (row) => <>
                 {
-                    info.row.original.checker_status === "Approved" ?
+                    row.checker_status === "Approved" ?
                         <>
                             {
-                                info.row.original.process === "Pending" ?
+                                row.process === "Pending" ?
                                     <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none" onClick={() => {
                                         setOpenPrint(true)
-                                        setRequestInfo({ ...request_info, customer_id: info.row.original.customer_id, request_id: info.row.original.request_id })
+                                        setRequestInfo({ ...request_info, customer_id: row.customer_id, request_id: row.request_id })
                                         setInvoiceDetail({
                                             invoice_id: 0,
                                             payment_date: datetime_format(new Date()),
                                             cashier: localStorage.getItem("display_name"),
-                                            customer_name: info.row.original.customer_name,
-                                            phone: info.row.original.phone,
-                                            start_date: date_format(info.row.original.from_date),
-                                            end_date: date_format(info.row.original.to_date),
-                                            old_end: date_format(info.row.original.old_end),
-                                            new_end: date_format(info.row.original.new_end)
+                                            customer_name: row.customer_name,
+                                            phone: row.phone,
+                                            start_date: date_format(row.from_date),
+                                            end_date: date_format(row.to_date),
+                                            old_end: date_format(row.old_end),
+                                            new_end: date_format(row.new_end)
                                         })
                                     }}
                                     >
@@ -262,9 +287,7 @@ const HoldRequest = () => {
                         </span>
                 }
             </>,
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
+        },
     ];
 
     return (
@@ -274,25 +297,47 @@ const HoldRequest = () => {
                     <Card>
                         <CardContent className="p-2">
                         {/* <div className="flex items-center mb-4">
-                            <button type="button" className=" bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 rounded-tl-md rounded-bl-md hover:text-gray-600 active">Pending</button>
-                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 hover:text-gray-600">Approved</button>
-                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 hover:text-gray-600">Rejected</button>
-                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-400 py-2 px-4 rounded-tr-md rounded-br-md hover:text-gray-600">All</button>
+                            <button type="button" className=" bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 rounded-tl-md rounded-bl-md hover:text-gray-900 active">Pending</button>
+                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 hover:text-gray-900">Approved</button>
+                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 hover:text-gray-900">Rejected</button>
+                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 rounded-tr-md rounded-br-md hover:text-gray-900">All</button>
                         </div> */}
 
 
-                        <DataTable data={data?.HoldRequests} columns={columns} />
+                        <DataTable<HoldRequestType>
+                            data={pagedRequests}
+                            columns={columns}
+                            pageInfo={{
+                                current_page: page,
+                                page_size: pageSize,
+                                total_items: totalItems,
+                                total_pages: totalPages,
+                                has_next: page < totalPages,
+                                has_previous: page > 1,
+                            }}
+                            currentPage={page}
+                            pageSize={pageSize}
+                            onPageChange={setPage}
+                            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+                            pageSizeOptions={[10, 20, 30, 50]}
+                            searchValue={search}
+                            onSearchChange={(term) => { setSearch(term); setPage(1); }}
+                            columnToggle
+                            emptyMessage="គ្មានទិន្នន័យ"
+                            exportFileName="hold_requests.csv"
+                            printTitle="សំណើសុំច្បាប់"
+                        />
                         </CardContent>
 
                         {/* <div className="overflow-x-auto">
                             <table className="w-full min-w-[540px]">
                                 <thead>
                                     <tr className="w-full">
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-left rounded-tl-md rounded-bl-md">ឈ្មោះអតិថិជន</th>
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-left">មូលហេតុ</th>
+                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-left rounded-tl-md rounded-bl-md">ឈ្មោះអតិថិជន</th>
+                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-left">មូលហេតុ</th>
 
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-center">ស្ថានភាព</th>
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-400 py-2 px-4 bg-gray-200 text-center rounded-tr-md rounded-br-md">សកម្មភាព</th>
+                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-center">ស្ថានភាព</th>
+                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-center rounded-tr-md rounded-br-md">សកម្មភាព</th>
                                     </tr>
                                 </thead>
                                 <tbody>

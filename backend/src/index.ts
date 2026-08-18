@@ -17,6 +17,9 @@ import { entities } from "./Entities";
 import { Facility } from "./Entities/Facility";
 import { Context } from "./Context/Context";
 import path from "path";
+import { UPLOADS_DIR, UPLOADS_URL_PREFIX, ensureUploadDirs, DESKTOP_DIR, DESKTOP_URL_PREFIX, ensureDesktopDir } from "./Utils/paths";
+import { requireAuthForUploads } from "./MiddleWare/requireAuthForUploads";
+import { startPrinting } from "./Print/service";
 
 // Production toggles — NODE_ENV=production disables dev-only conveniences.
 const isProd = process.env.NODE_ENV === "production";
@@ -76,8 +79,20 @@ const main = async () => {
   const SPA_DIR = path.resolve(__dirname, "../../frontend/dist");
   app.use(express.static(SPA_DIR));
 
-  // Serve uploaded files
-  app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
+  // Serve uploaded files from the server-owned uploads directory (configurable
+  // via UPLOADS_DIR so it can live outside the tree a deploy replaces).
+  // Behind an auth guard: these are member photos, and static files never pass
+  // through graphql-shield.
+  ensureUploadDirs();
+  app.use(UPLOADS_URL_PREFIX, requireAuthForUploads, express.static(UPLOADS_DIR));
+
+  // Desktop client downloads (CKD-Ticket.exe + latest.json), served
+  // unauthenticated on purpose — the updater runs before any login. `maxAge: 0`
+  // keeps the manifest from being cached past a release; the exe itself is
+  // content-addressed by the sha256 in the manifest, so a stale copy is caught
+  // by the checksum rather than trusted.
+  ensureDesktopDir();
+  app.use(DESKTOP_URL_PREFIX, express.static(DESKTOP_DIR, { maxAge: 0, etag: true }));
 
   app.use(cookieParser());
   app.use(express.json({ limit: "20mb" }));
@@ -152,6 +167,11 @@ const main = async () => {
   await new Promise((resolve) =>
     httpServer.listen({ port: PORT }, resolve as () => void)
   );
+
+  // Receipts are printed by the server, never by the till: this starts the
+  // print worker and the queue dispatcher. Safe if the worker is absent —
+  // jobs just queue until it appears.
+  startPrinting();
 
   // Typically, http://localhost:4000/graphql
   console.log(

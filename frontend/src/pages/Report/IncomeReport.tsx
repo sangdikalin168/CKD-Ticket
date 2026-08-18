@@ -2,18 +2,12 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 
-import { DateTimePicker } from "../../components/DateTimePicker/DateTimePicker";
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/Button";
+import { DateInput } from "@/components/ui/DateInput";
+import { Label } from "@/components/ui/Label";
+import { DataTable } from "@/components/ui/DataTable";
+import type { ColumnDef } from "@/types/datatable";
 // import { ItemDetailModal } from "./pages/sportclub/ItemDetailModal";
 
 const GET_TICKETPAYMENT = gql`
@@ -94,9 +88,33 @@ const GET_TRAINNING_PAYMENT_DETAIL = gql`
 }
 `;
 
+type IncomeRow = {
+  item: string;
+  price: number;
+  qty: number;
+  total: number;
+};
+
+type MemberPaymentDetailRow = {
+  customer_name: string;
+  promotion: string;
+};
+
+const incomeColumns: ColumnDef<IncomeRow>[] = [
+  { key: "item", header: "ទំនិញ", sortable: true },
+  { key: "qty", header: "ចំនួន", sortable: true },
+  { key: "price", header: "តម្លៃ", sortable: true, render: (row) => `$${row.price}` },
+  { key: "total", header: "សរុប", sortable: true, render: (row) => `$${row.total}` },
+];
+
+const memberDetailColumns: ColumnDef<MemberPaymentDetailRow>[] = [
+  { key: "customer_name", header: "ឈ្មោះ", sortable: true },
+  { key: "promotion", header: "Description", sortable: true },
+];
+
 function IncomeReport() {
 
-  const [data, setData] = React.useState(() => []);
+  const [data, setData] = React.useState<IncomeRow[]>(() => []);
   const [GetTicketPayment] = useLazyQuery(GET_TICKETPAYMENT, {
     fetchPolicy: "no-cache",
   });
@@ -220,31 +238,23 @@ function IncomeReport() {
 
   const [total, SetTotal] = useState(0);
 
-  const [showDateTo, setShowDateTo] = useState(false);
-  const handleCloseDateTo = (state: boolean) => {
-    setShowDateTo(state);
-  };
   const [selectedDateTo, setSelectedDateTo] = useState(
     date_time_format(new Date())
   );
 
-  const handleChangeDateTo = (selectedDate: Date) => {
-    setLoading(true);
-    setSelectedDateTo(date_time_format(selectedDate));
-    setLoading(false);
-  };
-
-  const [showDateFrom, setShowDateFrom] = useState(false);
-  const handleCloseDateFrom = (state: boolean) => {
-    setShowDateFrom(state);
-  };
   const [selectedDateFrom, setSelectedDateFrom] = useState(
     date_time_format(new Date())
   );
-  const handleChangeDateFrom = (selectedDate: Date) => {
-    setLoading(true);
-    setSelectedDateFrom(date_time_format(selectedDate));
-    setLoading(false);
+
+  // DateInput emits YYYY-MM-DD — the format these queries already send. It can
+  // also emit '' when the field is cleared, which the old read-only picker could
+  // never do; ignoring that keeps the last good date instead of querying on ''.
+  const handleChangeDateFrom = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) setSelectedDateFrom(e.target.value);
+  };
+
+  const handleChangeDateTo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) setSelectedDateTo(e.target.value);
   };
 
   const [getSeller, { loading: seller_loading }] = useLazyQuery(GET_SELLER, {
@@ -322,24 +332,26 @@ function IncomeReport() {
             </div>
           </div>
 
-          {/* DateTime Picker */}
-          <div className="space-y-2 sapce-x-2 p-2">
-
-            <div className="col-span-1 mr-1">
-              <DateTimePicker
-                onChange={handleChangeDateFrom}
+          {/* Date range — the two fields were previously unlabelled and identical,
+              so which one bounded which end was guesswork. */}
+          <div className="flex flex-wrap items-end gap-3 p-2">
+            <div className="w-44 space-y-1.5">
+              <Label htmlFor="date-from">ពីថ្ងៃ</Label>
+              <DateInput
+                id="date-from"
+                name="dateFrom"
                 value={selectedDateFrom}
-                show={showDateFrom}
-                setShow={handleCloseDateFrom}
+                onChange={handleChangeDateFrom}
               />
             </div>
 
-            <div className="col-span-1 mr-1">
-              <DateTimePicker
-                onChange={handleChangeDateTo}
+            <div className="w-44 space-y-1.5">
+              <Label htmlFor="date-to">ដល់ថ្ងៃ</Label>
+              <DateInput
+                id="date-to"
+                name="dateTo"
                 value={selectedDateTo}
-                show={showDateTo}
-                setShow={handleCloseDateTo}
+                onChange={handleChangeDateTo}
               />
             </div>
           </div>
@@ -371,38 +383,21 @@ function IncomeReport() {
           </div>
 
           <div className="p-2">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ទំនិញ</TableHead>
-                  <TableHead>ចំនួន</TableHead>
-                  <TableHead>តម្លៃ</TableHead>
-                  <TableHead>សរុប</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {
-                  data.map((payment, index) => {
-                    return (
-                      <TableRow key={index}>
-                        <TableCell className="text-sm">{payment.item}</TableCell>
-                        <TableCell className="text-sm">{payment.qty}</TableCell>
-                        <TableCell className="text-sm">${payment.price}</TableCell>
-                        <TableCell className="text-sm">${payment.total}</TableCell>
-                      </TableRow>
-                    )
-                  })
-                }
-              </TableBody>
-              <TableFooter>
-                <TableRow className="text-md font-bold">
-                  <TableCell>សរុប $ {total} </TableCell>
-                  <TableCell></TableCell>
-                  <TableCell></TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
+            <DataTable<IncomeRow>
+              data={data}
+              columns={incomeColumns}
+              currentPage={1}
+              pageSize={data.length || 1}
+              onPageChange={() => { /* un-paginated */ }}
+              onPageSizeChange={() => { /* un-paginated */ }}
+              searchable={false}
+              exportable={false}
+              printable={false}
+              densityToggle={false}
+            />
+            {/* DataTable has no footer/summary row, so the old <TableFooter>
+                total renders here. Same `total` state, same value. */}
+            <div className="pt-2 text-right text-md font-bold">សរុប $ {total} </div>
           </div>
 
 
@@ -411,57 +406,46 @@ function IncomeReport() {
             {
               member_payments ? (
                 <div className="p-2">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ឈ្មោះ</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {
-                        member_payments.GetMemberPaymentDetail.map((payment, index) => {
-                          return (
-                            <TableRow key={index}>
-                              <TableCell className="text-sm">{payment.customer_name}</TableCell>
-                              <TableCell className="text-sm">{payment.promotion}</TableCell>
-                            </TableRow>
-                          )
-                        })
-                      }
-                    </TableBody>
-                  </Table>
+                  <DataTable<MemberPaymentDetailRow>
+                    data={member_payments.GetMemberPaymentDetail}
+                    columns={memberDetailColumns}
+                    currentPage={1}
+                    pageSize={member_payments.GetMemberPaymentDetail.length || 1}
+                    onPageChange={() => { /* un-paginated */ }}
+                    onPageSizeChange={() => { /* un-paginated */ }}
+                    searchable={false}
+                    exportable={false}
+                    printable={false}
+                    densityToggle={false}
+                  />
                 </div>
               ) : null
             }
 
           </>
 
-          {/* Member Details Table */}
+          {/* Member Details Table — DUPLICATE: this renders exactly the same
+              GetMemberPaymentDetail rows, with the same headers, as the block
+              above. Kept as-is during the DataTable conversion; the page also has
+              unused coupon/training queries and two dead buttons (គូប៉ុន /
+              ហ្វឹកហាត់), so a human should decide whether this block was meant to
+              show one of those instead, or simply be deleted. */}
           <>
             {
               member_payments ? (
                 <div className="p-2">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ឈ្មោះ</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {
-                        member_payments.GetMemberPaymentDetail.map((payment, index) => {
-                          return (
-                            <TableRow key={index}>
-                              <TableCell className="text-sm">{payment.customer_name}</TableCell>
-                              <TableCell className="text-sm">{payment.promotion}</TableCell>
-                            </TableRow>
-                          )
-                        })
-                      }
-                    </TableBody>
-                  </Table>
+                  <DataTable<MemberPaymentDetailRow>
+                    data={member_payments.GetMemberPaymentDetail}
+                    columns={memberDetailColumns}
+                    currentPage={1}
+                    pageSize={member_payments.GetMemberPaymentDetail.length || 1}
+                    onPageChange={() => { /* un-paginated */ }}
+                    onPageSizeChange={() => { /* un-paginated */ }}
+                    searchable={false}
+                    exportable={false}
+                    printable={false}
+                    densityToggle={false}
+                  />
                 </div>
               ) : null
             }

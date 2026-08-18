@@ -12,6 +12,7 @@ import {
 } from "type-graphql";
 import { Like } from "typeorm";
 import { checkAuth } from "../MiddleWare/checkAuth";
+import { MEMBER_PHOTOS_DIR, resolveUploadPath } from "../Utils/paths";
 import { MutationResponseBase } from "../Types/MutationResponse";
 import * as fs from "fs";
 import * as path from "path";
@@ -173,27 +174,28 @@ export class CustomerResolver {
                 };
             }
 
-            // Create uploads directory if it doesn't exist
-            const uploadsDir = path.join(__dirname, "../../uploads/members");
-            if (!fs.existsSync(uploadsDir)) {
-                fs.mkdirSync(uploadsDir, { recursive: true });
+            // Create uploads directory if it doesn't exist. MEMBER_PHOTOS_DIR
+            // honours UPLOADS_DIR, so photos can live outside the tree a deploy
+            // replaces — see Utils/paths.ts.
+            if (!fs.existsSync(MEMBER_PHOTOS_DIR)) {
+                fs.mkdirSync(MEMBER_PHOTOS_DIR, { recursive: true });
             }
 
             // Generate unique filename
             const fileName = `member_${customer_id}_${Date.now()}.jpg`;
-            const filePath = path.join(uploadsDir, fileName);
+            const filePath = path.join(MEMBER_PHOTOS_DIR, fileName);
 
             // Extract base64 data and save to file
             const base64Data = image_path.replace(/^data:image\/\w+;base64,/, "");
             const buffer = Buffer.from(base64Data, "base64");
             fs.writeFileSync(filePath, buffer);
 
-            // Delete old image if exists
-            if (customer.image_path && customer.image_path.startsWith("/uploads/")) {
-                const oldFilePath = path.join(__dirname, "../../", customer.image_path);
-                if (fs.existsSync(oldFilePath)) {
-                    fs.unlinkSync(oldFilePath);
-                }
+            // Delete old image if exists. resolveUploadPath refuses anything
+            // that escapes the uploads directory, so a malformed stored path
+            // can't unlink a file elsewhere on disk.
+            const oldFilePath = resolveUploadPath(customer.image_path);
+            if (oldFilePath && fs.existsSync(oldFilePath)) {
+                fs.unlinkSync(oldFilePath);
             }
 
             // Store relative path in database

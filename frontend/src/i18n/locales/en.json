@@ -1,0 +1,23 @@
+{
+  "language": {
+    "label": "Language"
+  },
+  "login": {
+    "brand": "NAN-TECH",
+    "capsLockOn": "Caps Lock is on",
+    "copyright": "© {{year}} NAN-TECH",
+    "hidePassword": "Hide password",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "passwordRequired": "Password is required",
+    "showPassword": "Show password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "subtitle": "Use your username or phone number to continue.",
+    "system": "Ticketing System",
+    "username": "Username or phone number",
+    "usernamePlaceholder": "Username or phone number",
+    "usernameRequired": "Username is required",
+    "wrongCredentials": "Wrong username or password"
+  }
+}

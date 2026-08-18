@@ -2,9 +2,9 @@ import { useState } from "react";
 import Modal from "../../../../components/Modal/Modal";
 import Notifications from "../../../../components/Notification";
 import { useCreateTransferRequestMutation, useGetCustomerDetailLazyQuery } from "../../../../generated/graphql";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 
 const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);

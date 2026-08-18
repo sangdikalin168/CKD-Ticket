@@ -1,10 +1,11 @@
 import { EyeIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { UsersIcon } from "@heroicons/react/24/outline";
-import { createColumnHelper } from "@tanstack/react-table";
 import { useRef, useState } from "react";
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
-import DataTable from "../../components/DataTable/DataTable";
+import { DataTable } from "@/components/ui/DataTable";
+import { CachedImage } from "@/components/ui/CachedImage";
+import type { ColumnDef } from "@/types/datatable";
 import {
   useCreateCustomerMutation,
   useGetCustomersCountQuery,
@@ -14,8 +15,8 @@ import CreateMember from "./CreateMember";
 import JWTManager from "../../utils/jwt";
 import MemberProfile from "./Profile/MemberProfile/MemberProfile";
 import { TypeOptions, toast } from "react-toastify";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import {
   Dialog,
   DialogContent,
@@ -70,11 +71,13 @@ const StatusBadge = ({ date }: { date: string }) => {
 const AvatarName = ({ name, imagePath }: { name: string; imagePath: string }) => {
   // Relative: /uploads is proxied to the backend (vite in dev, nginx in prod), so
   // this works on the LAN and behind the tunnel, where :4000 is not reachable.
+  // CachedImage rather than a plain <img>: /uploads now requires a bearer token,
+  // which an <img src> cannot send, so it is fetched and cached as a blob URL.
   const src = imagePath ? imagePath : null;
   return (
     <div className="flex items-center gap-2">
       {src ? (
-        <img src={src} alt={name} className="h-7 w-7 rounded-full object-cover shrink-0" />
+        <CachedImage src={src} alt={name} className="h-7 w-7 rounded-full object-cover shrink-0" />
       ) : (
         <UserCircleIcon className="h-7 w-7 text-gray-300 shrink-0" />
       )}
@@ -84,66 +87,49 @@ const AvatarName = ({ name, imagePath }: { name: string; imagePath: string }) =>
 };
 
 export const Member = () => {
-  const columnHelper = createColumnHelper<Customer>();
-
-  const columns = [
-    columnHelper.accessor((row) => row.customer_id, {
-      id: "ID",
-      cell: (info) => (
-        <span className="text-muted-foreground text-xs">{info.getValue()}</span>
+  const columns: ColumnDef<Customer>[] = [
+    {
+      key: "customer_id",
+      header: "ID",
+      sortable: true,
+      render: (row) => (
+        <span className="text-muted-foreground text-xs">{row.customer_id}</span>
       ),
-      header: (info) => <span>{info.column.id}</span>,
-      footer: (info) => info.column.id,
-    }),
-    columnHelper.accessor((row) => row.customer_name, {
-      id: "ឈ្មោះ",
-      cell: (info) => (
-        <AvatarName
-          name={info.getValue()}
-          imagePath={info.row.original.image_path}
-        />
+    },
+    {
+      key: "customer_name",
+      header: "ឈ្មោះ",
+      sortable: true,
+      render: (row) => (
+        <AvatarName name={row.customer_name} imagePath={row.image_path} />
       ),
-      header: (info) => <span>{info.column.id}</span>,
-      footer: (info) => info.column.id,
-    }),
-    columnHelper.accessor((row) => row.phone, {
-      id: "ទូរស័ព្ទ",
-      cell: (info) => <span>{info.getValue() || "—"}</span>,
-      header: (info) => <span>{info.column.id}</span>,
-      footer: (info) => info.column.id,
-    }),
-    columnHelper.accessor((row) => row.end_membership_date, {
-      id: "ថ្ងៃផុតកំណត់",
-      cell: (info) => <span className="text-sm">{info.getValue() || "—"}</span>,
-      header: (info) => <span>{info.column.id}</span>,
-      footer: (info) => info.column.id,
-    }),
-    columnHelper.accessor((row) => row.end_membership_date, {
-      id: "ស្ថានភាព",
-      cell: (info) => <StatusBadge date={info.getValue()} />,
-      header: (info) => <span>{info.column.id}</span>,
-      footer: (info) => info.column.id,
-      enableSorting: false,
-    }),
-    columnHelper.accessor((row) => row.customer_id, {
-      id: "Action",
-      cell: (info) => (
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => {
-            setCustomerID(info.row.original.customer_id);
-            setShowProfile(true);
-          }}
-        >
-          <EyeIcon className="h-3.5 w-3.5" />
-        </Button>
+    },
+    {
+      key: "phone",
+      header: "ទូរស័ព្ទ",
+      sortable: true,
+      render: (row) => <span>{row.phone || "—"}</span>,
+    },
+    {
+      key: "end_membership_date",
+      header: "ថ្ងៃផុតកំណត់",
+      sortable: true,
+      render: (row) => (
+        <span className="text-sm">{row.end_membership_date || "—"}</span>
       ),
-      header: () => <span>Action</span>,
-      footer: (info) => info.column.id,
-      enableSorting: false,
-    }),
+    },
+    {
+      // Also derived from end_membership_date, so it needs its own key for the
+      // column-visibility toggle; the accessor keeps export/copy/print textual.
+      key: "membership_status",
+      header: "ស្ថានភាព",
+      sortable: false,
+      accessor: (row) =>
+        row.end_membership_date && new Date(row.end_membership_date) >= new Date()
+          ? "មានសុពលភាព"
+          : "ផុតកំណត់",
+      render: (row) => <StatusBadge date={row.end_membership_date} />,
+    },
   ];
 
   const PAGE_SIZE = 20;
@@ -235,16 +221,25 @@ export const Member = () => {
         </CardHeader>
 
         <CardContent className="px-5 py-4">
-          <DataTable
+          <DataTable<Customer>
             columns={columns}
             data={data_table}
-            manualPagination
-            pageCount={serverPageCount}
-            totalRows={totalCount}
-            onPageChange={(idx, size) => {
-              setPageIndex(idx);
-              setPageSize(size);
+            pageInfo={{
+              current_page: pageIndex + 1,
+              page_size: pageSize,
+              total_items: totalCount,
+              total_pages: serverPageCount,
+              has_next: pageIndex + 1 < serverPageCount,
+              has_previous: pageIndex > 0,
             }}
+            currentPage={pageIndex + 1}
+            pageSize={pageSize}
+            onPageChange={(page) => setPageIndex(page - 1)}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPageIndex(0);
+            }}
+            pageSizeOptions={[10, 20, 30, 50]}
             searchValue={search}
             onSearchChange={(term) => {
               setSearch(term);
@@ -252,6 +247,21 @@ export const Member = () => {
               // viewed from page 12 renders empty.
               setPageIndex(0);
             }}
+            columnToggle
+            loading={member_loading}
+            emptyMessage="គ្មានទិន្នន័យ"
+            exportFileName="members.csv"
+            printTitle="សមាជិក"
+            rowActions={(row) => [
+              {
+                label: "មើល",
+                onClick: () => {
+                  setCustomerID(row.customer_id);
+                  setShowProfile(true);
+                },
+                icon: <EyeIcon className="h-3.5 w-3.5" />,
+              },
+            ]}
           />
         </CardContent>
       </Card>

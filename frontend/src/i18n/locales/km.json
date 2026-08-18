@@ -1,0 +1,23 @@
+{
+  "language": {
+    "label": "ភាសា"
+  },
+  "login": {
+    "brand": "NAN-TECH",
+    "capsLockOn": "Caps Lock កំពុងបើក",
+    "copyright": "© {{year}} NAN-TECH",
+    "hidePassword": "លាក់ពាក្យសម្ងាត់",
+    "password": "ពាក្យសម្ងាត់",
+    "passwordPlaceholder": "បញ្ចូលពាក្យសម្ងាត់របស់អ្នក",
+    "passwordRequired": "សូមបញ្ចូលពាក្យសម្ងាត់",
+    "showPassword": "បង្ហាញពាក្យសម្ងាត់",
+    "signIn": "ចូលប្រើ",
+    "signingIn": "កំពុងចូល…",
+    "subtitle": "ប្រើឈ្មោះអ្នកប្រើប្រាស់ ឬលេខទូរស័ព្ទដើម្បីបន្ត។",
+    "system": "ប្រព័ន្ធលក់សំបុត្រ",
+    "username": "ឈ្មោះ ឬ លេខទូរស័ព្ទ",
+    "usernamePlaceholder": "ឈ្មោះអ្នកប្រើប្រាស់ ឬលេខទូរស័ព្ទ",
+    "usernameRequired": "សូមបញ្ចូលឈ្មោះអ្នកប្រើប្រាស់",
+    "wrongCredentials": "ឈ្មោះអ្នកប្រើប្រាស់ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ"
+  }
+}

@@ -92,3 +92,27 @@ export class ColumnNumericTransformer {
         return data === null || data === undefined ? null : parseFloat(data);
     }
 }
+
+/** What kind of receipt a print job produces. */
+export enum PrintDocType {
+    TICKET_SALE = "TICKET_SALE",
+    MEMBER_PAYMENT = "MEMBER_PAYMENT",
+    MEMBER_RENEW = "MEMBER_RENEW",
+    COUPON = "COUPON",
+    TRAINING = "TRAINING",
+    FRUIT = "FRUIT",
+    HOLD = "HOLD",
+    TRANSFER = "TRANSFER",
+    SELF_TEST = "SELF_TEST",
+}
+registerEnumType(PrintDocType, { name: "PrintDocType" });
+
+/** Lifecycle of a queued print job. */
+export enum PrintJobStatus {
+    QUEUED = "QUEUED",
+    PRINTING = "PRINTING",
+    DONE = "DONE",
+    FAILED = "FAILED",
+    CANCELLED = "CANCELLED",
+}
+registerEnumType(PrintJobStatus, { name: "PrintJobStatus" });

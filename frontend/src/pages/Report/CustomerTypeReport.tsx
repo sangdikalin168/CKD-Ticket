@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import * as XLSX from 'xlsx';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import {
   Table,
   TableHeader,

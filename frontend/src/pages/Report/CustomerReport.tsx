@@ -4,18 +4,13 @@
 // npm install html2pdf.js
 import html2pdf from "html2pdf.js";
 import * as XLSX from 'xlsx';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { DateInput } from "@/components/ui/DateInput";
+import { Label } from "@/components/ui/Label";
+import { Card, CardContent } from "@/components/ui/Card";
+import { DataTable } from "@/components/ui/DataTable";
+import type { ColumnDef } from "@/types/datatable";
 const CUSTOMER_SCAN_REPORT_QUERY = gql`
   query CustomerScanReport($toDate: String!, $fromDate: String!, $memberId: Float!) {
     customerScanReport(toDate: $toDate, fromDate: $fromDate, memberId: $memberId) {
@@ -84,6 +79,33 @@ const EXPIRING_CUSTOMERS_QUERY = gql`
   }
 `;
 
+type ScanLogRow = {
+  scanDate: string;
+};
+
+type CustomerRow = {
+  customer_id: number;
+  customer_name: string;
+  phone: string;
+  gender?: string;
+  created_date?: string;
+  end_membership_date?: string;
+};
+
+// Format date: dd-mm-yyyy hh:mm tt
+const formatScanDate = (value: string) => {
+  const dateObj = new Date(value);
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  let hours = dateObj.getHours();
+  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  return `${day}-${month}-${year} ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+};
+
 export const CustomerReport = () => {
   // Ref for scan log section
   const scanLogRef = useRef<HTMLDivElement>(null);
@@ -143,6 +165,8 @@ export const CustomerReport = () => {
   // Query for active customers
   const { loading: loadingActive, error: errorActive, data: dataActive } = useQuery(ACTIVE_CUSTOMERS_QUERY);
   const [showDetails, setShowDetails] = useState(false);
+  // DataTable never filters — the active members list is long, so the parent filters it.
+  const [activeSearch, setActiveSearch] = useState("");
 
   // Query for expiring customers based on fromDate and toDate
   const { loading: loadingExpiring, error: errorExpiring, data: dataExpiring } = useQuery(EXPIRING_CUSTOMERS_QUERY, {
@@ -158,6 +182,47 @@ export const CustomerReport = () => {
   // Extract data for both queries
   const { total: totalActive, customers: customersActive } = dataActive?.activeCustomers || { total: 0, customers: [] };
   const { total: totalExpiring, customers: customersExpiring } = dataExpiring?.expiringCustomersOnDate || { total: 0, customers: [] };
+
+  // ----- Table rows & columns -----
+  const scanLogRows: ScanLogRow[] = dataScan?.customerScanReport?.ScanLog || [];
+
+  const scanLogColumns: ColumnDef<ScanLogRow>[] = [
+    {
+      key: 'scanDate',
+      header: 'Scan Date',
+      sortable: true,
+      // Sort on the raw timestamp, display the formatted one.
+      accessor: (row) => new Date(row.scanDate).getTime(),
+      render: (row) => formatScanDate(row.scanDate),
+    },
+  ];
+
+  const activeRows: CustomerRow[] = customersActive || [];
+  const activeSearchTerm = activeSearch.trim().toLowerCase();
+  const filteredActiveRows: CustomerRow[] = activeSearchTerm
+    ? activeRows.filter((customer) =>
+      customer.customer_name?.toLowerCase().includes(activeSearchTerm) ||
+      customer.phone?.toLowerCase().includes(activeSearchTerm) ||
+      String(customer.customer_id ?? '').includes(activeSearchTerm)
+    )
+    : activeRows;
+
+  const activeCustomerColumns: ColumnDef<CustomerRow>[] = [
+    { key: 'customer_name', header: 'Name', sortable: true },
+    { key: 'phone', header: 'Phone', sortable: true },
+    { key: 'gender', header: 'Gender', sortable: true },
+    { key: 'created_date', header: 'Created', sortable: true },
+    { key: 'end_membership_date', header: 'EndDate', sortable: true },
+  ];
+
+  const expiringRows: CustomerRow[] = customersExpiring || [];
+
+  const expiringCustomerColumns: ColumnDef<CustomerRow>[] = [
+    { key: 'customer_id', header: 'ID', sortable: true },
+    { key: 'customer_name', header: 'Name', sortable: true },
+    { key: 'phone', header: 'Phone', sortable: true },
+    { key: 'end_membership_date', header: 'Expire', sortable: true },
+  ];
 
   const exportToExcel = (customers, fromDate, toDate) => {
     // Prepare the data for Excel
@@ -260,8 +325,8 @@ export const CustomerReport = () => {
 
               <div>
                 <Label className="block text-sm font-medium mb-1">From Date</Label>
-                <Input
-                  type="date"
+                <DateInput
+                  name="fromDate"
                   value={fromDate}
                   onChange={e => {
                     setFromDate(e.target.value);
@@ -271,8 +336,8 @@ export const CustomerReport = () => {
               </div>
               <div>
                 <Label className="block text-sm font-medium mb-1">To Date</Label>
-                <Input
-                  type="date"
+                <DateInput
+                  name="toDate"
                   value={toDate}
                   onChange={e => {
                     setToDate(e.target.value);
@@ -323,39 +388,24 @@ export const CustomerReport = () => {
             </div>
             {/* Scan results */}
             <div className="mt-6" ref={scanLogRef}>
-              {loadingScan && <p className="text-gray-400 text-center">Loading scan results...</p>}
+              {loadingScan && <p className="text-gray-600 text-center">Loading scan results...</p>}
               {errorScan && <p className="text-red-500 text-center">Error: {errorScan.message}</p>}
               {dataScan && dataScan.customerScanReport && (
                 <div>
                   <div className="mb-2 font-semibold text-center">Scan Log for {selectedCustomer?.customer_name} ({dataScan.customerScanReport.FromDate} to {dataScan.customerScanReport.ToDate})</div>
                   {dataScan.customerScanReport.ScanLog.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Scan Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {dataScan.customerScanReport.ScanLog.map((log: any, idx: number) => {
-                          // Format date: dd-mm-yyyy hh:mm tt
-                          const dateObj = new Date(log.scanDate);
-                          const day = String(dateObj.getDate()).padStart(2, '0');
-                          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                          const year = dateObj.getFullYear();
-                          let hours = dateObj.getHours();
-                          const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-                          const ampm = hours >= 12 ? 'PM' : 'AM';
-                          hours = hours % 12;
-                          hours = hours ? hours : 12; // the hour '0' should be '12'
-                          const formatted = `${day}-${month}-${year} ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
-                          return (
-                            <TableRow key={idx}>
-                              <TableCell>{formatted}</TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <DataTable<ScanLogRow>
+                      data={scanLogRows}
+                      columns={scanLogColumns}
+                      currentPage={1}
+                      pageSize={scanLogRows.length || 1}
+                      onPageChange={() => { /* un-paginated */ }}
+                      onPageSizeChange={() => { /* un-paginated */ }}
+                      searchable={false}
+                      exportable={false}
+                      printable={false}
+                      densityToggle={false}
+                    />
                   ) : (
                     <p className="text-center">No scan records found for this customer in the selected date range.</p>
                   )}
@@ -374,8 +424,8 @@ export const CustomerReport = () => {
               <CardContent className="p-6">
                 <div className="flex justify-between mb-6">
                   <div>
-                    <div className="text-2xl font-semibold mb-1"><span className="text-base font-normal text-gray-400 align-top"></span>{totalActive}</div>
-                    <div className="text-sm font-medium text-gray-400">Active Members</div>
+                    <div className="text-2xl font-semibold mb-1"><span className="text-base font-normal text-gray-600 align-top"></span>{totalActive}</div>
+                    <div className="text-sm font-medium text-gray-600">Active Members</div>
                   </div>
                 </div>
                 <Button
@@ -401,30 +451,21 @@ export const CustomerReport = () => {
                   {showDetails ? "Hide details" : "View details"}
                 </Button>
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>#</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Gender</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>EndDate</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {customersActive.map((customer: any, index: number) => (
-                        <TableRow key={customer.customer_id}>
-                          <TableCell className="whitespace-nowrap">{index + 1}</TableCell>
-                          <TableCell className="whitespace-nowrap">{customer.customer_name}</TableCell>
-                          <TableCell className="whitespace-nowrap">{customer.phone}</TableCell>
-                          <TableCell className="whitespace-nowrap">{customer.gender}</TableCell>
-                          <TableCell className="whitespace-nowrap">{customer.created_date}</TableCell>
-                          <TableCell className="whitespace-nowrap">{customer.end_membership_date}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <DataTable<CustomerRow>
+                    data={filteredActiveRows}
+                    columns={activeCustomerColumns}
+                    currentPage={1}
+                    pageSize={filteredActiveRows.length || 1}
+                    onPageChange={() => { /* un-paginated */ }}
+                    onPageSizeChange={() => { /* un-paginated */ }}
+                    searchPlaceholder="Search name, phone or ID..."
+                    searchValue={activeSearch}
+                    onSearchChange={setActiveSearch}
+                    exportFileName="active-customers.xlsx"
+                    printTitle="Active Members"
+                    densityToggle={false}
+                    emptyMessage="No active members found."
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -440,16 +481,16 @@ export const CustomerReport = () => {
               <CardContent className="p-6">
                 <div className="flex justify-between mb-6">
                   <div>
-                    <div className="text-2xl font-semibold mb-1"><span className="text-base font-normal text-gray-400 align-top"></span>{totalExpiring}</div>
-                    <div className="text-sm font-medium text-gray-400">Expiring Members</div>
+                    <div className="text-2xl font-semibold mb-1"><span className="text-base font-normal text-gray-600 align-top"></span>{totalExpiring}</div>
+                    <div className="text-sm font-medium text-gray-600">Expiring Members</div>
                   </div>
                 </div>
 
                 <div className="mb-4 flex flex-col md:flex-row gap-4">
                   <div>
                     <Label className="block text-sm font-medium mb-1">From Date</Label>
-                    <Input
-                      type="date"
+                    <DateInput
+                      name="fromDate"
                       value={fromDate}
                       onChange={e => {
                         setFromDate(e.target.value);
@@ -459,8 +500,8 @@ export const CustomerReport = () => {
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-1">To Date</Label>
-                    <Input
-                      type="date"
+                    <DateInput
+                      name="toDate"
                       value={toDate}
                       onChange={e => {
                         setToDate(e.target.value);
@@ -529,26 +570,18 @@ export const CustomerReport = () => {
                 <div className="text-lg font-semibold">{totalExpiring} Customers Expiring from {fromDate} to {toDate}</div>
                 {customersExpiring.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Expire</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {customersExpiring.map((customer) => (
-                          <TableRow key={customer.customer_id}>
-                            <TableCell>{customer.customer_id}</TableCell>
-                            <TableCell>{customer.customer_name}</TableCell>
-                            <TableCell>{customer.phone}</TableCell>
-                            <TableCell className="whitespace-nowrap">{customer.end_membership_date}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <DataTable<CustomerRow>
+                      data={expiringRows}
+                      columns={expiringCustomerColumns}
+                      currentPage={1}
+                      pageSize={expiringRows.length || 1}
+                      onPageChange={() => { /* un-paginated */ }}
+                      onPageSizeChange={() => { /* un-paginated */ }}
+                      searchable={false}
+                      exportable={false}
+                      printable={false}
+                      densityToggle={false}
+                    />
                   </div>
                 ) : (
                   <p>No customers found for the selected expiration date.</p>

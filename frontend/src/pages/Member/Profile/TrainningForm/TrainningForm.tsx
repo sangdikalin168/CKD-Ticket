@@ -10,7 +10,7 @@ import { useCreateTrainningPaymentMutation, useGetTranningPriceQuery } from "../
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { CouponInvoice } from "../../../../components/ComponentToPrint/CouponInvoice";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 const notify = (
     message: string,

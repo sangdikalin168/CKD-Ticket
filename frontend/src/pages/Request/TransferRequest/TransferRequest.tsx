@@ -1,15 +1,15 @@
-import { createColumnHelper } from '@tanstack/react-table';
-import DataTable from '../../../components/DataTable/DataTable';
+import { DataTable } from '@/components/ui/DataTable';
+import type { ColumnDef } from '@/types/datatable';
 import LoadingPage from '../../../components/LoadingPage/LoadingPage';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useApproveTransferRequestMutation, useCheckTransferRequestMutation, useCreateTransferMutation, useTransferRequestsQuery } from '../../../generated/graphql';
 import Notifications from '../../../components/Notification';
 import { PrinterIcon } from '@heroicons/react/20/solid';
 import { useReactToPrint } from 'react-to-print';
 import { TransferInvoice } from '../../../components/ComponentToPrint/TransferInvoice';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 import {
     Dialog,
     DialogContent,
@@ -59,78 +59,77 @@ const date_format = (date_time: string) => {
 };
 
 const TransferRequest = () => {
-    const columnHelper = createColumnHelper<TransferRequest>();
-    const columns = [
-        columnHelper.accessor((row) => row.display_name, {
-            id: "អ្នកស្នើ",
-            cell: (info) => info.getValue(),
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.request_date, {
-            id: "ថ្ងៃស្នើ",
-            cell: (info) => datetime_format(info.getValue()),
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.sender_name, {
-            id: "ពីឈ្មោះ",
-            cell: (info) =>
+    const columns: ColumnDef<TransferRequest>[] = [
+        {
+            key: 'display_name',
+            header: 'អ្នកស្នើ',
+            sortable: true,
+        },
+        {
+            key: 'request_date',
+            header: 'ថ្ងៃស្នើ',
+            sortable: true,
+            render: (row) => datetime_format(row.request_date),
+        },
+        {
+            key: 'sender_name',
+            header: 'ពីឈ្មោះ',
+            sortable: true,
+            render: (row) =>
                 <div
                     onClick={async () => {
                         await getCustomer({
                             variables: {
-                                customerId: info.row.original.customer_id
+                                customerId: row.customer_id
                             }
                         })
                         await getCustomerPayment({
                             variables: {
-                                customerId: info.row.original.customer_id
+                                customerId: row.customer_id
                             }
                         })
                         setOpen(true)
                     }}
                 >
-                    {info.getValue()}
-                </div >,
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.receiver_name, {
-            id: "ទៅឈ្មោះ",
-            cell: (info) =>
+                    {row.sender_name}
+                </div>,
+        },
+        {
+            key: 'receiver_name',
+            header: 'ទៅឈ្មោះ',
+            sortable: true,
+            render: (row) =>
                 <div
                     onClick={async () => {
                         await getCustomer({
                             variables: {
-                                customerId: info.row.original.customer_id
+                                customerId: row.customer_id
                             }
                         })
                         await getCustomerPayment({
                             variables: {
-                                customerId: info.row.original.customer_id
+                                customerId: row.customer_id
                             }
                         })
                         setOpen(true)
                     }}
                 >
-                    {info.getValue()}
-                </div >,
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.reason, {
-            id: "មូលហេតុ",
-            cell: (info) => info.getValue(),
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.checker_name, {
-            id: "អ្នកពិនិត្យ",
-            cell: (info) => (
+                    {row.receiver_name}
+                </div>,
+        },
+        {
+            key: 'reason',
+            header: 'មូលហេតុ',
+            sortable: true,
+        },
+        {
+            key: 'checker_name',
+            header: 'អ្នកពិនិត្យ',
+            sortable: true,
+            render: (row) => (
                 <>
                     {
-                        info.row.original.checker_status === "Pending" ?
+                        row.checker_status === "Pending" ?
                             <Button
                                 type="button"
                                 variant="outline"
@@ -138,7 +137,7 @@ const TransferRequest = () => {
                                 className="text-red-600"
                                 onClick={() => {
                                     HandleCheckerApprove();
-                                    setRequestID(info.row.original.request_id)
+                                    setRequestID(row.request_id)
                                 }}
                             >
                                 Action
@@ -146,15 +145,15 @@ const TransferRequest = () => {
                             :
                             <>
                                 {
-                                    info.row.original.checker_status === "Approved" ?
+                                    row.checker_status === "Approved" ?
                                         <div className="group">
                                             <strong className="text-green-500 visible group-hover:invisible">Approved</strong>
-                                            <strong className="text-green-500 invisible group-hover:visible">{info.row.original.checker_comment}</strong>
+                                            <strong className="text-green-500 invisible group-hover:visible">{row.checker_comment}</strong>
                                         </div>
                                         :
                                         <div className="group">
                                             <strong className="text-red-500 visible group-hover:invisible">Rejected</strong>
-                                            <strong className="text-red-500 invisible group-hover:visible">{info.row.original.checker_comment}</strong>
+                                            <strong className="text-red-500 invisible group-hover:visible">{row.checker_comment}</strong>
                                         </div>
                                 }
                             </>
@@ -163,15 +162,15 @@ const TransferRequest = () => {
                 </>
 
             ),
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.approver_name, {
-            id: "អ្នកសម្រេច",
-            cell: (info) => (
+        },
+        {
+            key: 'approver_name',
+            header: 'អ្នកសម្រេច',
+            sortable: true,
+            render: (row) => (
                 <>
                     {
-                        info.row.original.approver_status === "Pending" ?
+                        row.approver_status === "Pending" ?
                             <Button
                                 type="button"
                                 variant="outline"
@@ -179,7 +178,7 @@ const TransferRequest = () => {
                                 className="text-red-600"
                                 onClick={() => {
                                     CheckApproverRole();
-                                    setRequestID(info.row.original.request_id)
+                                    setRequestID(row.request_id)
                                 }}
                             >
                                 Action
@@ -187,15 +186,15 @@ const TransferRequest = () => {
                             :
                             <>
                                 {
-                                    info.row.original.checker_status === "Approved" ?
+                                    row.checker_status === "Approved" ?
                                         <div className="group">
                                             <strong className="text-green-500 visible group-hover:invisible">Approved</strong>
-                                            <strong className="text-green-500 invisible group-hover:visible">{info.row.original.approver_comment}</strong>
+                                            <strong className="text-green-500 invisible group-hover:visible">{row.approver_comment}</strong>
                                         </div>
                                         :
                                         <div className="group">
                                             <strong className="text-red-500 visible group-hover:invisible">Rejected</strong>
-                                            <strong className="text-red-500 invisible group-hover:visible">{info.row.original.approver_comment}</strong>
+                                            <strong className="text-red-500 invisible group-hover:visible">{row.approver_comment}</strong>
                                         </div>
                                 }
                             </>
@@ -204,12 +203,13 @@ const TransferRequest = () => {
                 </>
 
             ),
-            header: (info) => <span>{info.column.id}</span>,
-            footer: (info) => info.column.id,
-        }),
-        columnHelper.accessor((row) => row.request_id, {
-            id: "Process",
-            cell: ({ row: { original: row_data } }) => (
+        },
+        {
+            key: 'process',
+            header: 'Process',
+            sortable: true,
+            accessor: (row) => row.request_id,
+            render: (row_data) => (
                 <div className="flex">
                     {
                         row_data.checker_status === "Approved" && row_data.approver_status === "Approved" ?
@@ -262,9 +262,7 @@ const TransferRequest = () => {
                     }
                 </div>
             ),
-            header: () => <span>Process</span>,
-            footer: (info) => info.column.id,
-        }),
+        },
     ];
 
     function countDaysBetweenDates(startDate: Date, endDate: Date) {
@@ -336,6 +334,37 @@ const TransferRequest = () => {
     const buttonRef = useRef<HTMLButtonElement>(null);
     const InvoiceRef = useRef<HTMLDivElement>(null);
 
+    const [search, setSearch] = useState("")
+    const [page, setPage] = useState(1)
+    const [page_size, setPageSize] = useState(20)
+
+    const requests = useMemo(
+        () => (data?.TransferRequests ?? []) as TransferRequest[],
+        [data]
+    );
+
+    // The old table filtered internally; the new one only reports the search
+    // term, so filter here before slicing the current page.
+    const filtered_requests = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        if (!term) return requests;
+        return requests.filter((row) =>
+            [
+                row.display_name,
+                row.request_date,
+                row.sender_name,
+                row.receiver_name,
+                row.reason,
+                row.checker_name,
+                row.approver_name,
+                String(row.request_id),
+            ].some((value) => (value ?? "").toLowerCase().includes(term))
+        );
+    }, [requests, search]);
+
+    const total_pages = Math.max(1, Math.ceil(filtered_requests.length / page_size));
+    const paged_requests = filtered_requests.slice((page - 1) * page_size, page * page_size);
+
     const [invoice_detail, setInvoiceDetail] = useState({
         invoice_id: 0, cashier: "", payment_date: "",
         sender_id: 0, sender_name: "", sender_phone: "", sender_old_end: "", sender_new_end: "",
@@ -398,9 +427,34 @@ const TransferRequest = () => {
     return (
         <>
             {!loading ? (
-                <DataTable
+                <DataTable<TransferRequest>
                     columns={columns}
-                    data={data?.TransferRequests}
+                    data={paged_requests}
+                    pageInfo={{
+                        current_page: page,
+                        page_size: page_size,
+                        total_items: filtered_requests.length,
+                        total_pages: total_pages,
+                        has_next: page < total_pages,
+                        has_previous: page > 1,
+                    }}
+                    currentPage={page}
+                    pageSize={page_size}
+                    onPageChange={setPage}
+                    onPageSizeChange={(size) => {
+                        setPageSize(size);
+                        setPage(1);
+                    }}
+                    pageSizeOptions={[10, 20, 30, 50]}
+                    searchValue={search}
+                    onSearchChange={(term) => {
+                        setSearch(term);
+                        setPage(1);
+                    }}
+                    columnToggle
+                    exportData={filtered_requests}
+                    exportFileName="transfer_requests.csv"
+                    emptyMessage="គ្មានទិន្នន័យ"
                 />
             ) : (
                 <LoadingPage message={"Loading"} />

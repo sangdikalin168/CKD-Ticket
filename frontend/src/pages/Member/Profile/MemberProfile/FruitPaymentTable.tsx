@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "../../Component/DataTable";
 import { PencilIcon } from "@heroicons/react/20/solid";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 type MemberPayment = {
     payment_id: number;

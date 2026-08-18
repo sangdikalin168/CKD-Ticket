@@ -15,6 +15,14 @@ module.exports = {
       },
     },
     extend: {
+      fontSize: {
+        // Used by tableDensity's `compact` tokens and several imported
+        // components; without it `text-caption` is an undefined utility and
+        // those elements fall back to the inherited size.
+        // lineHeight raised from 1.4: Khmer stacks subscripts (coeng) and
+        // below-vowels, which crowd the next line at 1.4.
+        caption: ['0.75rem', { lineHeight: '1.6', letterSpacing: '0.02em' }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -32,6 +40,30 @@ module.exports = {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+        },
+        // Added with the NAN-HR ui/ layer: its Button exposes warning/info/
+        // success variants and sidebar.tsx paints from the sidebar-* tokens.
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",

@@ -6,7 +6,7 @@ import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { DateTimePicker } from "../../../../components/DateTimePicker/DateTimePicker";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {

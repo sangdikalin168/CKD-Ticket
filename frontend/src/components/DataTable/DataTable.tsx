@@ -25,9 +25,9 @@ import {
   ArrowUpDown,
   Search,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Separator } from "@/components/ui/separator";
 import {
   Table,
@@ -254,11 +254,13 @@ export default function DataTable({
                 onSelect={(e) => e.preventDefault()}
                 className="gap-2 cursor-pointer"
               >
+                {/* The NAN-HR Checkbox renders its own label and reports a
+                    boolean, unlike the Radix one this used to call. */}
                 <Checkbox
                   checked={col.getIsVisible()}
-                  onCheckedChange={col.getToggleVisibilityHandler()}
+                  onChange={(next) => col.toggleVisibility(next)}
+                  label={<span className="text-sm">{col.id}</span>}
                 />
-                <span className="text-sm">{col.id}</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

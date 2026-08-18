@@ -1,28 +1,46 @@
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
+import React from 'react';
+import { cn } from '../../lib/utils';
 
-import { cn } from "@/lib/utils"
+export interface CheckboxProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: React.ReactNode;
+  description?: React.ReactNode;
+  disabled?: boolean;
+  className?: string;
+}
 
-const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
+/**
+ * Labelled checkbox. The whole row is the hit target, so it stays usable at
+ * touch sizes without the caller wiring up its own <label>.
+ */
+export const Checkbox: React.FC<CheckboxProps> = ({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled = false,
+  className,
+}) => (
+  <label
     className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className
+      'flex items-start gap-3 cursor-pointer select-none',
+      disabled && 'opacity-50 cursor-not-allowed',
+      className,
     )}
-    {...props}
   >
-    <CheckboxPrimitive.Indicator
-      className={cn("flex items-center justify-center text-current")}
-    >
-      <Check className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
-
-export { Checkbox }
+    <input
+      type="checkbox"
+      checked={checked}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.checked)}
+      className="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+    />
+    <span className="min-w-0">
+      <span className="block text-sm text-foreground">{label}</span>
+      {description && (
+        <span className="block text-xs text-muted-foreground mt-0.5">{description}</span>
+      )}
+    </span>
+  </label>
+);

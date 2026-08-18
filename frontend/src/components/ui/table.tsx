@@ -73,7 +73,9 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      // Compact density (see ui/tableDensity.ts): fits ~24 rows on a
+      // 1366x768 screen instead of 10. Pass className to override per table.
+      "px-2 py-1 text-caption normal-case tracking-normal text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -88,7 +90,8 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+      // leading-[19px] (not 17px) so Khmer subscripts clear the row below.
+      "px-2 py-[3px] text-caption leading-[19px] tabular-nums align-middle [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}

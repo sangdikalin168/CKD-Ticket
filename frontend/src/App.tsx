@@ -11,6 +11,7 @@ import TransferRequest from "./pages/Request/TransferRequest/TransferRequest";
 import { useSideBarContext } from "./context/SideBarContext";
 import SideBar from "./components/Sidebar/Sidebar";
 import NavBar from "./components/Navbar/Navbar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import IncomeReport from "./pages/Report/IncomeReport";
 import { MemberPriceTable } from "./pages/PriceTable/MemberPriceTable";
@@ -204,21 +205,26 @@ function App() {
 }
 
 function Layout() {
+  // SideBarContext stays the source of truth for the desktop open/closed state
+  // so anything already reading it keeps working; SidebarProvider mirrors it.
+  // The provider owns the mobile state separately (a Sheet), which is why the
+  // hand-rolled backdrop and the md:ml-64 margin maths are gone — the
+  // provider's flex layout and SidebarInset handle both.
   const { expanded, setExpanded } = useSideBarContext();
   return (
-    <>
+    <SidebarProvider
+      open={expanded}
+      onOpenChange={setExpanded}
+      className="min-h-screen bg-gray-50"
+    >
       <SideBar />
-      <div
-        className={`fixed top-0 left-0 w-full h-full bg-black/50 z-40 md:hidden ${expanded ? "" : "hidden"}`}
-        onClick={() => setExpanded((curr) => !curr)}
-      />
-      <main className={`w-full bg-gray-50 min-h-screen transition-all ${expanded ? "md:ml-64 md:w-[calc(100%-256px)]" : ""}`}>
+      <SidebarInset className="min-w-0 bg-gray-50">
         <NavBar />
         <div className="p-3">
           <Outlet />
         </div>
-      </main>
-    </>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
 

@@ -1,5 +1,6 @@
 import { PencilSquareIcon, BackwardIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
+import { CachedImage } from "@/components/ui/CachedImage";
 import {
   useGetCustomerDetailQuery,
   useGetFruitPaymentQuery,
@@ -22,9 +23,9 @@ import { BiTransfer } from "react-icons/bi";
 import WebcamCapture from "../../../../components/WebcamCapture/WebcamCapture";
 import { useMutation } from "@apollo/client";
 import { UPDATE_CUSTOMER_PHOTO } from "../../../../graphql/Customer/UpdateCustomerPhoto";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/Card";
 import {
   Dialog,
   DialogContent,
@@ -212,7 +213,7 @@ const MemberProfile = ({ ID }: any) => {
                 onClick={() => setOpenPreview(true)}
               >
                 {photoSrc ? (
-                  <img
+                  <CachedImage
                     className="h-24 w-24 rounded-full object-cover transition-opacity group-hover:opacity-80"
                     src={photoSrc}
                     alt={details?.customer_name || "Profile"}
@@ -532,7 +533,7 @@ const MemberProfile = ({ ID }: any) => {
           </DialogHeader>
           <div className="mt-2">
             {photoSrc ? (
-              <img
+              <CachedImage
                 className="w-full h-auto rounded-lg"
                 src={photoSrc}
                 alt={details?.customer_name || "Profile Preview"}

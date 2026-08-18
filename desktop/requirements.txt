@@ -1,0 +1,8 @@
+# Desktop host. Mirrors CKD-Check-In's stack so both apps stay one toolchain.
+pywebview>=5.0
+# Windows: pywebview renders through WebView2 via .NET, and the PDF spool
+# fallback in printing.py needs win32api.
+pywin32>=306; sys_platform == "win32"
+
+# Build only — not needed at runtime on a counter PC.
+pyinstaller>=6.10

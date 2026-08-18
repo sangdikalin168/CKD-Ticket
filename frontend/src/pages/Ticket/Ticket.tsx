@@ -5,7 +5,7 @@ import { ComponentToPrint } from "../../components/ComponentToPrint/index";
 import { v4 as uuidv4 } from "uuid";
 import { gql, useQuery } from "@apollo/client";
 import { useCreateTicketPaymentMutation } from "../../generated/graphql";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { TypeOptions, toast } from "react-toastify";
 import { Ticket as TicketIcon, Loader2, Settings2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";

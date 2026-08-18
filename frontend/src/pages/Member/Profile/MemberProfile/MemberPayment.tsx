@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { useMemberPaymentDetailLazyQuery } from "../../../../generated/graphql";
 import { useReactToPrint } from "react-to-print";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 type MemberPayment = {
   payment_id: number;
