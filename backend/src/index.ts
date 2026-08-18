@@ -55,27 +55,41 @@ export const MysqlDataSource = new DataSource({
   // auto-alter the live DB — use migrations (and ensure prod schema exists first).
   synchronize: !isProd,
   entities: [...entities],
-  // __dirname-relative, matching either extension: production has ALWAYS run
-  // this codebase from src/ via ts-node with no dist/, so the old cwd-relative
-  // "dist/migrations/*.js" matched nothing and runMigrations() was a silent
-  // no-op for its entire life. This glob works from src (ts) and dist (js).
+  // __dirname-relative, matching either extension: production runs this
+  // codebase from src/ via ts-node with no dist/, so the old cwd-relative
+  // "dist/migrations/*.js" matched nothing at boot. This glob works from src
+  // (ts) and dist (js). Note migrations are NOT applied at boot — see below.
   migrations: isProd ? [`${__dirname}/migrations/*.{ts,js}`] : [],
   migrationsTableName: "typeorm_migrations",
 });
 
 const main = async () => {
-  MysqlDataSource.initialize()
-    .then(async () => {
-      console.log("Database Connected");
-      if (isProd) {
-        const ran = await MysqlDataSource.runMigrations();
-        if (ran.length) console.log(`Applied ${ran.length} migration(s)`);
-      }
-      await ensureDefaultFacilities();
-    })
-    .catch((err) => {
-      console.error("Error during Data Source initialization", err);
-    });
+  // Migrations are DELIBERATELY not run here.
+  //
+  // This used to be `if (isProd) await runMigrations()` inside a floating
+  // .then() that nobody awaited and whose .catch() only logged — so the server
+  // went on to listen even if the schema change had failed. MySQL/MariaDB
+  // auto-commit DDL, so a failure part-way through leaves committed,
+  // half-applied schema that TypeORM does not record as run, announced by one
+  // console line while the gym keeps trading. That was survivable only because
+  // the migrations glob was broken and the call did nothing.
+  //
+  // Now that the glob is fixed the call would be live, so it is gone. Apply
+  // migrations as an explicit, verified deploy step, before starting the API:
+  //
+  //     npm run migration:run:prod        (see docs/DEPLOY-transfer-guardrails.md)
+  //
+  // Startup still fails loudly if the database is unreachable: initialize() is
+  // awaited, and a rejection exits non-zero instead of listening on a broken
+  // connection.
+  try {
+    await MysqlDataSource.initialize();
+    console.log("Database Connected");
+    await ensureDefaultFacilities();
+  } catch (err) {
+    console.error("FATAL: database initialization failed", err);
+    process.exit(1);
+  }
 
   const app = express();
   // Built SPA. Only used when Node fronts the app directly (Cloudflare Tunnel ->

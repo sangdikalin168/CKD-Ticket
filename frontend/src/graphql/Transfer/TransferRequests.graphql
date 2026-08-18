@@ -16,6 +16,7 @@ query TransferRequests {
     approver_status
     process
     processed_by
+    processed_date
     display_name
     sender_name
     sender_phone

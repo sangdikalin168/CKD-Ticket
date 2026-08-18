@@ -34,10 +34,16 @@ export type ActiveCustomerReport = {
   total: Scalars['Int'];
 };
 
-/** Age classification: Kid or Adult. */
+/** Kid or Adult. */
 export enum AgeGroup {
   Adult = 'Adult',
   Kid = 'Kid'
+}
+
+export enum ApprovalStatus {
+  Approved = 'Approved',
+  Pending = 'Pending',
+  Rejected = 'Rejected'
 }
 
 export type CheckIn = {
@@ -48,8 +54,73 @@ export type CheckIn = {
   customer_id?: Maybe<Scalars['Float']>;
   entitlement_id?: Maybe<Scalars['Float']>;
   facility_id?: Maybe<Scalars['Float']>;
+  key_taken: Scalars['Boolean'];
   note?: Maybe<Scalars['String']>;
   recorded_by?: Maybe<Scalars['Float']>;
+  towel_taken: Scalars['Boolean'];
+};
+
+export type CheckinCoupon = {
+  __typename?: 'CheckinCoupon';
+  coupon_code: Scalars['String'];
+  customer_id: Scalars['Float'];
+  customer_name: Scalars['String'];
+  gender: Scalars['String'];
+  phone: Scalars['String'];
+  price: Scalars['Float'];
+  quantity: Scalars['Int'];
+};
+
+export type CheckinFingerprint = {
+  __typename?: 'CheckinFingerprint';
+  customer_id: Scalars['Float'];
+  fingerprint: Scalars['String'];
+};
+
+export type CheckinMember = {
+  __typename?: 'CheckinMember';
+  active: Scalars['Boolean'];
+  customer_id: Scalars['Float'];
+  customer_name: Scalars['String'];
+  gender: Scalars['String'];
+  key_status: Scalars['String'];
+  next_payment: Scalars['String'];
+  phone: Scalars['String'];
+  shift: Scalars['String'];
+  towel_status: Scalars['String'];
+};
+
+export type CheckinResponse = {
+  __typename?: 'CheckinResponse';
+  message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
+};
+
+export type CheckinTicket = {
+  __typename?: 'CheckinTicket';
+  entries_left?: Maybe<Scalars['Int']>;
+  is_check: Scalars['Int'];
+  key_image?: Maybe<Scalars['String']>;
+  key_label?: Maybe<Scalars['String']>;
+  place_allowed: Scalars['Boolean'];
+  place_names: Array<Scalars['String']>;
+  places: Array<Scalars['String']>;
+  price: Scalars['Float'];
+  station_place: Scalars['String'];
+  status?: Maybe<Scalars['String']>;
+  ticket_code: Scalars['String'];
+};
+
+export type CheckoutMember = {
+  __typename?: 'CheckoutMember';
+  check_in_id?: Maybe<Scalars['Float']>;
+  check_in_time?: Maybe<Scalars['String']>;
+  customer_id: Scalars['Float'];
+  customer_name: Scalars['String'];
+  image_path?: Maybe<Scalars['String']>;
+  key_taken: Scalars['Boolean'];
+  phone?: Maybe<Scalars['String']>;
+  towel_taken: Scalars['Boolean'];
 };
 
 export type CouponCard = {
@@ -61,19 +132,6 @@ export type CouponCard = {
   price: Scalars['Float'];
   quantity: Scalars['Float'];
   status: Scalars['String'];
-};
-
-export type CouponCardMutationResponse = CouponCardResponse & {
-  __typename?: 'CouponCardMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
-export type CouponCardResponse = {
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
 };
 
 export type CouponPayment = {
@@ -91,15 +149,8 @@ export type CouponPayment = {
   user_id: Scalars['Float'];
 };
 
-export type CouponPaymentMutationResponse = CouponPaymentResponse & {
+export type CouponPaymentMutationResponse = {
   __typename?: 'CouponPaymentMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  payment_id: Scalars['Float'];
-  success: Scalars['Boolean'];
-};
-
-export type CouponPaymentResponse = {
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
   payment_id: Scalars['Float'];
@@ -126,7 +177,7 @@ export type Customer = {
   end_membership_date: Scalars['String'];
   fingerprint: Scalars['String'];
   gender: Scalars['String'];
-  image_path: Scalars['String'];
+  image_path?: Maybe<Scalars['String']>;
   key_status: Scalars['String'];
   phone: Scalars['String'];
   rfid_uid?: Maybe<Scalars['String']>;
@@ -149,7 +200,7 @@ export type CustomerMembershipDetail = {
   promotion: Scalars['String'];
 };
 
-export type CustomerMutationResponse = ICustomerResponse & {
+export type CustomerMutationResponse = {
   __typename?: 'CustomerMutationResponse';
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
@@ -169,7 +220,7 @@ export enum CustomerStatus {
   Inactive = 'INACTIVE'
 }
 
-/** Membership type: Full, Old or New. */
+/** Full, Old, or New member. */
 export enum CustomerType {
   Full = 'Full',
   New = 'New',
@@ -237,15 +288,8 @@ export type FruitPayment = {
   user_id: Scalars['Float'];
 };
 
-export type FruitPaymentMutationResponse = FruitPaymentResponse & {
+export type FruitPaymentMutationResponse = {
   __typename?: 'FruitPaymentMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  payment_id: Scalars['Float'];
-  success: Scalars['Boolean'];
-};
-
-export type FruitPaymentResponse = {
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
   payment_id: Scalars['Float'];
@@ -259,19 +303,6 @@ export type FruitPrice = {
   month_qty: Scalars['Float'];
   name: Scalars['String'];
   price: Scalars['Float'];
-};
-
-export type FruitPriceTableMutationResponse = FruitPriceTableResponse & {
-  __typename?: 'FruitPriceTableMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
-export type FruitPriceTableResponse = {
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
 };
 
 export type GetUser = {
@@ -350,6 +381,53 @@ export type HoldRequest = {
   to_date: Scalars['String'];
 };
 
+export type HoldRequestV2 = {
+  __typename?: 'HoldRequestV2';
+  customer_id: Scalars['Float'];
+  decided_at?: Maybe<Scalars['String']>;
+  decided_by?: Maybe<Scalars['Float']>;
+  decision_note?: Maybe<Scalars['String']>;
+  fee: Scalars['String'];
+  from_date: Scalars['String'];
+  legacy: Scalars['Float'];
+  new_end?: Maybe<Scalars['String']>;
+  old_end?: Maybe<Scalars['String']>;
+  processed_at?: Maybe<Scalars['String']>;
+  processed_by?: Maybe<Scalars['Float']>;
+  reason: Scalars['String'];
+  request_id: Scalars['Float'];
+  requested_at: Scalars['String'];
+  requested_by: Scalars['Float'];
+  status: Scalars['String'];
+  to_date: Scalars['String'];
+};
+
+export type HoldRequestV2Row = {
+  __typename?: 'HoldRequestV2Row';
+  customer_id: Scalars['Float'];
+  customer_name: Scalars['String'];
+  decided_at?: Maybe<Scalars['String']>;
+  decided_by?: Maybe<Scalars['Float']>;
+  decided_by_name?: Maybe<Scalars['String']>;
+  decision_note?: Maybe<Scalars['String']>;
+  fee: Scalars['String'];
+  from_date: Scalars['String'];
+  legacy: Scalars['Float'];
+  new_end?: Maybe<Scalars['String']>;
+  old_end?: Maybe<Scalars['String']>;
+  phone: Scalars['String'];
+  processed_at?: Maybe<Scalars['String']>;
+  processed_by?: Maybe<Scalars['Float']>;
+  processed_by_name?: Maybe<Scalars['String']>;
+  reason: Scalars['String'];
+  request_id: Scalars['Float'];
+  requested_at: Scalars['String'];
+  requested_by: Scalars['Float'];
+  requested_by_name?: Maybe<Scalars['String']>;
+  status: Scalars['String'];
+  to_date: Scalars['String'];
+};
+
 export type HoldResponse = {
   code: Scalars['Float'];
   hold_id?: Maybe<Scalars['Float']>;
@@ -357,15 +435,11 @@ export type HoldResponse = {
   success: Scalars['Boolean'];
 };
 
-export type ICustomerResponse = {
+export type HoldV2Response = {
+  __typename?: 'HoldV2Response';
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
-export type IMemberPriceTableResponse = {
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
+  new_end?: Maybe<Scalars['String']>;
   success: Scalars['Boolean'];
 };
 
@@ -409,15 +483,8 @@ export type MemberPaymentDetail = {
   start_date: Scalars['DateTime'];
 };
 
-export type MemberPaymentMutationResponse = MemberPaymentResponse & {
+export type MemberPaymentMutationResponse = {
   __typename?: 'MemberPaymentMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  payment_id: Scalars['Float'];
-  success: Scalars['Boolean'];
-};
-
-export type MemberPaymentResponse = {
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
   payment_id: Scalars['Float'];
@@ -430,18 +497,13 @@ export type MemberPriceTable = {
   customerType: CustomerType;
   description: Scalars['String'];
   entryQty: Scalars['Float'];
+  facilities: Array<Facility>;
   id: Scalars['Float'];
+  key_image?: Maybe<Scalars['String']>;
   monthQty: Scalars['Float'];
   price: Scalars['Float'];
   serviceType: ServiceType;
   shift: ShiftType;
-};
-
-export type MemberPriceTableMutationResponse = IMemberPriceTableResponse & {
-  __typename?: 'MemberPriceTableMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
 };
 
 export type MemberScan = {
@@ -471,6 +533,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   ApproveHoldRequest: HoldMutationResponse;
   ApproveTransferRequest: TransferMutationResponse;
+  CancelHoldRequestV2: HoldV2Response;
   CheckHoldRequest: HoldMutationResponse;
   CheckTransferRequest: TransferMutationResponse;
   CreateCouponPayment: CouponPaymentMutationResponse;
@@ -479,17 +542,29 @@ export type Mutation = {
   CreateFruitPayment: FruitPaymentMutationResponse;
   CreateHold: HoldMutationResponse;
   CreateHoldRequest: HoldMutationResponse;
+  CreateHoldRequestV2: HoldV2Response;
   CreateTicketPayment: TicketPaymentMutationResponse;
   CreateTrainningPayment: TrainningPaymentMutationResponse;
   CreateTransfer: TransferMutationResponse;
   CreateTransferRequest: TransferMutationResponse;
+  DecideHoldRequestV2: HoldV2Response;
+  DeleteTicketPriceConfig: Scalars['Boolean'];
+  ProcessHoldV2: HoldV2Response;
   UpdateCustomer: CustomerMutationResponse;
   UpdateCustomerPhoto: CustomerMutationResponse;
+  UpsertTicketPriceConfig: TicketPriceConfig;
+  checkinConsumeCoupon: CheckinResponse;
+  checkinMember: CheckinResponse;
+  checkinSaveFingerprint: CheckinResponse;
+  checkinTicket: CheckinResponse;
+  checkoutUpdateItems: CheckinResponse;
   createMemberPrice: MemberPriceTable;
   create_user: UserMutationResponse;
   deleteMemberPrice: Scalars['Boolean'];
+  enqueuePrintJob: PrintJobResponse;
   login: UserMutationResponse;
   logout: UserMutationResponse;
+  printSelfTest: PrintJobResponse;
   updatePrice?: Maybe<MemberPriceTable>;
 };
 
@@ -503,9 +578,13 @@ export type MutationApproveHoldRequestArgs = {
 
 
 export type MutationApproveTransferRequestArgs = {
-  approved_by: Scalars['Float'];
   approver_comment: Scalars['String'];
-  approver_status: Scalars['String'];
+  approver_status: ApprovalStatus;
+  request_id: Scalars['Float'];
+};
+
+
+export type MutationCancelHoldRequestV2Args = {
   request_id: Scalars['Float'];
 };
 
@@ -519,9 +598,8 @@ export type MutationCheckHoldRequestArgs = {
 
 
 export type MutationCheckTransferRequestArgs = {
-  checked_by: Scalars['Float'];
   checker_comment: Scalars['String'];
-  checker_status: Scalars['String'];
+  checker_status: ApprovalStatus;
   request_id: Scalars['Float'];
 };
 
@@ -587,6 +665,14 @@ export type MutationCreateHoldRequestArgs = {
 };
 
 
+export type MutationCreateHoldRequestV2Args = {
+  customer_id: Scalars['Float'];
+  from_date: Scalars['String'];
+  reason: Scalars['String'];
+  to_date: Scalars['String'];
+};
+
+
 export type MutationCreateTicketPaymentArgs = {
   price: Scalars['Float'];
   ticket_code: Scalars['String'];
@@ -604,22 +690,33 @@ export type MutationCreateTrainningPaymentArgs = {
 
 
 export type MutationCreateTransferArgs = {
-  processed_by: Scalars['Float'];
-  receiver_id: Scalars['Float'];
-  receiver_new_end: Scalars['String'];
-  receiver_old_end: Scalars['String'];
+  fee?: InputMaybe<Scalars['Float']>;
   request_id: Scalars['Float'];
-  sender_id: Scalars['Float'];
-  sender_new_end: Scalars['String'];
-  sender_old_date: Scalars['String'];
 };
 
 
 export type MutationCreateTransferRequestArgs = {
   reason: Scalars['String'];
   receiver_id: Scalars['Float'];
-  request_by: Scalars['Float'];
   sender_id: Scalars['Float'];
+};
+
+
+export type MutationDecideHoldRequestV2Args = {
+  approve: Scalars['Boolean'];
+  note?: InputMaybe<Scalars['String']>;
+  request_id: Scalars['Float'];
+};
+
+
+export type MutationDeleteTicketPriceConfigArgs = {
+  config_id: Scalars['Float'];
+};
+
+
+export type MutationProcessHoldV2Args = {
+  fee?: InputMaybe<Scalars['Float']>;
+  request_id: Scalars['Float'];
 };
 
 
@@ -635,14 +732,57 @@ export type MutationUpdateCustomerPhotoArgs = {
 };
 
 
+export type MutationUpsertTicketPriceConfigArgs = {
+  age_group?: InputMaybe<Scalars['String']>;
+  facility_ids: Array<Scalars['Float']>;
+  key_image?: InputMaybe<Scalars['String']>;
+  label?: InputMaybe<Scalars['String']>;
+  price: Scalars['Float'];
+};
+
+
+export type MutationCheckinConsumeCouponArgs = {
+  coupon_code: Scalars['String'];
+  key_qty?: InputMaybe<Scalars['Int']>;
+  towel_qty?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MutationCheckinMemberArgs = {
+  customer_id: Scalars['Float'];
+  key_status: Scalars['String'];
+  towel_status: Scalars['String'];
+};
+
+
+export type MutationCheckinSaveFingerprintArgs = {
+  customer_id: Scalars['Float'];
+  template: Scalars['String'];
+};
+
+
+export type MutationCheckinTicketArgs = {
+  station_place?: InputMaybe<Scalars['String']>;
+  ticket_code: Scalars['String'];
+};
+
+
+export type MutationCheckoutUpdateItemsArgs = {
+  check_in_id: Scalars['Int'];
+  key_taken?: InputMaybe<Scalars['Boolean']>;
+  towel_taken?: InputMaybe<Scalars['Boolean']>;
+};
+
+
 export type MutationCreateMemberPriceArgs = {
   ageGroup: Scalars['String'];
   customerType: Scalars['String'];
   description: Scalars['String'];
   entryQty?: InputMaybe<Scalars['Float']>;
+  facility_ids?: InputMaybe<Array<Scalars['Int']>>;
+  key_image?: InputMaybe<Scalars['String']>;
   monthQty?: InputMaybe<Scalars['Float']>;
   price: Scalars['Float'];
-  serviceType?: InputMaybe<Scalars['String']>;
   shift?: InputMaybe<Scalars['String']>;
 };
 
@@ -657,13 +797,18 @@ export type MutationDeleteMemberPriceArgs = {
 };
 
 
+export type MutationEnqueuePrintJobArgs = {
+  input: PrintJobInput;
+};
+
+
 export type MutationLoginArgs = {
   loginInput: LoginInput;
 };
 
 
 export type MutationLogoutArgs = {
-  user_id: Scalars['ID'];
+  user_id?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -672,10 +817,11 @@ export type MutationUpdatePriceArgs = {
   customerType?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   entryQty?: InputMaybe<Scalars['Float']>;
+  facility_ids?: InputMaybe<Array<Scalars['Int']>>;
   id: Scalars['Int'];
+  key_image?: InputMaybe<Scalars['String']>;
   monthQty?: InputMaybe<Scalars['Float']>;
   price?: InputMaybe<Scalars['Float']>;
-  serviceType?: InputMaybe<Scalars['String']>;
   shift?: InputMaybe<Scalars['String']>;
 };
 
@@ -705,6 +851,68 @@ export enum PaymentMethod {
   Cash = 'CASH',
   Other = 'OTHER',
   Transfer = 'TRANSFER'
+}
+
+export enum PrintDocType {
+  Coupon = 'COUPON',
+  Fruit = 'FRUIT',
+  Hold = 'HOLD',
+  MemberPayment = 'MEMBER_PAYMENT',
+  MemberRenew = 'MEMBER_RENEW',
+  SelfTest = 'SELF_TEST',
+  TicketSale = 'TICKET_SALE',
+  Training = 'TRAINING',
+  Transfer = 'TRANSFER'
+}
+
+export type PrintJob = {
+  __typename?: 'PrintJob';
+  attempts: Scalars['Float'];
+  copies: Scalars['Float'];
+  created_at: Scalars['DateTime'];
+  doc_type: PrintDocType;
+  idempotency_key: Scalars['String'];
+  job_id: Scalars['ID'];
+  last_error?: Maybe<Scalars['String']>;
+  max_attempts: Scalars['Float'];
+  ref_id: Scalars['Float'];
+  status: PrintJobStatus;
+};
+
+export type PrintJobInput = {
+  copies?: InputMaybe<Scalars['Int']>;
+  doc_type: PrintDocType;
+  idempotency_key?: InputMaybe<Scalars['String']>;
+  ref_id?: InputMaybe<Scalars['Int']>;
+};
+
+export type PrintJobResponse = {
+  __typename?: 'PrintJobResponse';
+  duplicate: Scalars['Boolean'];
+  job_id?: Maybe<Scalars['ID']>;
+  message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
+};
+
+export enum PrintJobStatus {
+  Cancelled = 'CANCELLED',
+  Done = 'DONE',
+  Failed = 'FAILED',
+  Printing = 'PRINTING',
+  Queued = 'QUEUED'
+}
+
+export type PrinterStatus = {
+  __typename?: 'PrinterStatus';
+  failed: Scalars['Int'];
+  queued: Scalars['Int'];
+  worker_available: Scalars['Boolean'];
+  worker_error?: Maybe<Scalars['String']>;
+};
+
+export enum ProcessStatus {
+  Done = 'Done',
+  Pending = 'Pending'
 }
 
 export enum ProductType {
@@ -737,6 +945,7 @@ export type Purchase = {
 
 export type Query = {
   __typename?: 'Query';
+  GetActiveHoldRequestV2: Array<HoldRequestV2>;
   GetCouponCard: Array<CouponCard>;
   GetCouponPayment: Array<CouponPayment>;
   GetCouponPaymentDetails: Array<CouponType>;
@@ -753,14 +962,21 @@ export type Query = {
   GetMemberPayments: Array<MemberType>;
   GetSeller: Array<Users>;
   GetTicketPayment: Array<TicketType>;
+  GetTicketPriceConfigs: Array<TicketPriceConfig>;
   GetTrainningPayment: Array<TrainningPayment>;
   GetTrainningPaymentDetail: Array<MemberType>;
   GetTrainningPayments: Array<TrainningType>;
   GetTranningPrice: Array<TrainningPrice>;
   HoldRequests: Array<HoldJoin>;
+  HoldRequestsV2: Array<HoldRequestV2Row>;
   MemberPaymentDetail: MemberPaymentDetail;
   TransferRequests: Array<TransferJoin>;
   activeCustomers: ActiveCustomerReport;
+  checkinFingerprints: Array<CheckinFingerprint>;
+  checkinLookupCoupon?: Maybe<CheckinCoupon>;
+  checkinLookupMember?: Maybe<CheckinMember>;
+  checkinLookupTicket?: Maybe<CheckinTicket>;
+  checkoutLookupMember?: Maybe<CheckoutMember>;
   customerScanReport: CustomerScanReport;
   customersByMembershipDuration: CustomersByMembershipDurationReport;
   expiringCustomersOnDate: ExpiringCustomerReport;
@@ -768,7 +984,13 @@ export type Query = {
   getAllMemberPriceTable: Array<MemberPriceTable>;
   getMemberPriceById?: Maybe<MemberPriceTable>;
   get_user: GetUser;
+  printerStatus: PrinterStatus;
   users: Array<Users>;
+};
+
+
+export type QueryGetActiveHoldRequestV2Args = {
+  customer_id: Scalars['Float'];
 };
 
 
@@ -797,6 +1019,18 @@ export type QueryGetCouponPaymentsArgs = {
 
 export type QueryGetCustomerDetailArgs = {
   customer_id: Scalars['Float'];
+};
+
+
+export type QueryGetCustomersArgs = {
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryGetCustomersCountArgs = {
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -869,6 +1103,27 @@ export type QueryMemberPaymentDetailArgs = {
 };
 
 
+export type QueryCheckinLookupCouponArgs = {
+  coupon_code: Scalars['String'];
+};
+
+
+export type QueryCheckinLookupMemberArgs = {
+  customer_id: Scalars['Float'];
+};
+
+
+export type QueryCheckinLookupTicketArgs = {
+  station_place?: InputMaybe<Scalars['String']>;
+  ticket_code: Scalars['String'];
+};
+
+
+export type QueryCheckoutLookupMemberArgs = {
+  customer_id: Scalars['Float'];
+};
+
+
 export type QueryCustomerScanReportArgs = {
   fromDate: Scalars['String'];
   memberId: Scalars['Float'];
@@ -910,7 +1165,7 @@ export type ScanLog = {
   scanDate: Scalars['String'];
 };
 
-/** Service type: Swim, SwimGym, SwimSteam, SwimGymSteam. */
+/** Derived from selected facilities. */
 export enum ServiceType {
   Swim = 'Swim',
   SwimGym = 'SwimGym',
@@ -923,7 +1178,7 @@ export enum Shift {
   Morning = 'Morning'
 }
 
-/** The type of shift (Full or Half). */
+/** Full or Morning shift. */
 export enum ShiftType {
   Full = 'Full',
   Morning = 'Morning'
@@ -939,7 +1194,7 @@ export type TicketPayment = {
   user_id: Scalars['Float'];
 };
 
-export type TicketPaymentMutationResponse = TicketPaymentResponse & {
+export type TicketPaymentMutationResponse = {
   __typename?: 'TicketPaymentMutationResponse';
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
@@ -947,11 +1202,14 @@ export type TicketPaymentMutationResponse = TicketPaymentResponse & {
   success: Scalars['Boolean'];
 };
 
-export type TicketPaymentResponse = {
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  payment_id: Scalars['Float'];
-  success: Scalars['Boolean'];
+export type TicketPriceConfig = {
+  __typename?: 'TicketPriceConfig';
+  age_group?: Maybe<Scalars['String']>;
+  config_id: Scalars['Float'];
+  facilities: Array<Facility>;
+  key_image?: Maybe<Scalars['String']>;
+  label?: Maybe<Scalars['String']>;
+  price: Scalars['Float'];
 };
 
 export type TicketType = {
@@ -972,15 +1230,8 @@ export type TrainningPayment = {
   user_id: Scalars['Float'];
 };
 
-export type TrainningPaymentMutationResponse = TrainningPaymentResponse & {
+export type TrainningPaymentMutationResponse = {
   __typename?: 'TrainningPaymentMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  payment_id: Scalars['Float'];
-  success: Scalars['Boolean'];
-};
-
-export type TrainningPaymentResponse = {
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
   payment_id: Scalars['Float'];
@@ -1004,19 +1255,6 @@ export type TrainningType = {
   qty: Scalars['Float'];
 };
 
-export type TranningPriceMutationResponse = TranningPriceResponse & {
-  __typename?: 'TranningPriceMutationResponse';
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
-export type TranningPriceResponse = {
-  code: Scalars['Float'];
-  message?: Maybe<Scalars['String']>;
-  success: Scalars['Boolean'];
-};
-
 export type Transfer = {
   __typename?: 'Transfer';
   fee: Scalars['Float'];
@@ -1034,19 +1272,20 @@ export type Transfer = {
 
 export type TransferJoin = {
   __typename?: 'TransferJoin';
-  approved_by: Scalars['Float'];
-  approved_date: Scalars['String'];
-  approver_comment: Scalars['String'];
+  approved_by?: Maybe<Scalars['Float']>;
+  approved_date?: Maybe<Scalars['String']>;
+  approver_comment?: Maybe<Scalars['String']>;
   approver_name?: Maybe<Scalars['String']>;
-  approver_status: Scalars['String'];
-  checked_by: Scalars['Float'];
-  checked_date: Scalars['String'];
-  checker_comment: Scalars['String'];
+  approver_status: ApprovalStatus;
+  checked_by?: Maybe<Scalars['Float']>;
+  checked_date?: Maybe<Scalars['String']>;
+  checker_comment?: Maybe<Scalars['String']>;
   checker_name?: Maybe<Scalars['String']>;
-  checker_status: Scalars['String'];
+  checker_status: ApprovalStatus;
   display_name: Scalars['String'];
-  process: Scalars['String'];
-  processed_by: Scalars['Float'];
+  process: ProcessStatus;
+  processed_by?: Maybe<Scalars['Float']>;
+  processed_date?: Maybe<Scalars['String']>;
   processed_name?: Maybe<Scalars['String']>;
   reason: Scalars['String'];
   receiver_id: Scalars['Float'];
@@ -1072,16 +1311,17 @@ export type TransferMutationResponse = TransferResponse & {
 
 export type TransferRequest = {
   __typename?: 'TransferRequest';
-  approved_by: Scalars['Float'];
-  approved_date: Scalars['String'];
-  approver_comment: Scalars['String'];
-  approver_status: Scalars['String'];
-  checked_by: Scalars['Float'];
-  checked_date: Scalars['String'];
-  checker_comment: Scalars['String'];
-  checker_status: Scalars['String'];
-  process: Scalars['String'];
-  processed_by: Scalars['Float'];
+  approved_by?: Maybe<Scalars['Float']>;
+  approved_date?: Maybe<Scalars['String']>;
+  approver_comment?: Maybe<Scalars['String']>;
+  approver_status: ApprovalStatus;
+  checked_by?: Maybe<Scalars['Float']>;
+  checked_date?: Maybe<Scalars['String']>;
+  checker_comment?: Maybe<Scalars['String']>;
+  checker_status: ApprovalStatus;
+  process: ProcessStatus;
+  processed_by?: Maybe<Scalars['Float']>;
+  processed_date?: Maybe<Scalars['String']>;
   reason: Scalars['String'];
   receiver_id: Scalars['Float'];
   request_by: Scalars['Float'];
@@ -1111,6 +1351,7 @@ export type Users = {
   created_at: Scalars['String'];
   display_name: Scalars['String'];
   image: Scalars['String'];
+  is_active: Scalars['Float'];
   phone: Scalars['String'];
   role: Scalars['String'];
   user_id: Scalars['ID'];
@@ -1151,12 +1392,23 @@ export type GetCustomerDetailQueryVariables = Exact<{
 }>;
 
 
-export type GetCustomerDetailQuery = { __typename?: 'Query', GetCustomerDetail: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path: string, fingerprint: string, end_membership_date: string, end_fruit_date: string, key_status: string, towel_status: string, shift: string }> };
+export type GetCustomerDetailQuery = { __typename?: 'Query', GetCustomerDetail: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path?: string | null, fingerprint: string, end_membership_date: string, end_fruit_date: string, key_status: string, towel_status: string, shift: string }> };
 
-export type GetCustomersQueryVariables = Exact<{ limit: Scalars['Int']; offset: Scalars['Int']; search?: InputMaybe<Scalars['String']>; }>;
+export type GetCustomersCountQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']>;
+}>;
 
 
-export type GetCustomersQuery = { __typename?: 'Query', GetCustomers: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path: string, fingerprint: string, end_membership_date: string, key_status: string, towel_status: string }> };
+export type GetCustomersCountQuery = { __typename?: 'Query', GetCustomersCount: number };
+
+export type GetCustomersQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+  search?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type GetCustomersQuery = { __typename?: 'Query', GetCustomers: Array<{ __typename?: 'Customer', customer_id: number, created_date: string, created_by: number, customer_code: string, customer_name: string, phone: string, gender: string, image_path?: string | null, fingerprint: string, end_membership_date: string, key_status: string, towel_status: string }> };
 
 export type UpdateCustomerMutationVariables = Exact<{
   phone: Scalars['String'];
@@ -1244,6 +1496,32 @@ export type CreateHoldRequestMutationVariables = Exact<{
 
 export type CreateHoldRequestMutation = { __typename?: 'Mutation', CreateHoldRequest: { __typename?: 'HoldMutationResponse', code: number, success: boolean, message?: string | null } };
 
+export type CreateHoldRequestV2MutationVariables = Exact<{
+  customerId: Scalars['Float'];
+  reason: Scalars['String'];
+  fromDate: Scalars['String'];
+  toDate: Scalars['String'];
+}>;
+
+
+export type CreateHoldRequestV2Mutation = { __typename?: 'Mutation', CreateHoldRequestV2: { __typename?: 'HoldV2Response', code: number, success: boolean, message?: string | null } };
+
+export type DecideHoldRequestV2MutationVariables = Exact<{
+  requestId: Scalars['Float'];
+  approve: Scalars['Boolean'];
+  note?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type DecideHoldRequestV2Mutation = { __typename?: 'Mutation', DecideHoldRequestV2: { __typename?: 'HoldV2Response', code: number, success: boolean, message?: string | null } };
+
+export type GetActiveHoldRequestV2QueryVariables = Exact<{
+  customerId: Scalars['Float'];
+}>;
+
+
+export type GetActiveHoldRequestV2Query = { __typename?: 'Query', GetActiveHoldRequestV2: Array<{ __typename?: 'HoldRequestV2', request_id: number, status: string, from_date: string, to_date: string, reason: string }> };
+
 export type GetHoldRequestQueryVariables = Exact<{
   customerId: Scalars['Float'];
 }>;
@@ -1262,6 +1540,19 @@ export type HoldRequestsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type HoldRequestsQuery = { __typename?: 'Query', HoldRequests: Array<{ __typename?: 'HoldJoin', request_id: number, request_by: number, request_date: string, customer_id: number, reason: string, from_date: string, to_date: string, old_end: string, new_end: string, checked_by: number, checker_comment: string, checked_date: string, checker_status: string, approved_by: number, approver_comment: string, approved_date: string, approver_status: string, display_name: string, customer_name: string, checker_name?: string | null, approved_name?: string | null, process: string, processed_name?: string | null, processed_by: number, phone: string }> };
+
+export type HoldRequestsV2QueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HoldRequestsV2Query = { __typename?: 'Query', HoldRequestsV2: Array<{ __typename?: 'HoldRequestV2Row', request_id: number, customer_id: number, customer_name: string, phone: string, requested_by: number, requested_by_name?: string | null, requested_at: string, reason: string, from_date: string, to_date: string, status: string, decided_by?: number | null, decided_by_name?: string | null, decided_at?: string | null, decision_note?: string | null, processed_by?: number | null, processed_by_name?: string | null, processed_at?: string | null, old_end?: string | null, new_end?: string | null, fee: string, legacy: number }> };
+
+export type ProcessHoldV2MutationVariables = Exact<{
+  requestId: Scalars['Float'];
+  fee?: InputMaybe<Scalars['Float']>;
+}>;
+
+
+export type ProcessHoldV2Mutation = { __typename?: 'Mutation', ProcessHoldV2: { __typename?: 'HoldV2Response', code: number, success: boolean, message?: string | null, new_end?: string | null } };
 
 export type GetMemberPaymentDetailQueryVariables = Exact<{
   dateTo: Scalars['String'];
@@ -1316,6 +1607,29 @@ export type CreateTicketPaymentMutationVariables = Exact<{
 
 export type CreateTicketPaymentMutation = { __typename?: 'Mutation', CreateTicketPayment: { __typename?: 'TicketPaymentMutationResponse', payment_id: number, code: number, success: boolean, message?: string | null } };
 
+export type GetTicketPriceConfigsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetTicketPriceConfigsQuery = { __typename?: 'Query', GetTicketPriceConfigs: Array<{ __typename?: 'TicketPriceConfig', config_id: number, price: number, label?: string | null, age_group?: string | null, key_image?: string | null, facilities: Array<{ __typename?: 'Facility', facility_id: number, name: string, code: string }> }> };
+
+export type UpsertTicketPriceConfigMutationVariables = Exact<{
+  price: Scalars['Float'];
+  facility_ids: Array<Scalars['Float']> | Scalars['Float'];
+  label?: InputMaybe<Scalars['String']>;
+  key_image?: InputMaybe<Scalars['String']>;
+  age_group?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type UpsertTicketPriceConfigMutation = { __typename?: 'Mutation', UpsertTicketPriceConfig: { __typename?: 'TicketPriceConfig', config_id: number, price: number, label?: string | null, age_group?: string | null, key_image?: string | null, facilities: Array<{ __typename?: 'Facility', facility_id: number, name: string, code: string }> } };
+
+export type DeleteTicketPriceConfigMutationVariables = Exact<{
+  config_id: Scalars['Float'];
+}>;
+
+
+export type DeleteTicketPriceConfigMutation = { __typename?: 'Mutation', DeleteTicketPriceConfig: boolean };
+
 export type CreateTrainningPaymentMutationVariables = Exact<{
   type: Scalars['String'];
   price: Scalars['Float'];
@@ -1340,9 +1654,8 @@ export type GetTranningPriceQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetTranningPriceQuery = { __typename?: 'Query', GetTranningPrice: Array<{ __typename?: 'TrainningPrice', id: number, name: string, type: string, month_qty: number, price: number }> };
 
 export type ApproveTransferRequestMutationVariables = Exact<{
-  approverStatus: Scalars['String'];
+  approverStatus: ApprovalStatus;
   approverComment: Scalars['String'];
-  approvedBy: Scalars['Float'];
   requestId: Scalars['Float'];
 }>;
 
@@ -1350,9 +1663,8 @@ export type ApproveTransferRequestMutationVariables = Exact<{
 export type ApproveTransferRequestMutation = { __typename?: 'Mutation', ApproveTransferRequest: { __typename?: 'TransferMutationResponse', code: number, success: boolean, message?: string | null } };
 
 export type CheckTransferRequestMutationVariables = Exact<{
-  checkerStatus: Scalars['String'];
+  checkerStatus: ApprovalStatus;
   checkerComment: Scalars['String'];
-  checkedBy: Scalars['Float'];
   requestId: Scalars['Float'];
 }>;
 
@@ -1360,14 +1672,8 @@ export type CheckTransferRequestMutationVariables = Exact<{
 export type CheckTransferRequestMutation = { __typename?: 'Mutation', CheckTransferRequest: { __typename?: 'TransferMutationResponse', code: number, success: boolean, message?: string | null } };
 
 export type CreateTransferMutationVariables = Exact<{
-  receiverNewEnd: Scalars['String'];
-  receiverOldEnd: Scalars['String'];
-  receiverId: Scalars['Float'];
-  senderNewEnd: Scalars['String'];
-  senderOldDate: Scalars['String'];
-  senderId: Scalars['Float'];
-  processedBy: Scalars['Float'];
   requestId: Scalars['Float'];
+  fee?: InputMaybe<Scalars['Float']>;
 }>;
 
 
@@ -1377,7 +1683,6 @@ export type CreateTransferRequestMutationVariables = Exact<{
   reason: Scalars['String'];
   receiverId: Scalars['Float'];
   senderId: Scalars['Float'];
-  requestBy: Scalars['Float'];
 }>;
 
 
@@ -1386,7 +1691,7 @@ export type CreateTransferRequestMutation = { __typename?: 'Mutation', CreateTra
 export type TransferRequestsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type TransferRequestsQuery = { __typename?: 'Query', TransferRequests: Array<{ __typename?: 'TransferJoin', request_id: number, request_by: number, request_date: string, reason: string, sender_id: number, receiver_id: number, checked_by: number, checker_comment: string, checked_date: string, checker_status: string, approved_by: number, approver_comment: string, approved_date: string, approver_status: string, process: string, processed_by: number, display_name: string, sender_name: string, sender_phone: string, receiver_name: string, receiver_phone: string, checker_name?: string | null, processed_name?: string | null, approver_name?: string | null, receiver_old_end: string, sender_old_end: string }> };
+export type TransferRequestsQuery = { __typename?: 'Query', TransferRequests: Array<{ __typename?: 'TransferJoin', request_id: number, request_by: number, request_date: string, reason: string, sender_id: number, receiver_id: number, checked_by?: number | null, checker_comment?: string | null, checked_date?: string | null, checker_status: ApprovalStatus, approved_by?: number | null, approver_comment?: string | null, approved_date?: string | null, approver_status: ApprovalStatus, process: ProcessStatus, processed_by?: number | null, processed_date?: string | null, display_name: string, sender_name: string, sender_phone: string, receiver_name: string, receiver_phone: string, checker_name?: string | null, processed_name?: string | null, approver_name?: string | null, receiver_old_end: string, sender_old_end: string }> };
 
 
 export const CreateCouponPaymentDocument = gql`
@@ -1569,6 +1874,39 @@ export function useGetCustomerDetailLazyQuery(baseOptions?: Apollo.LazyQueryHook
 export type GetCustomerDetailQueryHookResult = ReturnType<typeof useGetCustomerDetailQuery>;
 export type GetCustomerDetailLazyQueryHookResult = ReturnType<typeof useGetCustomerDetailLazyQuery>;
 export type GetCustomerDetailQueryResult = Apollo.QueryResult<GetCustomerDetailQuery, GetCustomerDetailQueryVariables>;
+export const GetCustomersCountDocument = gql`
+    query GetCustomersCount($search: String) {
+  GetCustomersCount(search: $search)
+}
+    `;
+
+/**
+ * __useGetCustomersCountQuery__
+ *
+ * To run a query within a React component, call `useGetCustomersCountQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCustomersCountQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCustomersCountQuery({
+ *   variables: {
+ *      search: // value for 'search'
+ *   },
+ * });
+ */
+export function useGetCustomersCountQuery(baseOptions?: Apollo.QueryHookOptions<GetCustomersCountQuery, GetCustomersCountQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCustomersCountQuery, GetCustomersCountQueryVariables>(GetCustomersCountDocument, options);
+      }
+export function useGetCustomersCountLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCustomersCountQuery, GetCustomersCountQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCustomersCountQuery, GetCustomersCountQueryVariables>(GetCustomersCountDocument, options);
+        }
+export type GetCustomersCountQueryHookResult = ReturnType<typeof useGetCustomersCountQuery>;
+export type GetCustomersCountLazyQueryHookResult = ReturnType<typeof useGetCustomersCountLazyQuery>;
+export type GetCustomersCountQueryResult = Apollo.QueryResult<GetCustomersCountQuery, GetCustomersCountQueryVariables>;
 export const GetCustomersDocument = gql`
     query GetCustomers($limit: Int!, $offset: Int!, $search: String) {
   GetCustomers(limit: $limit, offset: $offset, search: $search) {
@@ -1600,10 +1938,13 @@ export const GetCustomersDocument = gql`
  * @example
  * const { data, loading, error } = useGetCustomersQuery({
  *   variables: {
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *      search: // value for 'search'
  *   },
  * });
  */
-export function useGetCustomersQuery(baseOptions?: Apollo.QueryHookOptions<GetCustomersQuery, GetCustomersQueryVariables>) {
+export function useGetCustomersQuery(baseOptions: Apollo.QueryHookOptions<GetCustomersQuery, GetCustomersQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GetCustomersQuery, GetCustomersQueryVariables>(GetCustomersDocument, options);
       }
@@ -1614,28 +1955,6 @@ export function useGetCustomersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type GetCustomersQueryHookResult = ReturnType<typeof useGetCustomersQuery>;
 export type GetCustomersLazyQueryHookResult = ReturnType<typeof useGetCustomersLazyQuery>;
 export type GetCustomersQueryResult = Apollo.QueryResult<GetCustomersQuery, GetCustomersQueryVariables>;
-
-export type GetCustomersCountQueryVariables = Exact<{ search?: InputMaybe<Scalars['String']>; }>;
-export type GetCustomersCountQuery = { __typename?: 'Query', GetCustomersCount: number };
-
-export const GetCustomersCountDocument = gql`
-    query GetCustomersCount($search: String) {
-  GetCustomersCount(search: $search)
-}
-    `;
-
-export function useGetCustomersCountQuery(baseOptions?: Apollo.QueryHookOptions<GetCustomersCountQuery, GetCustomersCountQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetCustomersCountQuery, GetCustomersCountQueryVariables>(GetCustomersCountDocument, options);
-      }
-export function useGetCustomersCountLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCustomersCountQuery, GetCustomersCountQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetCustomersCountQuery, GetCustomersCountQueryVariables>(GetCustomersCountDocument, options);
-        }
-export type GetCustomersCountQueryHookResult = ReturnType<typeof useGetCustomersCountQuery>;
-export type GetCustomersCountLazyQueryHookResult = ReturnType<typeof useGetCustomersCountLazyQuery>;
-export type GetCustomersCountQueryResult = Apollo.QueryResult<GetCustomersCountQuery, GetCustomersCountQueryVariables>;
-
 export const UpdateCustomerDocument = gql`
     mutation UpdateCustomer($phone: String!, $customerId: Float!) {
   UpdateCustomer(phone: $phone, customer_id: $customerId) {
@@ -2060,6 +2379,125 @@ export function useCreateHoldRequestMutation(baseOptions?: Apollo.MutationHookOp
 export type CreateHoldRequestMutationHookResult = ReturnType<typeof useCreateHoldRequestMutation>;
 export type CreateHoldRequestMutationResult = Apollo.MutationResult<CreateHoldRequestMutation>;
 export type CreateHoldRequestMutationOptions = Apollo.BaseMutationOptions<CreateHoldRequestMutation, CreateHoldRequestMutationVariables>;
+export const CreateHoldRequestV2Document = gql`
+    mutation CreateHoldRequestV2($customerId: Float!, $reason: String!, $fromDate: String!, $toDate: String!) {
+  CreateHoldRequestV2(
+    customer_id: $customerId
+    reason: $reason
+    from_date: $fromDate
+    to_date: $toDate
+  ) {
+    code
+    success
+    message
+  }
+}
+    `;
+export type CreateHoldRequestV2MutationFn = Apollo.MutationFunction<CreateHoldRequestV2Mutation, CreateHoldRequestV2MutationVariables>;
+
+/**
+ * __useCreateHoldRequestV2Mutation__
+ *
+ * To run a mutation, you first call `useCreateHoldRequestV2Mutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateHoldRequestV2Mutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createHoldRequestV2Mutation, { data, loading, error }] = useCreateHoldRequestV2Mutation({
+ *   variables: {
+ *      customerId: // value for 'customerId'
+ *      reason: // value for 'reason'
+ *      fromDate: // value for 'fromDate'
+ *      toDate: // value for 'toDate'
+ *   },
+ * });
+ */
+export function useCreateHoldRequestV2Mutation(baseOptions?: Apollo.MutationHookOptions<CreateHoldRequestV2Mutation, CreateHoldRequestV2MutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateHoldRequestV2Mutation, CreateHoldRequestV2MutationVariables>(CreateHoldRequestV2Document, options);
+      }
+export type CreateHoldRequestV2MutationHookResult = ReturnType<typeof useCreateHoldRequestV2Mutation>;
+export type CreateHoldRequestV2MutationResult = Apollo.MutationResult<CreateHoldRequestV2Mutation>;
+export type CreateHoldRequestV2MutationOptions = Apollo.BaseMutationOptions<CreateHoldRequestV2Mutation, CreateHoldRequestV2MutationVariables>;
+export const DecideHoldRequestV2Document = gql`
+    mutation DecideHoldRequestV2($requestId: Float!, $approve: Boolean!, $note: String) {
+  DecideHoldRequestV2(request_id: $requestId, approve: $approve, note: $note) {
+    code
+    success
+    message
+  }
+}
+    `;
+export type DecideHoldRequestV2MutationFn = Apollo.MutationFunction<DecideHoldRequestV2Mutation, DecideHoldRequestV2MutationVariables>;
+
+/**
+ * __useDecideHoldRequestV2Mutation__
+ *
+ * To run a mutation, you first call `useDecideHoldRequestV2Mutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDecideHoldRequestV2Mutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [decideHoldRequestV2Mutation, { data, loading, error }] = useDecideHoldRequestV2Mutation({
+ *   variables: {
+ *      requestId: // value for 'requestId'
+ *      approve: // value for 'approve'
+ *      note: // value for 'note'
+ *   },
+ * });
+ */
+export function useDecideHoldRequestV2Mutation(baseOptions?: Apollo.MutationHookOptions<DecideHoldRequestV2Mutation, DecideHoldRequestV2MutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DecideHoldRequestV2Mutation, DecideHoldRequestV2MutationVariables>(DecideHoldRequestV2Document, options);
+      }
+export type DecideHoldRequestV2MutationHookResult = ReturnType<typeof useDecideHoldRequestV2Mutation>;
+export type DecideHoldRequestV2MutationResult = Apollo.MutationResult<DecideHoldRequestV2Mutation>;
+export type DecideHoldRequestV2MutationOptions = Apollo.BaseMutationOptions<DecideHoldRequestV2Mutation, DecideHoldRequestV2MutationVariables>;
+export const GetActiveHoldRequestV2Document = gql`
+    query GetActiveHoldRequestV2($customerId: Float!) {
+  GetActiveHoldRequestV2(customer_id: $customerId) {
+    request_id
+    status
+    from_date
+    to_date
+    reason
+  }
+}
+    `;
+
+/**
+ * __useGetActiveHoldRequestV2Query__
+ *
+ * To run a query within a React component, call `useGetActiveHoldRequestV2Query` and pass it any options that fit your needs.
+ * When your component renders, `useGetActiveHoldRequestV2Query` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetActiveHoldRequestV2Query({
+ *   variables: {
+ *      customerId: // value for 'customerId'
+ *   },
+ * });
+ */
+export function useGetActiveHoldRequestV2Query(baseOptions: Apollo.QueryHookOptions<GetActiveHoldRequestV2Query, GetActiveHoldRequestV2QueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetActiveHoldRequestV2Query, GetActiveHoldRequestV2QueryVariables>(GetActiveHoldRequestV2Document, options);
+      }
+export function useGetActiveHoldRequestV2LazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetActiveHoldRequestV2Query, GetActiveHoldRequestV2QueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetActiveHoldRequestV2Query, GetActiveHoldRequestV2QueryVariables>(GetActiveHoldRequestV2Document, options);
+        }
+export type GetActiveHoldRequestV2QueryHookResult = ReturnType<typeof useGetActiveHoldRequestV2Query>;
+export type GetActiveHoldRequestV2LazyQueryHookResult = ReturnType<typeof useGetActiveHoldRequestV2LazyQuery>;
+export type GetActiveHoldRequestV2QueryResult = Apollo.QueryResult<GetActiveHoldRequestV2Query, GetActiveHoldRequestV2QueryVariables>;
 export const GetHoldRequestDocument = gql`
     query GetHoldRequest($customerId: Float!) {
   GetHoldRequest(customer_id: $customerId) {
@@ -2209,6 +2647,98 @@ export function useHoldRequestsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type HoldRequestsQueryHookResult = ReturnType<typeof useHoldRequestsQuery>;
 export type HoldRequestsLazyQueryHookResult = ReturnType<typeof useHoldRequestsLazyQuery>;
 export type HoldRequestsQueryResult = Apollo.QueryResult<HoldRequestsQuery, HoldRequestsQueryVariables>;
+export const HoldRequestsV2Document = gql`
+    query HoldRequestsV2 {
+  HoldRequestsV2 {
+    request_id
+    customer_id
+    customer_name
+    phone
+    requested_by
+    requested_by_name
+    requested_at
+    reason
+    from_date
+    to_date
+    status
+    decided_by
+    decided_by_name
+    decided_at
+    decision_note
+    processed_by
+    processed_by_name
+    processed_at
+    old_end
+    new_end
+    fee
+    legacy
+  }
+}
+    `;
+
+/**
+ * __useHoldRequestsV2Query__
+ *
+ * To run a query within a React component, call `useHoldRequestsV2Query` and pass it any options that fit your needs.
+ * When your component renders, `useHoldRequestsV2Query` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useHoldRequestsV2Query({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useHoldRequestsV2Query(baseOptions?: Apollo.QueryHookOptions<HoldRequestsV2Query, HoldRequestsV2QueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<HoldRequestsV2Query, HoldRequestsV2QueryVariables>(HoldRequestsV2Document, options);
+      }
+export function useHoldRequestsV2LazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<HoldRequestsV2Query, HoldRequestsV2QueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<HoldRequestsV2Query, HoldRequestsV2QueryVariables>(HoldRequestsV2Document, options);
+        }
+export type HoldRequestsV2QueryHookResult = ReturnType<typeof useHoldRequestsV2Query>;
+export type HoldRequestsV2LazyQueryHookResult = ReturnType<typeof useHoldRequestsV2LazyQuery>;
+export type HoldRequestsV2QueryResult = Apollo.QueryResult<HoldRequestsV2Query, HoldRequestsV2QueryVariables>;
+export const ProcessHoldV2Document = gql`
+    mutation ProcessHoldV2($requestId: Float!, $fee: Float) {
+  ProcessHoldV2(request_id: $requestId, fee: $fee) {
+    code
+    success
+    message
+    new_end
+  }
+}
+    `;
+export type ProcessHoldV2MutationFn = Apollo.MutationFunction<ProcessHoldV2Mutation, ProcessHoldV2MutationVariables>;
+
+/**
+ * __useProcessHoldV2Mutation__
+ *
+ * To run a mutation, you first call `useProcessHoldV2Mutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useProcessHoldV2Mutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [processHoldV2Mutation, { data, loading, error }] = useProcessHoldV2Mutation({
+ *   variables: {
+ *      requestId: // value for 'requestId'
+ *      fee: // value for 'fee'
+ *   },
+ * });
+ */
+export function useProcessHoldV2Mutation(baseOptions?: Apollo.MutationHookOptions<ProcessHoldV2Mutation, ProcessHoldV2MutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ProcessHoldV2Mutation, ProcessHoldV2MutationVariables>(ProcessHoldV2Document, options);
+      }
+export type ProcessHoldV2MutationHookResult = ReturnType<typeof useProcessHoldV2Mutation>;
+export type ProcessHoldV2MutationResult = Apollo.MutationResult<ProcessHoldV2Mutation>;
+export type ProcessHoldV2MutationOptions = Apollo.BaseMutationOptions<ProcessHoldV2Mutation, ProcessHoldV2MutationVariables>;
 export const GetMemberPaymentDetailDocument = gql`
     query GetMemberPaymentDetail($dateTo: String!, $dateFrom: String!) {
   GetMemberPaymentDetail(dateTo: $dateTo, dateFrom: $dateFrom) {
@@ -2432,11 +2962,7 @@ export type MemberPaymentDetailLazyQueryHookResult = ReturnType<typeof useMember
 export type MemberPaymentDetailQueryResult = Apollo.QueryResult<MemberPaymentDetailQuery, MemberPaymentDetailQueryVariables>;
 export const CreateTicketPaymentDocument = gql`
     mutation CreateTicketPayment($ticketCode: String!, $price: Float!, $userId: Float!) {
-  CreateTicketPayment(
-    ticket_code: $ticketCode
-    price: $price
-    user_id: $userId
-  ) {
+  CreateTicketPayment(ticket_code: $ticketCode, price: $price, user_id: $userId) {
     payment_id
     code
     success
@@ -2472,6 +2998,132 @@ export function useCreateTicketPaymentMutation(baseOptions?: Apollo.MutationHook
 export type CreateTicketPaymentMutationHookResult = ReturnType<typeof useCreateTicketPaymentMutation>;
 export type CreateTicketPaymentMutationResult = Apollo.MutationResult<CreateTicketPaymentMutation>;
 export type CreateTicketPaymentMutationOptions = Apollo.BaseMutationOptions<CreateTicketPaymentMutation, CreateTicketPaymentMutationVariables>;
+export const GetTicketPriceConfigsDocument = gql`
+    query GetTicketPriceConfigs {
+  GetTicketPriceConfigs {
+    config_id
+    price
+    label
+    age_group
+    key_image
+    facilities {
+      facility_id
+      name
+      code
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetTicketPriceConfigsQuery__
+ *
+ * To run a query within a React component, call `useGetTicketPriceConfigsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetTicketPriceConfigsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetTicketPriceConfigsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetTicketPriceConfigsQuery(baseOptions?: Apollo.QueryHookOptions<GetTicketPriceConfigsQuery, GetTicketPriceConfigsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetTicketPriceConfigsQuery, GetTicketPriceConfigsQueryVariables>(GetTicketPriceConfigsDocument, options);
+      }
+export function useGetTicketPriceConfigsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetTicketPriceConfigsQuery, GetTicketPriceConfigsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetTicketPriceConfigsQuery, GetTicketPriceConfigsQueryVariables>(GetTicketPriceConfigsDocument, options);
+        }
+export type GetTicketPriceConfigsQueryHookResult = ReturnType<typeof useGetTicketPriceConfigsQuery>;
+export type GetTicketPriceConfigsLazyQueryHookResult = ReturnType<typeof useGetTicketPriceConfigsLazyQuery>;
+export type GetTicketPriceConfigsQueryResult = Apollo.QueryResult<GetTicketPriceConfigsQuery, GetTicketPriceConfigsQueryVariables>;
+export const UpsertTicketPriceConfigDocument = gql`
+    mutation UpsertTicketPriceConfig($price: Float!, $facility_ids: [Float!]!, $label: String, $key_image: String, $age_group: String) {
+  UpsertTicketPriceConfig(
+    price: $price
+    facility_ids: $facility_ids
+    label: $label
+    key_image: $key_image
+    age_group: $age_group
+  ) {
+    config_id
+    price
+    label
+    age_group
+    key_image
+    facilities {
+      facility_id
+      name
+      code
+    }
+  }
+}
+    `;
+export type UpsertTicketPriceConfigMutationFn = Apollo.MutationFunction<UpsertTicketPriceConfigMutation, UpsertTicketPriceConfigMutationVariables>;
+
+/**
+ * __useUpsertTicketPriceConfigMutation__
+ *
+ * To run a mutation, you first call `useUpsertTicketPriceConfigMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpsertTicketPriceConfigMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [upsertTicketPriceConfigMutation, { data, loading, error }] = useUpsertTicketPriceConfigMutation({
+ *   variables: {
+ *      price: // value for 'price'
+ *      facility_ids: // value for 'facility_ids'
+ *      label: // value for 'label'
+ *      key_image: // value for 'key_image'
+ *      age_group: // value for 'age_group'
+ *   },
+ * });
+ */
+export function useUpsertTicketPriceConfigMutation(baseOptions?: Apollo.MutationHookOptions<UpsertTicketPriceConfigMutation, UpsertTicketPriceConfigMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpsertTicketPriceConfigMutation, UpsertTicketPriceConfigMutationVariables>(UpsertTicketPriceConfigDocument, options);
+      }
+export type UpsertTicketPriceConfigMutationHookResult = ReturnType<typeof useUpsertTicketPriceConfigMutation>;
+export type UpsertTicketPriceConfigMutationResult = Apollo.MutationResult<UpsertTicketPriceConfigMutation>;
+export type UpsertTicketPriceConfigMutationOptions = Apollo.BaseMutationOptions<UpsertTicketPriceConfigMutation, UpsertTicketPriceConfigMutationVariables>;
+export const DeleteTicketPriceConfigDocument = gql`
+    mutation DeleteTicketPriceConfig($config_id: Float!) {
+  DeleteTicketPriceConfig(config_id: $config_id)
+}
+    `;
+export type DeleteTicketPriceConfigMutationFn = Apollo.MutationFunction<DeleteTicketPriceConfigMutation, DeleteTicketPriceConfigMutationVariables>;
+
+/**
+ * __useDeleteTicketPriceConfigMutation__
+ *
+ * To run a mutation, you first call `useDeleteTicketPriceConfigMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteTicketPriceConfigMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteTicketPriceConfigMutation, { data, loading, error }] = useDeleteTicketPriceConfigMutation({
+ *   variables: {
+ *      config_id: // value for 'config_id'
+ *   },
+ * });
+ */
+export function useDeleteTicketPriceConfigMutation(baseOptions?: Apollo.MutationHookOptions<DeleteTicketPriceConfigMutation, DeleteTicketPriceConfigMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteTicketPriceConfigMutation, DeleteTicketPriceConfigMutationVariables>(DeleteTicketPriceConfigDocument, options);
+      }
+export type DeleteTicketPriceConfigMutationHookResult = ReturnType<typeof useDeleteTicketPriceConfigMutation>;
+export type DeleteTicketPriceConfigMutationResult = Apollo.MutationResult<DeleteTicketPriceConfigMutation>;
+export type DeleteTicketPriceConfigMutationOptions = Apollo.BaseMutationOptions<DeleteTicketPriceConfigMutation, DeleteTicketPriceConfigMutationVariables>;
 export const CreateTrainningPaymentDocument = gql`
     mutation CreateTrainningPayment($type: String!, $price: Float!, $promotion: String!, $customerId: Float!, $userId: Float!) {
   CreateTrainningPayment(
@@ -2598,11 +3250,10 @@ export type GetTranningPriceQueryHookResult = ReturnType<typeof useGetTranningPr
 export type GetTranningPriceLazyQueryHookResult = ReturnType<typeof useGetTranningPriceLazyQuery>;
 export type GetTranningPriceQueryResult = Apollo.QueryResult<GetTranningPriceQuery, GetTranningPriceQueryVariables>;
 export const ApproveTransferRequestDocument = gql`
-    mutation ApproveTransferRequest($approverStatus: String!, $approverComment: String!, $approvedBy: Float!, $requestId: Float!) {
+    mutation ApproveTransferRequest($approverStatus: ApprovalStatus!, $approverComment: String!, $requestId: Float!) {
   ApproveTransferRequest(
     approver_status: $approverStatus
     approver_comment: $approverComment
-    approved_by: $approvedBy
     request_id: $requestId
   ) {
     code
@@ -2628,7 +3279,6 @@ export type ApproveTransferRequestMutationFn = Apollo.MutationFunction<ApproveTr
  *   variables: {
  *      approverStatus: // value for 'approverStatus'
  *      approverComment: // value for 'approverComment'
- *      approvedBy: // value for 'approvedBy'
  *      requestId: // value for 'requestId'
  *   },
  * });
@@ -2641,11 +3291,10 @@ export type ApproveTransferRequestMutationHookResult = ReturnType<typeof useAppr
 export type ApproveTransferRequestMutationResult = Apollo.MutationResult<ApproveTransferRequestMutation>;
 export type ApproveTransferRequestMutationOptions = Apollo.BaseMutationOptions<ApproveTransferRequestMutation, ApproveTransferRequestMutationVariables>;
 export const CheckTransferRequestDocument = gql`
-    mutation CheckTransferRequest($checkerStatus: String!, $checkerComment: String!, $checkedBy: Float!, $requestId: Float!) {
+    mutation CheckTransferRequest($checkerStatus: ApprovalStatus!, $checkerComment: String!, $requestId: Float!) {
   CheckTransferRequest(
     checker_status: $checkerStatus
     checker_comment: $checkerComment
-    checked_by: $checkedBy
     request_id: $requestId
   ) {
     code
@@ -2671,7 +3320,6 @@ export type CheckTransferRequestMutationFn = Apollo.MutationFunction<CheckTransf
  *   variables: {
  *      checkerStatus: // value for 'checkerStatus'
  *      checkerComment: // value for 'checkerComment'
- *      checkedBy: // value for 'checkedBy'
  *      requestId: // value for 'requestId'
  *   },
  * });
@@ -2684,17 +3332,8 @@ export type CheckTransferRequestMutationHookResult = ReturnType<typeof useCheckT
 export type CheckTransferRequestMutationResult = Apollo.MutationResult<CheckTransferRequestMutation>;
 export type CheckTransferRequestMutationOptions = Apollo.BaseMutationOptions<CheckTransferRequestMutation, CheckTransferRequestMutationVariables>;
 export const CreateTransferDocument = gql`
-    mutation CreateTransfer($receiverNewEnd: String!, $receiverOldEnd: String!, $receiverId: Float!, $senderNewEnd: String!, $senderOldDate: String!, $senderId: Float!, $processedBy: Float!, $requestId: Float!) {
-  CreateTransfer(
-    receiver_new_end: $receiverNewEnd
-    receiver_old_end: $receiverOldEnd
-    receiver_id: $receiverId
-    sender_new_end: $senderNewEnd
-    sender_old_date: $senderOldDate
-    sender_id: $senderId
-    processed_by: $processedBy
-    request_id: $requestId
-  ) {
+    mutation CreateTransfer($requestId: Float!, $fee: Float) {
+  CreateTransfer(request_id: $requestId, fee: $fee) {
     code
     success
     message
@@ -2717,14 +3356,8 @@ export type CreateTransferMutationFn = Apollo.MutationFunction<CreateTransferMut
  * @example
  * const [createTransferMutation, { data, loading, error }] = useCreateTransferMutation({
  *   variables: {
- *      receiverNewEnd: // value for 'receiverNewEnd'
- *      receiverOldEnd: // value for 'receiverOldEnd'
- *      receiverId: // value for 'receiverId'
- *      senderNewEnd: // value for 'senderNewEnd'
- *      senderOldDate: // value for 'senderOldDate'
- *      senderId: // value for 'senderId'
- *      processedBy: // value for 'processedBy'
  *      requestId: // value for 'requestId'
+ *      fee: // value for 'fee'
  *   },
  * });
  */
@@ -2736,12 +3369,11 @@ export type CreateTransferMutationHookResult = ReturnType<typeof useCreateTransf
 export type CreateTransferMutationResult = Apollo.MutationResult<CreateTransferMutation>;
 export type CreateTransferMutationOptions = Apollo.BaseMutationOptions<CreateTransferMutation, CreateTransferMutationVariables>;
 export const CreateTransferRequestDocument = gql`
-    mutation CreateTransferRequest($reason: String!, $receiverId: Float!, $senderId: Float!, $requestBy: Float!) {
+    mutation CreateTransferRequest($reason: String!, $receiverId: Float!, $senderId: Float!) {
   CreateTransferRequest(
     reason: $reason
     receiver_id: $receiverId
     sender_id: $senderId
-    request_by: $requestBy
   ) {
     code
     success
@@ -2767,7 +3399,6 @@ export type CreateTransferRequestMutationFn = Apollo.MutationFunction<CreateTran
  *      reason: // value for 'reason'
  *      receiverId: // value for 'receiverId'
  *      senderId: // value for 'senderId'
- *      requestBy: // value for 'requestBy'
  *   },
  * });
  */
@@ -2797,6 +3428,7 @@ export const TransferRequestsDocument = gql`
     approver_status
     process
     processed_by
+    processed_date
     display_name
     sender_name
     sender_phone

@@ -13,9 +13,10 @@ import { Context } from "../Context/Context";
  *  - the actor is ALWAYS context.user.user_id — never a client argument
  *  - state transitions are compare-and-set UPDATEs (`WHERE status = ...`),
  *    so a double-click or two admins produce exactly one winner
- *  - the membership extension is computed HERE, at processing time, from the
- *    customer's current end date: inclusive hold length,
- *    DATEDIFF(to_date, from_date) + 1 days
+ *  - the membership extension is computed HERE, at processing time: inclusive
+ *    hold length, DATEDIFF(to_date, from_date) + 1 days, added to the LATER of
+ *    the customer's current end date and today (so a hold on an already-lapsed
+ *    membership runs from today rather than from the date it expired)
  *  - deciding your own request is refused (the schema CHECK backs this up)
  *  - one live request per customer is the engine's job (uq_one_active);
  *    the duplicate-key error is translated into a friendly message
@@ -194,7 +195,12 @@ export class HoldV2Resolver {
                         hr.processed_at = NOW(),
                         hr.fee          = ?,
                         hr.old_end      = c.end_membership_date,
-                        hr.new_end      = DATE_ADD(c.end_membership_date,
+                        -- GREATEST(..., CURDATE()): a hold on a LAPSED membership
+                        -- runs from today, not from the date it expired on. Without
+                        -- it a member 60 days expired gets an extension that is
+                        -- still 60 days in the past. old_end above still records the
+                        -- real prior end date, so the audit trail stays honest.
+                        hr.new_end      = DATE_ADD(GREATEST(c.end_membership_date, CURDATE()),
                                           INTERVAL DATEDIFF(hr.to_date, hr.from_date) + 1 DAY)
                   WHERE hr.request_id = ? AND hr.status = 'APPROVED'`,
                 [user.user_id, fee ?? 0, request_id]

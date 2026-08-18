@@ -1,10 +1,15 @@
+# Kept in sync with the schema, though the TicketPriceConfig page currently
+# defines its own inline gql: codegen validates EVERY document together and
+# refuses to emit anything if one is stale, so a drifted file here silently
+# blocks regeneration for the whole app.
 query GetTicketPriceConfigs {
   GetTicketPriceConfigs {
     config_id
     price
     label
-    facility_id
-    facility {
+    age_group
+    key_image
+    facilities {
       facility_id
       name
       code
@@ -12,13 +17,26 @@ query GetTicketPriceConfigs {
   }
 }
 
-mutation UpsertTicketPriceConfig($price: Float!, $facility_id: Float!, $label: String) {
-  UpsertTicketPriceConfig(price: $price, facility_id: $facility_id, label: $label) {
+mutation UpsertTicketPriceConfig(
+  $price: Float!
+  $facility_ids: [Float!]!
+  $label: String
+  $key_image: String
+  $age_group: String
+) {
+  UpsertTicketPriceConfig(
+    price: $price
+    facility_ids: $facility_ids
+    label: $label
+    key_image: $key_image
+    age_group: $age_group
+  ) {
     config_id
     price
     label
-    facility_id
-    facility {
+    age_group
+    key_image
+    facilities {
       facility_id
       name
       code

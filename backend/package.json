@@ -50,7 +50,9 @@
     "migration:run": "dotenv -e dev.env typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:run:prod": "dotenv -e prod.env typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:revert": "dotenv -e dev.env typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
-    "migration:show": "dotenv -e dev.env typeorm-ts-node-commonjs migration:show -d src/data-source.ts"
+    "migration:show": "dotenv -e dev.env typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
+    "migration:show:prod": "dotenv -e prod.env typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
+    "migration:revert:prod": "dotenv -e prod.env typeorm-ts-node-commonjs migration:revert -d src/data-source.ts"
   },
   "exports": {
     "./GraphQLUpload.js": "./GraphQLUpload.js",

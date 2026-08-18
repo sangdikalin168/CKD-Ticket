@@ -1,13 +1,11 @@
 mutation ApproveTransferRequest(
-  $approverStatus: String!
+  $approverStatus: ApprovalStatus!
   $approverComment: String!
-  $approvedBy: Float!
   $requestId: Float!
 ) {
   ApproveTransferRequest(
     approver_status: $approverStatus
     approver_comment: $approverComment
-    approved_by: $approvedBy
     request_id: $requestId
   ) {
     code

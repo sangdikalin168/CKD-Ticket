@@ -29,10 +29,11 @@ import { MigrationInterface, QueryRunner } from "typeorm";
  *    constraints (17 v1 rows were self-decided; we keep that history honest
  *    instead of nulling it away).
  *
- * Also: users gains is_active for soft-delete, and the three hard-deleted
- * user ids referenced throughout v1 history (1, 5, 6) are recreated as
- * deactivated shells so the FK backfill resolves and old actions display a
- * name instead of nothing.
+ * Also: users gains is_active for soft-delete, and every hard-deleted user id
+ * still referenced by v1 history is recreated as a deactivated shell so the FK
+ * backfill resolves and old actions display a name instead of nothing. The set
+ * is derived from the data at migration time (it was {1,5,6} in the dev
+ * snapshot; production may differ).
  */
 export class HoldRequestV21787374800000 implements MigrationInterface {
     name = 'HoldRequestV21787374800000'
@@ -46,17 +47,40 @@ export class HoldRequestV21787374800000 implements MigrationInterface {
             ADD COLUMN IF NOT EXISTS \`is_active\` tinyint NOT NULL DEFAULT 1
         `);
 
-        // Recreate the hard-deleted actors v1 history points at, deactivated
-        // and unable to log in (random bcrypt-shaped junk that verifies never).
-        // INSERT IGNORE: harmless if an id was somehow restored already.
+        // Recreate every hard-deleted actor v1 history points at, as a
+        // deactivated shell that can never log in ('!locked!' is not a valid
+        // bcrypt hash, so compare() always fails; is_active=0 blocks login
+        // outright). Derived from the data, NOT hardcoded: the orphan set
+        // differs per environment, and a missed id would make the foreign
+        // keys below fail and abort the migration.
+        //
+        // Staged via a temp table because MariaDB will not let an
+        // INSERT ... SELECT read the table it is inserting into.
+        await queryRunner.query(`
+            CREATE TEMPORARY TABLE \`_hrv2_missing_actors\` AS
+            SELECT DISTINCT uid FROM (
+                SELECT \`request_by\`   AS uid FROM \`hold_request\` UNION
+                SELECT \`checked_by\`         FROM \`hold_request\` UNION
+                SELECT \`approved_by\`        FROM \`hold_request\` UNION
+                SELECT \`processed_by\`       FROM \`hold_request\`
+            ) ids
+            WHERE uid <> 0 AND uid NOT IN (SELECT \`user_id\` FROM \`users\`)
+        `);
         await queryRunner.query(`
             INSERT IGNORE INTO \`users\`
                 (\`user_id\`, \`display_name\`, \`phone\`, \`username\`, \`password\`, \`role\`, \`image\`, \`tokenVersion\`, \`is_active\`)
-            VALUES
-                (1, 'Deleted user #1', 'deleted-1', 'deleted_user_1', '!locked!', 'Sale', '', 0, 0),
-                (5, 'Deleted user #5', 'deleted-5', 'deleted_user_5', '!locked!', 'Sale', '', 0, 0),
-                (6, 'Deleted user #6', 'deleted-6', 'deleted_user_6', '!locked!', 'Sale', '', 0, 0)
+            SELECT uid,
+                   CONCAT('Deleted user #', uid),
+                   CONCAT('deleted-', uid),
+                   CONCAT('deleted_user_', uid),
+                   '!locked!', 'Sale', '', 0, 0
+            FROM \`_hrv2_missing_actors\`
         `);
+        const shells = await queryRunner.query(
+            `SELECT COUNT(*) AS n FROM \`_hrv2_missing_actors\``
+        );
+        console.log(`[HoldRequestV2] recreated ${shells[0].n} deleted-user shell(s) for the audit trail`);
+        await queryRunner.query(`DROP TEMPORARY TABLE \`_hrv2_missing_actors\``);
 
         // ── the v2 table ──────────────────────────────────────────────────
         await queryRunner.query(`
@@ -122,7 +146,8 @@ export class HoldRequestV21787374800000 implements MigrationInterface {
                 CASE
                     WHEN hr.\`process\` = 'Done' THEN 'PROCESSED'
                     WHEN hr.\`checker_status\` = 'Rejected' THEN 'REJECTED'
-                    ELSE 'PENDING'
+                    WHEN pend.rn = 1 THEN 'PENDING'
+                    ELSE 'CANCELLED'
                 END,
                 NULLIF(hr.\`checked_by\`, 0),
                 IF(hr.\`checked_date\` <= '2000-01-01 23:59:59', NULL, hr.\`checked_date\`),
@@ -143,7 +168,24 @@ export class HoldRequestV21787374800000 implements MigrationInterface {
                 WHERE \`request_id\` <> 0
                 GROUP BY \`request_id\`
             ) h ON h.\`request_id\` = hr.\`request_id\`
+            LEFT JOIN (
+                -- Rank a customer's still-open v1 rows, newest first.
+                SELECT \`request_id\`,
+                       ROW_NUMBER() OVER (PARTITION BY \`customer_id\` ORDER BY \`request_id\` DESC) AS rn
+                FROM \`hold_request\`
+                WHERE \`process\` <> 'Done' AND \`checker_status\` <> 'Rejected'
+            ) pend ON pend.\`request_id\` = hr.\`request_id\`
         `);
+
+        const demoted = await queryRunner.query(
+            `SELECT COUNT(*) AS n FROM \`hold_request_v2\` WHERE \`status\` = 'CANCELLED'`
+        );
+        if (Number(demoted[0].n) > 0) {
+            console.log(
+                `[HoldRequestV2] ${demoted[0].n} stale duplicate open request(s) backfilled as CANCELLED ` +
+                `(v1 allowed several open per customer; v2 permits one)`
+            );
+        }
 
         // Keep AUTO_INCREMENT clear of the preserved v1 ids.
         const [{ next }] = await queryRunner.query(
@@ -160,9 +202,9 @@ export class HoldRequestV21787374800000 implements MigrationInterface {
         // placeholders this migration inserted (an admin may have revived one).
         await queryRunner.query(`
             DELETE FROM \`users\`
-            WHERE \`user_id\` IN (1, 5, 6)
-              AND \`is_active\` = 0
-              AND \`username\` IN ('deleted_user_1', 'deleted_user_5', 'deleted_user_6')
+            WHERE \`is_active\` = 0
+              AND \`username\` = CONCAT('deleted_user_', \`user_id\`)
+              AND \`password\` = '!locked!'
         `);
         // Note: drops the column even where it pre-dated this migration —
         // acceptable for a rollback; the up() recreates it either way.

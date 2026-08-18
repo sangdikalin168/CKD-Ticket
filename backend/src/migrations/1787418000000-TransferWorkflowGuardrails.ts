@@ -27,10 +27,22 @@ import { MigrationInterface, QueryRunner } from "typeorm";
  *   - customer FKs on `transfer_request` ARE added (verified zero orphans).
  *
  * MariaDB 10.4 (prod): CHECK constraints are enforced from 10.2, ENUM and
- * ADD CONSTRAINT syntax as used here are supported. Rehearse against the
- * restored dump before deploying — and note prod's typeorm_migrations may need
- * manual reconciliation first (see RedesignAdditive), because the migrations
- * glob bug meant nothing in this table has ever run there.
+ * ADD CONSTRAINT syntax as used here are supported.
+ *
+ * MIGRATION HISTORY — verified, do NOT "reconcile" it. The production dump
+ * contains `INSERT INTO typeorm_migrations VALUES (1,1786964658879,
+ * 'RedesignAdditive1786964658879')` and all of that migration's tables
+ * (facility, package, purchase, entitlement, check_in) exist. RedesignAdditive
+ * IS applied. Clearing that row would make it re-run and die on its bare
+ * `CREATE TABLE facility` (nine CREATE TABLEs, none guarded by IF NOT EXISTS),
+ * which would then block this migration too. Verify the table holds exactly
+ * that one row and change nothing.
+ *
+ * ORDERING: 1787374800000-HoldRequestV2 sorts BEFORE this one and runs first in
+ * the same batch. TypeORM wraps the batch in one transaction and stops on the
+ * first failure — but MySQL/MariaDB AUTO-COMMIT DDL, so a failure part-way
+ * leaves committed schema changes that the transaction cannot undo. Rehearse
+ * BOTH together against a restored dump, never this one alone.
  */
 export class TransferWorkflowGuardrails1787418000000 implements MigrationInterface {
     name = "TransferWorkflowGuardrails1787418000000";

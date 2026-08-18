@@ -182,7 +182,11 @@ export class TransferResolver {
         if (checker_status === ApprovalStatus.Pending) {
             return { code: 400, success: false, message: "A review cannot set the status back to Pending" };
         }
-        await requireRole(user.user_id, ["Admin", "Checker"]);
+        try {
+            await requireRole(user.user_id, ["Admin", "Checker"]);
+        } catch (err) {
+            return { code: 403, success: false, message: err instanceof Error ? err.message : String(err) };
+        }
 
         // Guarded transition: only an unreviewed request can be reviewed, and
         // the evidence (who/when) is stamped in the same statement.
@@ -217,7 +221,11 @@ export class TransferResolver {
         if (approver_status === ApprovalStatus.Pending) {
             return { code: 400, success: false, message: "A review cannot set the status back to Pending" };
         }
-        await requireRole(user.user_id, ["Admin"]);
+        try {
+            await requireRole(user.user_id, ["Admin"]);
+        } catch (err) {
+            return { code: 403, success: false, message: err instanceof Error ? err.message : String(err) };
+        }
 
         // Reachable only after the checker approved — the same rule the DB
         // CHECK enforces; encoding it here turns a constraint violation into
@@ -254,9 +262,21 @@ export class TransferResolver {
         @Arg("fee", (_type) => Float, { defaultValue: 0 }) fee: number,
         @Ctx() { user }: Context
     ): Promise<TransferMutationResponse> {
-        await requireRole(user.user_id, ["Admin"]);
-
         try {
+            // Inside the try on purpose: requireRole throws, and an uncaught
+            // throw here is masked to "Internal server error" by index.ts's
+            // formatError in production — the operator would see a bare
+            // failure on a button that looks live.
+            //
+            // "Sale" is not a widening of the old rules, it is the old rule:
+            // execution previously had NO role check at all, and every one of
+            // the 30 historical executions was performed by a Sale account
+            // (users 5, 6 and 10). No Admin has ever executed a transfer, so
+            // an Admin-only gate would lock out exactly the people who do this
+            // job. The real protection is the approval state machine, not the
+            // executor's job title.
+            await requireRole(user.user_id, ["Admin", "Sale"]);
+
             const transferId = await TransferRequest.getRepository().manager.transaction(
                 async (mgr) => {
                     // 1. Claim. The WHERE is the entire legal-state check, and

@@ -2,7 +2,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import type { ColumnDef } from '@/types/datatable';
 import LoadingPage from '../../../components/LoadingPage/LoadingPage';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useApproveTransferRequestMutation, useCheckTransferRequestMutation, useCreateTransferMutation, useTransferRequestsQuery } from '../../../generated/graphql';
+import { ApprovalStatus, useApproveTransferRequestMutation, useCheckTransferRequestMutation, useCreateTransferMutation, useTransferRequestsQuery } from '../../../generated/graphql';
 import Notifications from '../../../components/Notification';
 import { PrinterIcon } from '@heroicons/react/20/solid';
 import { useReactToPrint } from 'react-to-print';
@@ -27,16 +27,16 @@ type TransferRequest = {
     sender_phone: string
     sender_old_end: string
     receiver_id: number
-    checked_by: number
+    checked_by: number | null
     checker_comment: string
     checked_date: string
     checker_status: string
-    approved_by: number
+    approved_by: number | null
     approver_comment: string
     approved_date: string
     approver_status: string
     process: string
-    processed_by: number
+    processed_by: number | null
     display_name: string
     sender_name: string
     receiver_name: string
@@ -191,7 +191,7 @@ const TransferRequest = () => {
             // it must mirror the rendered state, not the request id.
             accessor: (row) =>
                 row.checker_status === "Approved" && row.approver_status === "Approved"
-                    ? (row.processed_by === 0 ? "" : row.processed_name)
+                    ? (row.processed_by == null ? "" : row.processed_name)
                     : "Pending",
             render: (row_data) => (
                 <div className="flex">
@@ -199,7 +199,7 @@ const TransferRequest = () => {
                         row_data.checker_status === "Approved" && row_data.approver_status === "Approved" ?
                             <>
                                 {
-                                    row_data.processed_by === 0 ?
+                                    row_data.processed_by == null ?
                                         <span className="hidden sm:block">
                                             <Button
                                                 type="button"
@@ -462,29 +462,17 @@ const TransferRequest = () => {
         processingRef.current = true;
 
         try {
-            const { sender_id, sender_old_end, sender_new_end, receiver_id, receiver_old_end, receiver_new_end } = invoice_detail
+            // Nothing is destructured from invoice_detail any more: every value
+            // the transfer needs is now derived server-side from locked rows.
 
-            // processed_by === 0 is this page's "not yet processed" sentinel (and
-            // the column default server-side), so a fallback of 0 would commit the
-            // transfer yet leave the row looking unprocessed — re-offering the
-            // Process button. No valid user id -> refuse to attribute, abort.
-            const stored_user = parseInt(localStorage.getItem("user_id") || "", 10);
-            if (Number.isNaN(stored_user) || stored_user <= 0) {
-                Notifications("មិនស្គាល់អ្នកប្រើប្រាស់ សូមចូលប្រើម្ដងទៀត", "error")
-                return;
-            }
-
+            // Only the request id travels now. The server loads the request,
+            // locks both customers FOR UPDATE, and computes the new end dates
+            // itself — the browser's copies (sender_new_end etc.) are a stale
+            // snapshot taken when the list was last fetched, and trusting them
+            // is how a '0000-00-00' end date reached a live customer.
+            // processed_by comes from the JWT, so there is no id to send.
             const { data } = await createTransfer({
-                variables: {
-                    requestId: request_id,
-                    processedBy: stored_user,
-                    receiverNewEnd: receiver_new_end,
-                    receiverOldEnd: receiver_old_end,
-                    receiverId: receiver_id,
-                    senderNewEnd: sender_new_end,
-                    senderOldDate: sender_old_end,
-                    senderId: sender_id
-                }
+                variables: { requestId: request_id }
             })
             const res = data?.CreateTransfer;
             if (res?.success) {
@@ -590,10 +578,9 @@ const TransferRequest = () => {
                                 //TODO: Update To Checked
                                 const res = await checkerApprove({
                                     variables: {
-                                        checkedBy: parseInt(localStorage.getItem("user_id") || "0"),
                                         requestId: request_id,
                                         checkerComment: description,
-                                        checkerStatus: "Approved"
+                                        checkerStatus: ApprovalStatus.Approved
                                     }
                                 })
 
@@ -618,10 +605,9 @@ const TransferRequest = () => {
                                 //TODO: Update To Checked
                                 const res = await checkerApprove({
                                     variables: {
-                                        checkedBy: parseInt(localStorage.getItem("user_id") || "0"),
                                         requestId: request_id,
                                         checkerComment: description,
-                                        checkerStatus: "Rejected"
+                                        checkerStatus: ApprovalStatus.Rejected
                                     }
                                 })
 
@@ -666,10 +652,9 @@ const TransferRequest = () => {
                                 //TODO: Update To Checked
                                 const res = await approveTransfer({
                                     variables: {
-                                        approvedBy: parseInt(localStorage.getItem("user_id") || "0"),
                                         requestId: request_id,
                                         approverComment: description,
-                                        approverStatus: "Approved"
+                                        approverStatus: ApprovalStatus.Approved
                                     }
                                 })
 
@@ -694,10 +679,9 @@ const TransferRequest = () => {
                                 //TODO: Update To Checked
                                 const res = await approveTransfer({
                                     variables: {
-                                        approvedBy: parseInt(localStorage.getItem("user_id") || "0"),
                                         requestId: request_id,
                                         approverComment: description,
-                                        approverStatus: "Rejected"
+                                        approverStatus: ApprovalStatus.Rejected
                                     }
                                 })
 
