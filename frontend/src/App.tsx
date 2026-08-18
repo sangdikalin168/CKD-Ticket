@@ -13,6 +13,7 @@ import SideBar from "./components/Sidebar/Sidebar";
 import NavBar from "./components/Navbar/Navbar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import IncomeReport from "./pages/Report/IncomeReport";
 import { MemberPriceTable } from "./pages/PriceTable/MemberPriceTable";
 import { CustomerReport } from "./pages/Report/CustomerReport";
@@ -66,6 +67,7 @@ function QuickAction({ label, to, icon }: { label: string; to: string; icon: Rea
 }
 
 function Dashboard() {
+  const { t } = useTranslation();
   const role = localStorage.getItem("role");
   const displayName = localStorage.getItem("display_name");
 
@@ -73,59 +75,59 @@ function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">ផ្ទាំងគ្រប់គ្រង</h1>
-        <p className="text-muted-foreground text-sm">សូមស្វាគមន៍, {displayName} · {role}</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("dashboard.welcome", { name: displayName, role })}</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
-          title="សមាជិក"
-          value="សមាជិក"
-          description="គ្រប់គ្រងព័ត៌មានសមាជិក"
+          title={t("dashboard.members.title")}
+          value={t("dashboard.members.value")}
+          description={t("dashboard.members.description")}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
           linkTo="/member"
-          linkLabel="មើលសមាជិក"
+          linkLabel={t("dashboard.members.link")}
         />
         <StatCard
-          title="លក់សំបុត្រ"
-          value="Ticket"
-          description="លក់សំបុត្រចូលមកក្លិប"
+          title={t("dashboard.tickets.title")}
+          value={t("dashboard.tickets.value")}
+          description={t("dashboard.tickets.description")}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>}
           linkTo="/ticket"
-          linkLabel="លក់សំបុត្រ"
+          linkLabel={t("dashboard.tickets.link")}
         />
         <StatCard
-          title="សំណើសុំច្បាប់"
-          value="Hold"
-          description="ពិនិត្យសំណើសុំផ្អាកសមាជិកភាព"
+          title={t("dashboard.hold.title")}
+          value={t("dashboard.hold.value")}
+          description={t("dashboard.hold.description")}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           linkTo="/hold_request"
-          linkLabel="មើលសំណើ"
+          linkLabel={t("dashboard.hold.link")}
         />
         <StatCard
-          title="Report"
-          value="ចំណូល"
-          description="របាយការណ៍ចំណូល និងអតិថិជន"
+          title={t("dashboard.report.title")}
+          value={t("dashboard.report.value")}
+          description={t("dashboard.report.description")}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
           linkTo="/income_report"
-          linkLabel="មើល Report"
+          linkLabel={t("dashboard.report.link")}
         />
       </div>
 
       {/* Quick Actions */}
       <div className="bg-card border rounded-lg p-6 shadow-sm">
-        <h2 className="text-base font-semibold mb-4">សកម្មភាពរហ័ស</h2>
+        <h2 className="text-base font-semibold mb-4">{t("dashboard.quickActions")}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          <QuickAction label="លក់សំបុត្រ" to="/ticket"
+          <QuickAction label={t("menu.sellTicket")} to="/ticket"
             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>} />
-          <QuickAction label="សមាជិក" to="/member"
+          <QuickAction label={t("menu.member")} to="/member"
             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
-          <QuickAction label="សំណើសុំច្បាប់" to="/hold_request"
+          <QuickAction label={t("menu.holdRequest")} to="/hold_request"
             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
-          <QuickAction label="ផ្ទេរសុពលភាព" to="/transfer_request"
+          <QuickAction label={t("dashboard.transfer")} to="/transfer_request"
             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>} />
-          <QuickAction label="ចំណូល" to="/income_report"
+          <QuickAction label={t("menu.incomeReport")} to="/income_report"
             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>} />
         </div>
       </div>
@@ -134,25 +136,25 @@ function Dashboard() {
       {role === "Admin" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a href="/income_report" className="block bg-card border rounded-lg p-5 shadow-sm hover:bg-accent transition-colors">
-            <div className="font-semibold text-sm mb-1">របាយការណ៍ចំណូល</div>
-            <div className="text-xs text-muted-foreground">ចំណូលប្រចាំថ្ងៃ ប្រចាំខែ</div>
+            <div className="font-semibold text-sm mb-1">{t("dashboard.reports.income.title")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.reports.income.description")}</div>
           </a>
           <a href="/customer_report" className="block bg-card border rounded-lg p-5 shadow-sm hover:bg-accent transition-colors">
-            <div className="font-semibold text-sm mb-1">របាយការណ៍អតិថិជន</div>
-            <div className="text-xs text-muted-foreground">ស្ថានភាពសមាជិកភាព</div>
+            <div className="font-semibold text-sm mb-1">{t("dashboard.reports.customer.title")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.reports.customer.description")}</div>
           </a>
           <a href="/customer_type_report" className="block bg-card border rounded-lg p-5 shadow-sm hover:bg-accent transition-colors">
-            <div className="font-semibold text-sm mb-1">ប្រភេទសមាជិក</div>
-            <div className="text-xs text-muted-foreground">ការបែងចែកតាមប្រភេទ</div>
+            <div className="font-semibold text-sm mb-1">{t("dashboard.reports.type.title")}</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.reports.type.description")}</div>
           </a>
         </div>
       )}
 
       {/* Info */}
       <div className="bg-card border rounded-lg p-6 shadow-sm">
-        <h2 className="text-base font-semibold mb-2">ព័ត៌មានទូទៅ</h2>
+        <h2 className="text-base font-semibold mb-2">{t("dashboard.info.title")}</h2>
         <p className="text-sm text-muted-foreground">
-          ប្រព័ន្ធគ្រប់គ្រងក្លិបកីឡា CKD · ប្រើប្រាស់ម៉ឺនុយខាងឆ្វេងដើម្បីចូលទៅកាន់ផ្នែកផ្សេងៗ។
+          {t("dashboard.info.body")}
         </p>
       </div>
     </div>

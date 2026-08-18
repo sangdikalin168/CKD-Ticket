@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ExclamationCircleIcon as AlertCircle, TableCellsIcon as FileSpreadsheet } from '@heroicons/react/24/outline';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { cn } from '../../lib/utils';
@@ -141,10 +142,11 @@ export function DataTable<T extends Record<string, any>>({
   minBodyHeight,
   maxBodyHeight,
 }: DataTableProps<T>) {
-  const resolvedSearchPlaceholder = searchPlaceholder ?? 'ស្វែងរក...';
-  const resolvedAddButtonText = addButtonText ?? 'បន្ថែមថ្មី';
-  const resolvedPrintTitle = printTitle ?? 'តារាងទិន្នន័យ';
-  const resolvedEmptyMessage = emptyMessage ?? 'រកមិនឃើញទិន្នន័យ';
+  const { t } = useTranslation();
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t('common.searchPlaceholder');
+  const resolvedAddButtonText = addButtonText ?? t('ui.dataTable.addNew');
+  const resolvedPrintTitle = printTitle ?? t('ui.dataTable.printTitle');
+  const resolvedEmptyMessage = emptyMessage ?? t('common.noData');
   const [localSearchValue, setLocalSearchValue] = useState(searchValue);
   const debouncedSearchValue = useDebounce(localSearchValue, searchDebounceMs);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -230,7 +232,7 @@ export function DataTable<T extends Record<string, any>>({
       : !sortedData || sortedData.length === 0
         ? 'empty'
         : null;
-  const tableStateMessage = loading ? 'កំពុងផ្ទុក...' : error ? error : resolvedEmptyMessage;
+  const tableStateMessage = loading ? t('common.loading') : error ? error : resolvedEmptyMessage;
 
   const tableStatusNode = tableState === 'empty' && emptyState
     ? <div className="flex items-center justify-center py-12">{emptyState}</div>
@@ -255,11 +257,11 @@ export function DataTable<T extends Record<string, any>>({
 
       if (typeof exportData === 'function') {
         // Show loading toast
-        showSuccessToast('កំពុងទាញយកទិន្នន័យទាំងអស់សម្រាប់នាំចេញ...');
+        showSuccessToast(t('ui.dataTable.fetchingExport'));
         dataToExport = await exportData();
 
         if (dataToExport.length === 0) {
-          showErrorToast('គ្មានទិន្នន័យសម្រាប់នាំចេញទេ');
+          showErrorToast(t('ui.dataTable.noExportData'));
           return;
         }
       } else {
@@ -269,9 +271,9 @@ export function DataTable<T extends Record<string, any>>({
       // Change extension from .csv to .xlsx
       const fileName = exportFileName.replace(/\.csv$/i, '.xlsx');
       exportToExcel(dataToExport, exportColumns || columns, fileName);
-      showSuccessToast(`បាននាំចេញ ${dataToExport.length} កំណត់ត្រាដោយជោគជ័យ!`);
+      showSuccessToast(t('ui.dataTable.exportSuccess', { count: dataToExport.length }));
     } catch (err) {
-      showErrorToast('មិនអាចនាំចេញទិន្នន័យបានទេ');
+      showErrorToast(t('ui.dataTable.exportFailed'));
       console.error('Export error:', err);
     }
   };
@@ -281,11 +283,11 @@ export function DataTable<T extends Record<string, any>>({
       let dataToPrint: T[];
 
       if (typeof exportData === 'function') {
-        showSuccessToast('កំពុងទាញយកទិន្នន័យទាំងអស់សម្រាប់បោះពុម្ព...');
+        showSuccessToast(t('ui.dataTable.fetchingPrint'));
         dataToPrint = await exportData();
 
         if (dataToPrint.length === 0) {
-          showErrorToast('គ្មានទិន្នន័យសម្រាប់បោះពុម្ពទេ');
+          showErrorToast(t('ui.dataTable.noPrintData'));
           return;
         }
       } else {
@@ -294,7 +296,7 @@ export function DataTable<T extends Record<string, any>>({
 
       printTable(dataToPrint, columns, resolvedPrintTitle);
     } catch (err) {
-      showErrorToast('មិនអាចរៀបចំទិន្នន័យសម្រាប់បោះពុម្ពបានទេ');
+      showErrorToast(t('ui.dataTable.printFailed'));
       console.error('Print error:', err);
     }
   };
@@ -304,11 +306,11 @@ export function DataTable<T extends Record<string, any>>({
       let dataToCopy: T[];
 
       if (typeof exportData === 'function') {
-        showSuccessToast('កំពុងទាញយកទិន្នន័យទាំងអស់សម្រាប់ចម្លង...');
+        showSuccessToast(t('ui.dataTable.fetchingCopy'));
         dataToCopy = await exportData();
 
         if (dataToCopy.length === 0) {
-          showErrorToast('គ្មានទិន្នន័យសម្រាប់ចម្លងទេ');
+          showErrorToast(t('ui.dataTable.noCopyData'));
           return;
         }
       } else {
@@ -316,9 +318,9 @@ export function DataTable<T extends Record<string, any>>({
       }
 
       await copyToClipboard(dataToCopy, columns);
-      showSuccessToast('បានចម្លងទិន្នន័យដោយជោគជ័យ!');
+      showSuccessToast(t('ui.dataTable.copySuccess'));
     } catch {
-      showErrorToast('មិនអាចចម្លងទិន្នន័យបានទេ');
+      showErrorToast(t('ui.dataTable.copyFailed'));
     }
   };
 
@@ -424,17 +426,17 @@ export function DataTable<T extends Record<string, any>>({
                   variant="outline"
                   onClick={handleExport}
                   size="sm"
-                  title={'នាំចេញទៅ Excel'}
+                  title={t('ui.dataTable.exportToExcel')}
                   className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
-                  <span className="text-xs md:text-sm">{'នាំចេញ'}</span>
+                  <span className="text-xs md:text-sm">{t('common.export')}</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleCopy}
                   size="sm"
-                  title={'ចម្លងទិន្នន័យ'}
+                  title={t('ui.dataTable.copyToClipboard')}
                   className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
                 >
                   <svg
@@ -450,7 +452,7 @@ export function DataTable<T extends Record<string, any>>({
                       d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                     />
                   </svg>
-                  <span className="text-xs md:text-sm">{'ចម្លង'}</span>
+                  <span className="text-xs md:text-sm">{t('ui.dataTable.copy')}</span>
                 </Button>
               </>
             )}
@@ -461,7 +463,7 @@ export function DataTable<T extends Record<string, any>>({
                 variant="outline"
                 onClick={handlePrint}
                 size="sm"
-                title={'បោះពុម្ពតារាង'}
+                title={t('ui.dataTable.printTable')}
                 className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
               >
                 <svg
@@ -477,7 +479,7 @@ export function DataTable<T extends Record<string, any>>({
                     d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
                   />
                 </svg>
-                <span className="text-xs md:text-sm">{'បោះពុម្ព'}</span>
+                <span className="text-xs md:text-sm">{t('common.print')}</span>
               </Button>
             )}
           </div>
@@ -504,7 +506,7 @@ export function DataTable<T extends Record<string, any>>({
               >
                 <div className={cn('flex justify-between', tokens.mobileRow)}>
                   <span className={cn('font-medium text-muted-foreground', tokens.mobileLabel)}>
-                    {'ល.រ'}
+                    {t('ui.dataTable.no')}
                   </span>
                   <span className={cn('ml-2 text-right text-foreground', tokens.mobileValue)}>
                     {rowNumberOffset + rowIndex + 1}
@@ -569,7 +571,7 @@ export function DataTable<T extends Record<string, any>>({
                     stickyHead
                   )}
                 >
-                  {'ល.រ'}
+                  {t('ui.dataTable.no')}
                 </th>
                 {visibleColumns.map((column, index) => {
                   const isSortable = column.sortable !== false;
@@ -620,7 +622,7 @@ export function DataTable<T extends Record<string, any>>({
                     scope="col"
                     className={cn('text-left font-medium text-muted-foreground', tokens.headCell, stickyHead)}
                   >
-                    {'សកម្មភាព'}
+                    {t('common.actions')}
                   </th>
                 )}
               </tr>

@@ -1,4 +1,133 @@
 {
+  "common": {
+    "name": "ឈ្មោះ",
+    "code": "លេខកូដ",
+    "description": "ការពិពណ៌នា",
+    "status": "ស្ថានភាព",
+    "active": "សកម្ម",
+    "inactive": "អសកម្ម",
+    "allStatus": "ស្ថានភាពទាំងអស់",
+    "edit": "កែសម្រួល",
+    "delete": "លុប",
+    "cancel": "បោះបង់",
+    "create": "បង្កើត",
+    "update": "ធ្វើបច្ចុប្បន្នភាព",
+    "settings": "ការកំណត់",
+    "logout": "ចាកចេញ",
+    "unlimited": "គ្មានកំណត់",
+    "optional": "ស្រេចចិត្ត",
+    "save": "រក្សាទុក",
+    "saving": "កំពុងរក្សាទុក...",
+    "close": "បិទ",
+    "done": "រួចរាល់",
+    "error": "កំហុស",
+    "search": "ស្វែងរក",
+    "searchPlaceholder": "ស្វែងរក...",
+    "loading": "កំពុងផ្ទុក...",
+    "retry": "ព្យាយាមម្ដងទៀត",
+    "export": "នាំចេញ",
+    "import": "នាំចូល",
+    "refresh": "ផ្ទុកឡើងវិញ",
+    "add": "បន្ថែម",
+    "actions": "សកម្មភាព",
+    "confirm": "បញ្ជាក់",
+    "yes": "បាទ/ចាស",
+    "no": "ទេ",
+    "back": "ត្រឡប់ក្រោយ",
+    "next": "បន្ទាប់",
+    "previous": "មុន",
+    "submit": "ដាក់ស្នើ",
+    "view": "មើល",
+    "print": "បោះពុម្ព",
+    "download": "ទាញយក",
+    "upload": "ផ្ទុកឡើង",
+    "required": "ចាំបាច់",
+    "date": "កាលបរិច្ឆេទ",
+    "startDate": "កាលបរិច្ឆេទចាប់ផ្តើម",
+    "endDate": "កាលបរិច្ឆេទបញ្ចប់",
+    "time": "ពេលវេលា",
+    "employee": "បុគ្គលិក",
+    "department": "នាយកដ្ឋាន",
+    "site": "ទីតាំង",
+    "position": "មុខតំណែង",
+    "company": "ក្រុមហ៊ុន",
+    "total": "សរុប",
+    "noData": "រកមិនឃើញទិន្នន័យ",
+    "notes": "កំណត់ចំណាំ",
+    "reason": "មូលហេតុ",
+    "type": "ប្រភេទ",
+    "amount": "ចំនួនទឹកប្រាក់",
+    "all": "ទាំងអស់",
+    "pending": "កំពុងរង់ចាំ",
+    "approved": "បានអនុម័ត",
+    "rejected": "បានបដិសេធ",
+    "cancelled": "បានលុបចោល",
+    "saveSuccess": "បានរក្សាទុកដោយជោគជ័យ",
+    "saveFailed": "មិនអាចរក្សាទុកបានទេ",
+    "deleteSuccess": "បានលុបដោយជោគជ័យ",
+    "deleteFailed": "មិនអាចលុបបានទេ",
+    "loadFailed": "មិនអាចផ្ទុកទិន្នន័យបានទេ",
+    "deleteConfirm": "តើអ្នកប្រាកដថាចង់លុប \"{{name}}\" មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "selectAll": "ជ្រើសរើសទាំងអស់",
+    "clear": "សម្អាត",
+    "apply": "អនុវត្ត",
+    "filter": "តម្រង",
+    "from": "ពី",
+    "to": "ដល់",
+    "today": "ថ្ងៃនេះ",
+    "month": "ខែ",
+    "year": "ឆ្នាំ",
+    "days": "ថ្ងៃ",
+    "hours": "ម៉ោង"
+  },
+  "dashboard": {
+    "title": "ផ្ទាំងគ្រប់គ្រង",
+    "welcome": "សូមស្វាគមន៍, {{name}} · {{role}}",
+    "members": {
+      "title": "សមាជិក",
+      "value": "សមាជិក",
+      "description": "គ្រប់គ្រងព័ត៌មានសមាជិក",
+      "link": "មើលសមាជិក"
+    },
+    "tickets": {
+      "title": "លក់សំបុត្រ",
+      "value": "Ticket",
+      "description": "លក់សំបុត្រចូលមកក្លិប",
+      "link": "លក់សំបុត្រ"
+    },
+    "hold": {
+      "title": "សំណើសុំច្បាប់",
+      "value": "Hold",
+      "description": "ពិនិត្យសំណើសុំផ្អាកសមាជិកភាព",
+      "link": "មើលសំណើ"
+    },
+    "report": {
+      "title": "របាយការណ៍",
+      "value": "ចំណូល",
+      "description": "របាយការណ៍ចំណូល និងអតិថិជន",
+      "link": "មើល Report"
+    },
+    "quickActions": "សកម្មភាពរហ័ស",
+    "transfer": "ផ្ទេរសុពលភាព",
+    "reports": {
+      "income": {
+        "title": "របាយការណ៍ចំណូល",
+        "description": "ចំណូលប្រចាំថ្ងៃ ប្រចាំខែ"
+      },
+      "customer": {
+        "title": "របាយការណ៍អតិថិជន",
+        "description": "ស្ថានភាពសមាជិកភាព"
+      },
+      "type": {
+        "title": "ប្រភេទសមាជិក",
+        "description": "ការបែងចែកតាមប្រភេទ"
+      }
+    },
+    "info": {
+      "title": "ព័ត៌មានទូទៅ",
+      "body": "ប្រព័ន្ធគ្រប់គ្រងក្លិបកីឡា CKD · ប្រើប្រាស់ម៉ឺនុយខាងឆ្វេងដើម្បីចូលទៅកាន់ផ្នែកផ្សេងៗ។"
+    }
+  },
   "language": {
     "label": "ភាសា"
   },
@@ -19,5 +148,193 @@
     "usernamePlaceholder": "ឈ្មោះអ្នកប្រើប្រាស់ ឬលេខទូរស័ព្ទ",
     "usernameRequired": "សូមបញ្ចូលឈ្មោះអ្នកប្រើប្រាស់",
     "wrongCredentials": "ឈ្មោះអ្នកប្រើប្រាស់ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ"
+  },
+  "menu": {
+    "label": "ម៉ឺនុយ",
+    "sellTicket": "លក់សំបុត្រ",
+    "member": "សមាជិក",
+    "priceTable": "តារាងតម្លៃ",
+    "memberPrice": "តម្លៃសមាជិក",
+    "couponPrice": "តម្លៃគូប៉ុន",
+    "request": "សំណើ",
+    "holdRequest": "សំណើសុំច្បាប់",
+    "transferRequest": "សំណើផ្ទេរសុពលភាព",
+    "report": "របាយការណ៍",
+    "incomeReport": "ចំណូល",
+    "customerReport": "អតិថិជន",
+    "customerTypeReport": "ប្រភេទសមាជិក",
+    "user": "អ្នកប្រើប្រាស់",
+    "userList": "អ្នកប្រើប្រាស់",
+    "permissions": "កំណត់សិទ្ធិ"
+  },
+  "nav": {
+    "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+    "home": "ទំព័រដើម",
+    "profile": "ប្រវត្តិរូបរបស់អ្នក",
+    "settings": "ការកំណត់",
+    "signOut": "ចាកចេញ"
+  },
+  "ui": {
+    "dataTable": {
+      "addNew": "បន្ថែមថ្មី",
+      "printTitle": "តារាងទិន្នន័យ",
+      "fetchingExport": "កំពុងទាញយកទិន្នន័យទាំងអស់សម្រាប់នាំចេញ...",
+      "noExportData": "គ្មានទិន្នន័យសម្រាប់នាំចេញទេ",
+      "exportSuccess_other": "បាននាំចេញ {{count}} កំណត់ត្រាដោយជោគជ័យ!",
+      "exportFailed": "មិនអាចនាំចេញទិន្នន័យបានទេ",
+      "fetchingPrint": "កំពុងទាញយកទិន្នន័យទាំងអស់សម្រាប់បោះពុម្ព...",
+      "noPrintData": "គ្មានទិន្នន័យសម្រាប់បោះពុម្ពទេ",
+      "printFailed": "មិនអាចរៀបចំទិន្នន័យសម្រាប់បោះពុម្ពបានទេ",
+      "fetchingCopy": "កំពុងទាញយកទិន្នន័យទាំងអស់សម្រាប់ចម្លង...",
+      "noCopyData": "គ្មានទិន្នន័យសម្រាប់ចម្លងទេ",
+      "copySuccess": "បានចម្លងទិន្នន័យដោយជោគជ័យ!",
+      "copyFailed": "មិនអាចចម្លងទិន្នន័យបានទេ",
+      "exportToExcel": "នាំចេញទៅ Excel",
+      "copy": "ចម្លង",
+      "copyToClipboard": "ចម្លងទិន្នន័យ",
+      "printTable": "បោះពុម្ពតារាង",
+      "no": "ល.រ",
+      "showingRange": "បង្ហាញ {{from}} ដល់ {{to}} នៃ {{total}}",
+      "perPage": "ក្នុងមួយទំព័រ៖",
+      "prev": "មុន",
+      "showingResults": "បង្ហាញ {{from}} ដល់ {{to}} នៃ {{total}} លទ្ធផល",
+      "itemsPerPage": "ធាតុក្នុងមួយទំព័រ៖",
+      "firstPage": "ទំព័រដំបូង",
+      "previousPage": "ទំព័រមុន",
+      "pageOf": "ទំព័រ {{current}} នៃ {{total}}",
+      "nextPage": "ទំព័របន្ទាប់",
+      "lastPage": "ទំព័រចុងក្រោយ",
+      "density": {
+        "label": "ទំហំជួរ",
+        "comfortable": "ជួរធម្មតា",
+        "compact": "ជួរតូច"
+      }
+    },
+    "dialog": {
+      "confirmAction": "បញ្ជាក់សកម្មភាព",
+      "processing": "កំពុងដំណើរការ..."
+    },
+    "dateInput": {
+      "openPicker": "បើកកម្មវិធីជ្រើសរើសកាលបរិច្ឆេទ"
+    },
+    "calendar": {
+      "months": {
+        "january": "មករា",
+        "february": "កុម្ភៈ",
+        "march": "មីនា",
+        "april": "មេសា",
+        "may": "ឧសភា",
+        "june": "មិថុនា",
+        "july": "កក្កដា",
+        "august": "សីហា",
+        "september": "កញ្ញា",
+        "october": "តុលា",
+        "november": "វិច្ឆិកា",
+        "december": "ធ្នូ"
+      },
+      "monthsShort": {
+        "jan": "មករា",
+        "feb": "កុម្ភៈ",
+        "mar": "មីនា",
+        "apr": "មេសា",
+        "may": "ឧសភា",
+        "jun": "មិថុនា",
+        "jul": "កក្កដា",
+        "aug": "សីហា",
+        "sep": "កញ្ញា",
+        "oct": "តុលា",
+        "nov": "វិច្ឆិកា",
+        "dec": "ធ្នូ"
+      },
+      "days": {
+        "su": "អា",
+        "mo": "ច",
+        "tu": "អ",
+        "we": "ពុ",
+        "th": "ព្រ",
+        "fr": "សុ",
+        "sa": "ស"
+      }
+    },
+    "dateRange": {
+      "label": "ចន្លោះកាលបរិច្ឆេទ",
+      "allDate": "គ្រប់កាលបរិច្ឆេទ",
+      "thisWeek": "សប្តាហ៍នេះ",
+      "thisMonth": "ខែនេះ",
+      "lastMonth": "ខែមុន",
+      "customRange": "ចន្លោះផ្ទាល់ខ្លួន",
+      "fromDate": "ចាប់ពី {{date}}",
+      "quickSelect": "ជម្រើសរហ័ស",
+      "selected": "បានជ្រើសរើស",
+      "hintEndOrSame": "ចុចថ្ងៃដដែលសម្រាប់ ១ ថ្ងៃ ឬចុចថ្ងៃផ្សេងដើម្បីកំណត់ចន្លោះ",
+      "hintNewRange": "ចុចដើម្បីចាប់ផ្តើមចន្លោះថ្មី",
+      "hintSetStart": "ចុចដើម្បីកំណត់ថ្ងៃចាប់ផ្តើម"
+    },
+    "select": {
+      "placeholder": "ជ្រើសរើស",
+      "clearSelection": "សម្អាតការជ្រើសរើស",
+      "noResults": "រកមិនឃើញលទ្ធផលទេ",
+      "noResultsShort": "គ្មានលទ្ធផល"
+    },
+    "multiSelect": {
+      "selectedCount_other": "បានជ្រើសរើស {{count}}",
+      "clearAll": "សម្អាតទាំងអស់"
+    },
+    "monthPicker": {
+      "twoMonthsAgo": "២ ខែមុន",
+      "threeMonthsAgo": "៣ ខែមុន",
+      "clickToSelect": "ចុចដើម្បីជ្រើសរើសខែ",
+      "previousYear": "ឆ្នាំមុន",
+      "nextYear": "ឆ្នាំបន្ទាប់"
+    },
+    "columns": {
+      "label": "ជួរឈរ",
+      "showOrHide": "បង្ហាញ ឬលាក់ជួរឈរ",
+      "showAll": "បង្ហាញទាំងអស់",
+      "hideAll": "លាក់ទាំងអស់"
+    },
+    "sidebar": {
+      "title": "របារចំហៀង",
+      "description": "បង្ហាញរបារចំហៀងសម្រាប់ទូរស័ព្ទ",
+      "toggle": "បិទ/បើករបារចំហៀង"
+    },
+    "employeeSearch": {
+      "placeholder": "ស្វែងរកបុគ្គលិកតាមឈ្មោះ ឬលេខកូដ...",
+      "noResults": "រកមិនឃើញបុគ្គលិកទេ"
+    },
+    "loading": {
+      "pleaseWait": "សូមរង់ចាំ"
+    },
+    "photoUpload": {
+      "label": "រូបថតបុគ្គលិក",
+      "previewAlt": "រូបភាពមើលជាមុនរបស់បុគ្គលិក",
+      "fileTooLarge": "ទំហំឯកសារត្រូវតែតិចជាង 5MB",
+      "notAnImage": "សូមជ្រើសរើសឯកសាររូបភាព",
+      "webcamError": "មិនអាចប្រើកាមេរ៉ាបានទេ សូមពិនិត្យការអនុញ្ញាត",
+      "deletePhoto": "លុបរូបថត",
+      "deleteConfirm": "តើអ្នកប្រាកដថាចង់លុបរូបថតនេះមែនទេ?",
+      "capture": "ថតរូប",
+      "chooseFile": "ជ្រើសរើសឯកសារ",
+      "useWebcam": "ប្រើកាមេរ៉ា",
+      "acceptedFormats": "ទម្រង់ដែលទទួលយក៖ JPG, PNG, WEBP (អតិបរមា 5MB)"
+    },
+    "version": {
+      "updateAvailable": "មានកំណែថ្មី",
+      "updateMessage": "កំណែថ្មីនៃកម្មវិធីមានហើយ សូមផ្ទុកឡើងវិញដើម្បីទទួលបានមុខងារចុងក្រោយ",
+      "refreshNow": "ផ្ទុកឡើងវិញឥឡូវនេះ",
+      "later": "ពេលក្រោយ"
+    },
+    "pdf": {
+      "prev": "មុន",
+      "fullscreen": "ពេញអេក្រង់",
+      "exitFullscreen": "ចាកចេញ",
+      "loading": "កំពុងផ្ទុក PDF...",
+      "loadFailed": "មិនអាចផ្ទុក PDF បានទេ",
+      "cannotOpen": "ឯកសារដែលបានជ្រើសរើសមិនអាចបើកជា PDF បានទេ",
+      "openNewTab": "បើកក្នុងផ្ទាំងថ្មី",
+      "downloadPdf": "ទាញយក PDF",
+      "fallbackTitle": "ការមើលជាមុនសម្រាប់ {{fileName}}",
+      "previewUnavailable": "ការមើលជាមុនក្នុងកម្មវិធីរុករកមិនអាចប្រើបានទេ សូមទាញយក PDF ជំនួសវិញ"
+    }
   }
 }

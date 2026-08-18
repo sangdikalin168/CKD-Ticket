@@ -97,6 +97,7 @@
 
 // export default Navbar;
 
+import { useTranslation } from "react-i18next";
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
 import { IoMenu } from "react-icons/io5";
@@ -112,6 +113,7 @@ import { Separator } from "@/components/ui/separator";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export default function NavBar() {
+    const { t } = useTranslation();
     // toggleSidebar, not the raw desktop flag: it routes to the offcanvas panel
     // on desktop and the Sheet on mobile, which a plain setExpanded cannot do.
     const { toggleSidebar } = useSidebar();
@@ -126,9 +128,9 @@ export default function NavBar() {
     };
 
     const userNavigation = [
-        { name: "Your Profile", href: "#" },
-        { name: "Settings", href: "#" },
-        { name: "Sign out", href: "#", onclick: () => { JWTManager.deleteToken(); setIsAuthenticated(false); } },
+        { name: t("nav.profile"), href: "#" },
+        { name: t("nav.settings"), href: "#" },
+        { name: t("nav.signOut"), href: "#", onclick: () => { JWTManager.deleteToken(); setIsAuthenticated(false); } },
     ];
 
     return (
@@ -145,10 +147,10 @@ export default function NavBar() {
 
             <ul className="flex items-center text-sm ml-4">
                 <li className="mr-2">
-                    <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">Dashboard</a>
+                    <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">{t("nav.dashboard")}</a>
                 </li>
                 <li className="text-gray-600 mr-2 font-medium">/</li>
-                <li className="text-gray-600 mr-2 font-medium">Home</li>
+                <li className="text-gray-600 mr-2 font-medium">{t("nav.home")}</li>
             </ul>
 
             <ul className="ml-auto flex items-center gap-3">

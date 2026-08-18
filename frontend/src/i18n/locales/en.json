@@ -1,4 +1,133 @@
 {
+  "common": {
+    "name": "Name",
+    "code": "Code",
+    "description": "Description",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "allStatus": "All Status",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "settings": "Settings",
+    "logout": "Log Out",
+    "unlimited": "Unlimited",
+    "optional": "Optional",
+    "save": "Save",
+    "saving": "Saving...",
+    "close": "Close",
+    "done": "Done",
+    "error": "Error",
+    "search": "Search",
+    "searchPlaceholder": "Search...",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "add": "Add",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "view": "View",
+    "print": "Print",
+    "download": "Download",
+    "upload": "Upload",
+    "required": "Required",
+    "date": "Date",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "time": "Time",
+    "employee": "Employee",
+    "department": "Department",
+    "site": "Site",
+    "position": "Position",
+    "company": "Company",
+    "total": "Total",
+    "noData": "No data found",
+    "notes": "Notes",
+    "reason": "Reason",
+    "type": "Type",
+    "amount": "Amount",
+    "all": "All",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled",
+    "saveSuccess": "Saved successfully",
+    "saveFailed": "Failed to save",
+    "deleteSuccess": "Deleted successfully",
+    "deleteFailed": "Failed to delete",
+    "loadFailed": "Failed to load data",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+    "selectAll": "Select All",
+    "clear": "Clear",
+    "apply": "Apply",
+    "filter": "Filter",
+    "from": "From",
+    "to": "To",
+    "today": "Today",
+    "month": "Month",
+    "year": "Year",
+    "days": "Days",
+    "hours": "Hours"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {{name}} · {{role}}",
+    "members": {
+      "title": "Members",
+      "value": "Members",
+      "description": "Manage member information",
+      "link": "View members"
+    },
+    "tickets": {
+      "title": "Sell Tickets",
+      "value": "Ticket",
+      "description": "Sell club entry tickets",
+      "link": "Sell tickets"
+    },
+    "hold": {
+      "title": "Hold Requests",
+      "value": "Hold",
+      "description": "Review membership hold requests",
+      "link": "View requests"
+    },
+    "report": {
+      "title": "Reports",
+      "value": "Income",
+      "description": "Income and customer reports",
+      "link": "View reports"
+    },
+    "quickActions": "Quick Actions",
+    "transfer": "Transfer Validity",
+    "reports": {
+      "income": {
+        "title": "Income Report",
+        "description": "Daily and monthly income"
+      },
+      "customer": {
+        "title": "Customer Report",
+        "description": "Membership status"
+      },
+      "type": {
+        "title": "Member Types",
+        "description": "Breakdown by type"
+      }
+    },
+    "info": {
+      "title": "General Information",
+      "body": "CKD sports club management system · Use the menu on the left to reach each section."
+    }
+  },
   "language": {
     "label": "Language"
   },
@@ -19,5 +148,195 @@
     "usernamePlaceholder": "Username or phone number",
     "usernameRequired": "Username is required",
     "wrongCredentials": "Wrong username or password"
+  },
+  "menu": {
+    "label": "Menu",
+    "sellTicket": "Sell Tickets",
+    "member": "Members",
+    "priceTable": "Price Tables",
+    "memberPrice": "Membership Prices",
+    "couponPrice": "Coupon Prices",
+    "request": "Requests",
+    "holdRequest": "Hold Requests",
+    "transferRequest": "Transfer Requests",
+    "report": "Reports",
+    "incomeReport": "Income",
+    "customerReport": "Customers",
+    "customerTypeReport": "Member Types",
+    "user": "Users",
+    "userList": "Users",
+    "permissions": "Permissions"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "profile": "Your Profile",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "ui": {
+    "dataTable": {
+      "addNew": "Add New",
+      "printTitle": "Data Table",
+      "fetchingExport": "Fetching all data for export...",
+      "noExportData": "No data available to export",
+      "exportSuccess_one": "Exported {{count}} record successfully!",
+      "exportSuccess_other": "Exported {{count}} records successfully!",
+      "exportFailed": "Failed to export data",
+      "fetchingPrint": "Fetching all data for printing...",
+      "noPrintData": "No data available to print",
+      "printFailed": "Failed to prepare data for printing",
+      "fetchingCopy": "Fetching all data for copying...",
+      "noCopyData": "No data available to copy",
+      "copySuccess": "Data copied to clipboard!",
+      "copyFailed": "Failed to copy data to clipboard",
+      "exportToExcel": "Export to Excel",
+      "copy": "Copy",
+      "copyToClipboard": "Copy to clipboard",
+      "printTable": "Print table",
+      "no": "No",
+      "showingRange": "Showing {{from}} to {{to}} of {{total}}",
+      "perPage": "Per page:",
+      "prev": "Prev",
+      "showingResults": "Showing {{from}} to {{to}} of {{total}} results",
+      "itemsPerPage": "Items per page:",
+      "firstPage": "First Page",
+      "previousPage": "Previous Page",
+      "pageOf": "Page {{current}} of {{total}}",
+      "nextPage": "Next Page",
+      "lastPage": "Last Page",
+      "density": {
+        "label": "Row density",
+        "comfortable": "Comfortable rows",
+        "compact": "Compact rows"
+      }
+    },
+    "dialog": {
+      "confirmAction": "Confirm Action",
+      "processing": "Processing..."
+    },
+    "dateInput": {
+      "openPicker": "Open date picker"
+    },
+    "calendar": {
+      "months": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      },
+      "monthsShort": {
+        "jan": "Jan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Apr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Aug",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Dec"
+      },
+      "days": {
+        "su": "Su",
+        "mo": "Mo",
+        "tu": "Tu",
+        "we": "We",
+        "th": "Th",
+        "fr": "Fr",
+        "sa": "Sa"
+      }
+    },
+    "dateRange": {
+      "label": "Date Range",
+      "allDate": "All Date",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
+      "customRange": "Custom Range",
+      "fromDate": "From {{date}}",
+      "quickSelect": "Quick Select",
+      "selected": "Selected",
+      "hintEndOrSame": "Click same day for 1 day · or click another day to set range",
+      "hintNewRange": "Click to start a new range",
+      "hintSetStart": "Click to set start date"
+    },
+    "select": {
+      "placeholder": "Select",
+      "clearSelection": "Clear selection",
+      "noResults": "No results found",
+      "noResultsShort": "No results"
+    },
+    "multiSelect": {
+      "selectedCount_one": "{{count}} selected",
+      "selectedCount_other": "{{count}} selected",
+      "clearAll": "Clear All"
+    },
+    "monthPicker": {
+      "twoMonthsAgo": "2 Months Ago",
+      "threeMonthsAgo": "3 Months Ago",
+      "clickToSelect": "Click To Select Month",
+      "previousYear": "Previous year",
+      "nextYear": "Next year"
+    },
+    "columns": {
+      "label": "Columns",
+      "showOrHide": "Show or hide columns",
+      "showAll": "Show All",
+      "hideAll": "Hide All"
+    },
+    "sidebar": {
+      "title": "Sidebar",
+      "description": "Displays the mobile sidebar.",
+      "toggle": "Toggle Sidebar"
+    },
+    "employeeSearch": {
+      "placeholder": "Search employee by name or code...",
+      "noResults": "No employees found"
+    },
+    "loading": {
+      "pleaseWait": "Please wait"
+    },
+    "photoUpload": {
+      "label": "Employee Photo",
+      "previewAlt": "Employee preview",
+      "fileTooLarge": "File size must be less than 5MB",
+      "notAnImage": "Please select an image file",
+      "webcamError": "Could not access webcam. Please check permissions.",
+      "deletePhoto": "Delete Photo",
+      "deleteConfirm": "Are you sure you want to delete this photo?",
+      "capture": "Capture Photo",
+      "chooseFile": "Choose File",
+      "useWebcam": "Use Webcam",
+      "acceptedFormats": "Accepted formats: JPG, PNG, WEBP (max 5MB)"
+    },
+    "version": {
+      "updateAvailable": "Update Available",
+      "updateMessage": "A new version of the app is available. Please refresh to get the latest features.",
+      "refreshNow": "Refresh Now",
+      "later": "Later"
+    },
+    "pdf": {
+      "prev": "Prev",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit",
+      "loading": "Loading PDF...",
+      "loadFailed": "Failed to load PDF",
+      "cannotOpen": "The selected file could not be opened as a PDF.",
+      "openNewTab": "Open in New Tab",
+      "downloadPdf": "Download PDF",
+      "fallbackTitle": "Fallback preview for {{fileName}}",
+      "previewUnavailable": "Browser preview is unavailable. Please download the PDF instead."
+    }
   }
 }
