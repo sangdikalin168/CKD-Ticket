@@ -1,10 +1,9 @@
-
+import { useTranslation } from 'react-i18next';
 import { Bars3Icon as Rows3, Bars4Icon as Rows4 } from '@heroicons/react/24/outline';
 import type { ComponentType, ComponentProps } from 'react';
 import { cn } from '../../lib/utils';
 import { TableDensity } from '../../types/datatable';
 
-import { t } from '@/lib/khmer';
 interface DensityToggleProps {
   value: TableDensity;
   onChange: (density: TableDensity) => void;
@@ -21,10 +20,11 @@ const DENSITY_OPTIONS: { value: TableDensity; icon: IconComponent; labelKey: str
 ];
 
 export function DensityToggle({ value, onChange, className = '' }: DensityToggleProps) {
+  const { t } = useTranslation();
   return (
     <div
       role="group"
-      aria-label={'ទំហំជួរ'}
+      aria-label={t('ui.dataTable.density.label')}
       className={cn(
         'inline-flex shrink-0 items-center gap-0.5 rounded-md border border-input bg-background p-0.5',
         className

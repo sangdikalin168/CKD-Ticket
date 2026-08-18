@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CalendarIcon as Calendar, ChevronLeftIcon as ChevronLeft, ChevronRightIcon as ChevronRight, ChevronDownIcon as ChevronDown } from '@heroicons/react/24/outline';
 
-import { t } from '@/lib/khmer';
 const MONTH_SHORT_KEYS = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun',
   'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
@@ -51,6 +51,7 @@ export interface MonthPickerProps {
  * with quick presets on the left and a year-navigated 12-month grid on the right.
  */
 export function MonthPicker({ value, onChange, className = '', showLabel = true }: MonthPickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -95,7 +96,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
       {showLabel && (
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
-          {'ខែ'}
+          {t('common.month')}
         </label>
       )}
 
@@ -117,7 +118,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
           {/* Left: Quick presets */}
           <div className="flex flex-col gap-0.5 p-3 border-r border-border min-w-[150px]">
             <div className="text-caption font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
-              {'ជម្រើសរហ័ស'}
+              {t('ui.dateRange.quickSelect')}
             </div>
             {QUICK_PRESETS.map(opt => {
               const presetValue = getPresetValue(opt.key);
@@ -142,7 +143,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
           {/* Right: Year nav + month grid */}
           <div className="p-3 min-w-[260px]">
             <div className="text-caption font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-              {'ចុចដើម្បីជ្រើសរើសខែ'}
+              {t('ui.monthPicker.clickToSelect')}
             </div>
 
             {/* Year navigation */}
@@ -151,7 +152,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
                 type="button"
                 onClick={() => setViewYear(y => y - 1)}
                 className="p-1 rounded-md hover:bg-accent transition-colors"
-                aria-label={'ឆ្នាំមុន'}
+                aria-label={t('ui.monthPicker.previousYear')}
               >
                 <ChevronLeft className="w-4 h-4 text-foreground" />
               </button>
@@ -160,7 +161,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
                 type="button"
                 onClick={() => setViewYear(y => y + 1)}
                 className="p-1 rounded-md hover:bg-accent transition-colors"
-                aria-label={'ឆ្នាំបន្ទាប់'}
+                aria-label={t('ui.monthPicker.nextYear')}
               >
                 <ChevronRight className="w-4 h-4 text-foreground" />
               </button>

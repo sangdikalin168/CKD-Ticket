@@ -464,7 +464,6 @@ export const CustomerReport = () => {
                     exportFileName="active-customers.xlsx"
                     printTitle="Active Members"
                     densityToggle={false}
-                    emptyMessage="No active members found."
                   />
                 </div>
               </CardContent>

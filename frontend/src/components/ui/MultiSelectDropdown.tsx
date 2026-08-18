@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckIcon as Check, ChevronDownIcon as ChevronDown, XMarkIcon as X } from "@heroicons/react/24/outline";
 
-import { t } from '@/lib/khmer';
 export interface MultiSelectOption {
     value: string;
     label: string;
@@ -34,6 +34,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     id,
     allSelectedLabel,
 }) => {
+    const { t } = useTranslation();
     const resolvedPlaceholder = placeholder ?? t("common.all");
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");

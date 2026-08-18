@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CalendarIcon as Calendar, ChevronLeftIcon as ChevronLeft, ChevronRightIcon as ChevronRight, ChevronDownIcon as ChevronDown } from '@heroicons/react/24/outline';
 
-import { t } from '@/lib/khmer';
 export type DatePreset = '' | 'today' | 'this_week' | 'this_month' | 'last_month' | 'custom';
 
 // Use local date formatting to avoid UTC offset issues in non-UTC timezones
@@ -68,20 +68,22 @@ const QUICK_PRESETS: { value: DatePreset; labelKey: string }[] = [
   { value: 'last_month', labelKey: 'ui.dateRange.lastMonth' },
 ];
 
-function formatDisplayLabel(preset: DatePreset, customStart: string, customEnd: string): string {
-  if (preset === 'today') return 'ថ្ងៃនេះ';
-  if (preset === 'this_week') return 'សប្តាហ៍នេះ';
-  if (preset === 'this_month') return 'ខែនេះ';
-  if (preset === 'last_month') return 'ខែមុន';
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+function formatDisplayLabel(t: Translate, preset: DatePreset, customStart: string, customEnd: string): string {
+  if (preset === 'today') return t('common.today');
+  if (preset === 'this_week') return t('ui.dateRange.thisWeek');
+  if (preset === 'this_month') return t('ui.dateRange.thisMonth');
+  if (preset === 'last_month') return t('ui.dateRange.lastMonth');
   if (preset === 'custom') {
     const fmt = (s: string) => s.split('-').reverse().join('/');
     if (customStart && customEnd) {
       return customStart === customEnd ? fmt(customStart) : `${fmt(customStart)} – ${fmt(customEnd)}`;
     }
-    if (customStart) return `ចាប់ពី ${fmt(customStart)}`;
-    return 'ចន្លោះផ្ទាល់ខ្លួន';
+    if (customStart) return t('ui.dateRange.fromDate', { date: fmt(customStart) });
+    return t('ui.dateRange.customRange');
   }
-  return 'គ្រប់កាលបរិច្ឆេទ';
+  return t('ui.dateRange.allDate');
 }
 
 export interface DateRangeFilterProps {
@@ -109,6 +111,7 @@ export function DateRangeFilter({
   showLabel = true,
   align = 'left',
 }: DateRangeFilterProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<DatePreset>(defaultPreset);
   const [customStart, setCustomStart] = useState('');
@@ -262,14 +265,14 @@ export function DateRangeFilter({
     );
   };
 
-  const displayLabel = formatDisplayLabel(preset, customStart, customEnd);
+  const displayLabel = formatDisplayLabel(t, preset, customStart, customEnd);
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {showLabel && (
         <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
           <Calendar className="h-3.5 w-3.5" />
-          {'ចន្លោះកាលបរិច្ឆេទ'}
+          {t('ui.dateRange.label')}
         </label>
       )}
 
@@ -291,7 +294,7 @@ export function DateRangeFilter({
           {/* Left: Quick presets */}
           <div className="flex flex-col gap-0.5 p-3 border-r border-border min-w-[130px]">
             <div className="text-caption font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
-              {'ជម្រើសរហ័ស'}
+              {t('ui.dateRange.quickSelect')}
             </div>
             {QUICK_PRESETS.map(opt => (
               <button
@@ -311,7 +314,7 @@ export function DateRangeFilter({
             {preset === 'custom' && customStart && customEnd && (
               <div className="mt-3 pt-2 border-t border-border">
                 <div className="text-caption text-muted-foreground uppercase tracking-wider font-semibold mb-1 px-1">
-                  {'បានជ្រើសរើស'}
+                  {t('ui.dateRange.selected')}
                 </div>
                 <div className="px-1 text-xs text-foreground font-medium leading-5">
                   {customStart.split('-').reverse().join('/')}
@@ -323,7 +326,7 @@ export function DateRangeFilter({
                   onClick={() => setOpen(false)}
                   className="mt-2 w-full px-2 py-1 text-xs bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                 >
-                  {'អនុវត្ត'}
+                  {t('common.apply')}
                 </button>
               </div>
             )}
@@ -333,10 +336,10 @@ export function DateRangeFilter({
           <div className="p-3">
             <div className="text-caption font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1 h-4">
               {!selectingStart
-                ? 'ចុចថ្ងៃដដែលសម្រាប់ ១ ថ្ងៃ ឬចុចថ្ងៃផ្សេងដើម្បីកំណត់ចន្លោះ'
+                ? t('ui.dateRange.hintEndOrSame')
                 : customStart
-                  ? 'ចុចដើម្បីចាប់ផ្តើមចន្លោះថ្មី'
-                  : 'ចុចដើម្បីកំណត់ថ្ងៃចាប់ផ្តើម'}
+                  ? t('ui.dateRange.hintNewRange')
+                  : t('ui.dateRange.hintSetStart')}
             </div>
 
             {/* Month navigation header */}

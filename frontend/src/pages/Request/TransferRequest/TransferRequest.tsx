@@ -53,13 +53,16 @@ const datetime_format = (date_time: string | Date) => {
     return date.toLocaleDateString("fr-CA") + " " + date.toLocaleTimeString(navigator.language, { hour: '2-digit', minute: '2-digit' });
 };
 
-const date_format = (date_time: string) => {
+const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);
     return date.toLocaleDateString("fr-CA");
 };
 
 const TransferRequest = () => {
-    const columns: ColumnDef<TransferRequest>[] = [
+    // Memoised: this 200-line literal used to be rebuilt on every keystroke.
+    // The closures only touch useState setters (stable) and pure helpers, so
+    // empty deps are safe.
+    const columns: ColumnDef<TransferRequest>[] = useMemo(() => [
         {
             key: 'display_name',
             header: 'អ្នកស្នើ',
@@ -69,53 +72,23 @@ const TransferRequest = () => {
             key: 'request_date',
             header: 'ថ្ងៃស្នើ',
             sortable: true,
+            // accessor feeds export/copy/print and sorting; the formatted string
+            // ('YYYY-MM-DD HH:mm') sorts chronologically and matches the cell.
+            accessor: (row) => datetime_format(row.request_date),
             render: (row) => datetime_format(row.request_date),
         },
         {
+            // The click handlers HoldRequest has here were never ported (they
+            // referenced hooks this file does not declare), so these are plain
+            // text columns until a customer-detail dialog actually exists.
             key: 'sender_name',
             header: 'ពីឈ្មោះ',
             sortable: true,
-            render: (row) =>
-                <div
-                    onClick={async () => {
-                        await getCustomer({
-                            variables: {
-                                customerId: row.customer_id
-                            }
-                        })
-                        await getCustomerPayment({
-                            variables: {
-                                customerId: row.customer_id
-                            }
-                        })
-                        setOpen(true)
-                    }}
-                >
-                    {row.sender_name}
-                </div>,
         },
         {
             key: 'receiver_name',
             header: 'ទៅឈ្មោះ',
             sortable: true,
-            render: (row) =>
-                <div
-                    onClick={async () => {
-                        await getCustomer({
-                            variables: {
-                                customerId: row.customer_id
-                            }
-                        })
-                        await getCustomerPayment({
-                            variables: {
-                                customerId: row.customer_id
-                            }
-                        })
-                        setOpen(true)
-                    }}
-                >
-                    {row.receiver_name}
-                </div>,
         },
         {
             key: 'reason',
@@ -186,7 +159,7 @@ const TransferRequest = () => {
                             :
                             <>
                                 {
-                                    row.checker_status === "Approved" ?
+                                    row.approver_status === "Approved" ?
                                         <div className="group">
                                             <strong className="text-green-500 visible group-hover:invisible">Approved</strong>
                                             <strong className="text-green-500 invisible group-hover:visible">{row.approver_comment}</strong>
@@ -208,7 +181,12 @@ const TransferRequest = () => {
             key: 'process',
             header: 'Process',
             sortable: true,
-            accessor: (row) => row.request_id,
+            // accessor is what export/copy/print emit and what sorting compares —
+            // it must mirror the rendered state, not the request id.
+            accessor: (row) =>
+                row.checker_status === "Approved" && row.approver_status === "Approved"
+                    ? (row.processed_by === 0 ? "" : row.processed_name)
+                    : "Pending",
             render: (row_data) => (
                 <div className="flex">
                     {
@@ -238,7 +216,10 @@ const TransferRequest = () => {
                                                         receiver_name: row_data.receiver_name,
                                                         receiver_phone: row_data.receiver_phone,
                                                         receiver_old_end: row_data.receiver_old_end,
-                                                        receiver_new_end: ReceiverNewEnd(date_format(row_data.sender_old_end), row_data.receiver_old_end),
+                                                        // Raw value on purpose: date-only strings parse as UTC midnight
+                                                        // while datetimes parse as local, so pre-formatting here made the
+                                                        // two sides of the transfer measure different calendar days.
+                                                        receiver_new_end: ReceiverNewEnd(row_data.sender_old_end, row_data.receiver_old_end),
                                                     })
                                                 }}
                                             >
@@ -263,7 +244,8 @@ const TransferRequest = () => {
                 </div>
             ),
         },
-    ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ], []);
 
     function countDaysBetweenDates(startDate: Date, endDate: Date) {
         // Convert both dates to UTC to ensure accurate calculation
@@ -286,24 +268,40 @@ const TransferRequest = () => {
         return date_format(endDate);
     }
 
+    /** Days the sender has left to give away. An expired membership has none —
+     *  without the clamp a negative remainder used to REVIVE the sender (their
+     *  end date minus a negative count) while debiting the receiver. */
+    function SenderRemainingDays(sender_old_end: string) {
+        return Math.max(0, countDaysBetweenDates(new Date(), new Date(sender_old_end)));
+    }
+
     function SenderNewEnd(old_end: string) {
-        return calculateNewEndDate(old_end, -countDaysBetweenDates(new Date(), new Date(old_end)))
+        const remain = SenderRemainingDays(old_end);
+        // Nothing left to transfer: the expired end date stays where it was.
+        if (remain === 0) return date_format(old_end);
+        return calculateNewEndDate(old_end, -remain);
     }
 
     function ReceiverNewEnd(sender_old_end: string, receiver_old_end: string) {
-        const remain_days = countDaysBetweenDates(new Date(), new Date(receiver_old_end))
-        if (remain_days <= 0) {
-            return sender_old_end
-        } else {
-            const sender_remain = countDaysBetweenDates(new Date(), new Date(sender_old_end))
-            return calculateNewEndDate(receiver_old_end, sender_remain)
+        const sender_remain = SenderRemainingDays(sender_old_end);
+        // Expired sender transfers zero days — the receiver keeps their date.
+        if (sender_remain === 0) return date_format(receiver_old_end);
+        const receiver_remain = countDaysBetweenDates(new Date(), new Date(receiver_old_end));
+        if (receiver_remain <= 0) {
+            // Receiver already expired: they inherit the sender's window
+            // (today → sender's end date), same day count the sender gave up.
+            return date_format(sender_old_end);
         }
+        return calculateNewEndDate(receiver_old_end, sender_remain);
     }
 
     const HandleCheckerApprove = async () => {
         //TODO: Check Permission
         const userRole = localStorage.getItem("role");
         if (userRole === "Admin" || userRole === "Checker") {
+            // Clear the previous request's comment — the input is controlled, so
+            // stale text can no longer be submitted invisibly.
+            setDescription("")
             setOpenChecker(true)
             return;
         }
@@ -314,15 +312,16 @@ const TransferRequest = () => {
         //TODO: Check Permission
         const userRole = localStorage.getItem("role");
         if (userRole === "Admin") {
+            setDescription("")
             setOpenApprover(true)
             return;
         }
         Notifications("អ្នកមិនមានសិទ្ធិទេ", "error")
     }
 
-    const [checkerApprove] = useCheckTransferRequestMutation();
-    const [approveTransfer] = useApproveTransferRequestMutation();
-    const [createTransfer] = useCreateTransferMutation();
+    const [checkerApprove, { loading: checker_saving }] = useCheckTransferRequestMutation();
+    const [approveTransfer, { loading: approver_saving }] = useApproveTransferRequestMutation();
+    const [createTransfer, { loading: transfer_saving }] = useCreateTransferMutation();
     const { data, loading, refetch } = useTransferRequestsQuery({ fetchPolicy: "no-cache" })
 
     const [open_checker, setOpenChecker] = useState(false)
@@ -330,9 +329,12 @@ const TransferRequest = () => {
     const [request_id, setRequestID] = useState(0)
     const [description, setDescription] = useState("")
     const [open_print, setOpenPrint] = useState(false)
-    const cancelButtonRef = useRef<HTMLButtonElement>(null)
     const buttonRef = useRef<HTMLButtonElement>(null);
     const InvoiceRef = useRef<HTMLDivElement>(null);
+    // Synchronous re-entry guard: state alone can't stop a double-click that
+    // lands before React re-renders, and each extra CreateTransfer inserts a
+    // second transfer row server-side.
+    const processingRef = useRef(false);
 
     const [search, setSearch] = useState("")
     const [page, setPage] = useState(1)
@@ -362,8 +364,34 @@ const TransferRequest = () => {
         );
     }, [requests, search]);
 
-    const total_pages = Math.max(1, Math.ceil(filtered_requests.length / page_size));
-    const paged_requests = filtered_requests.slice((page - 1) * page_size, page * page_size);
+    // Sorting lives here, not in DataTable: the table only ever receives the
+    // current page slice, so its built-in sort could only reorder ~20 rows.
+    // Passing onSortChange switches it to report-only mode, and the whole
+    // filtered set is sorted before slicing.
+    const [sort, setSort] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
+
+    const sorted_requests = useMemo(() => {
+        if (!sort.key) return filtered_requests;
+        const col = columns.find((c) => c.key === sort.key);
+        if (!col) return filtered_requests;
+        const valueOf = (row: TransferRequest) =>
+            col.accessor ? col.accessor(row) : row[sort.key as keyof TransferRequest];
+        return [...filtered_requests].sort((a, b) => {
+            const va = valueOf(a);
+            const vb = valueOf(b);
+            if (va == null && vb == null) return 0;
+            if (va == null) return sort.direction === 'asc' ? -1 : 1;
+            if (vb == null) return sort.direction === 'asc' ? 1 : -1;
+            if (typeof va === 'number' && typeof vb === 'number') {
+                return sort.direction === 'asc' ? va - vb : vb - va;
+            }
+            const cmp = String(va).toLowerCase().localeCompare(String(vb).toLowerCase());
+            return sort.direction === 'asc' ? cmp : -cmp;
+        });
+    }, [filtered_requests, sort, columns]);
+
+    const total_pages = Math.max(1, Math.ceil(sorted_requests.length / page_size));
+    const paged_requests = sorted_requests.slice((page - 1) * page_size, page * page_size);
 
     const [invoice_detail, setInvoiceDetail] = useState({
         invoice_id: 0, cashier: "", payment_date: "",
@@ -373,52 +401,93 @@ const TransferRequest = () => {
 
     const handlePrint = useReactToPrint({
         content: () => InvoiceRef.current,
-        print: async (printIframe: HTMLIFrameElement) => {
-            // Do whatever you want here, including asynchronous work
-            await SendToElectronPrinter(printIframe);
-        }
+        print: (printIframe: HTMLIFrameElement) => SendToElectronPrinter(printIframe),
+        // Without this, a print failure (e.g. running in a plain browser, where
+        // window.electronAPI does not exist) was swallowed with only a console
+        // line — the transfer was committed but no invoice appeared and no one
+        // was told.
+        onPrintError: () => Notifications("មិនអាចបោះពុម្ពវិក្កយបត្របានទេ", "error"),
     });
 
-    const SendToElectronPrinter = async (target: HTMLIFrameElement) => {
-        return new Promise(() => {
-            console.log("forwarding print request to the main process...");
-            const data = target.contentWindow.document.documentElement.outerHTML;
-            const blob = new Blob([data], { type: "text/html; charset=utf-8" });
+    const SendToElectronPrinter = (target: HTMLIFrameElement) => {
+        // Must settle: react-to-print awaits this promise before running its
+        // cleanup (iframe removal); the old executor never resolved, so every
+        // print leaked the hidden iframe and its blob URL.
+        return new Promise<void>((resolve, reject) => {
+            const doc = target.contentWindow?.document;
+            if (!doc) {
+                reject(new Error("print frame not ready"));
+                return;
+            }
+            const blob = new Blob([doc.documentElement.outerHTML], { type: "text/html; charset=utf-8" });
             const url = URL.createObjectURL(blob);
-            window.electronAPI.printComponent1(url, (response: any) => {
+            const api = (window as { electronAPI?: { printComponent1: (u: string, cb: (r: unknown) => void) => void } }).electronAPI;
+            if (!api?.printComponent1) {
+                URL.revokeObjectURL(url);
+                reject(new Error("printing is only available in the desktop app"));
+                return;
+            }
+            api.printComponent1(url, (response) => {
                 console.log("Main: ", response);
+                URL.revokeObjectURL(url);
+                resolve();
             });
         });
     };
 
     async function ProcessTransfer(): Promise<void> {
+        // Ref, not state: a double-click lands before React re-renders, and each
+        // extra CreateTransfer inserts a second transfer row server-side.
+        if (processingRef.current) return;
+        processingRef.current = true;
 
-        const { sender_id, sender_old_end, sender_new_end, receiver_id, receiver_old_end, receiver_new_end } = invoice_detail
+        try {
+            const { sender_id, sender_old_end, sender_new_end, receiver_id, receiver_old_end, receiver_new_end } = invoice_detail
 
-        const { data: { CreateTransfer: res } } = await createTransfer({
-            variables: {
-                requestId: request_id,
-                processedBy: parseInt(localStorage.getItem("user_id") || "99"),
-                receiverNewEnd: receiver_new_end,
-                receiverOldEnd: receiver_old_end,
-                receiverId: receiver_id,
-                senderNewEnd: sender_new_end,
-                senderOldDate: sender_old_end,
-                senderId: sender_id
+            const stored_user = parseInt(localStorage.getItem("user_id") || "0", 10);
+
+            const { data } = await createTransfer({
+                variables: {
+                    requestId: request_id,
+                    processedBy: Number.isNaN(stored_user) ? 0 : stored_user,
+                    receiverNewEnd: receiver_new_end,
+                    receiverOldEnd: receiver_old_end,
+                    receiverId: receiver_id,
+                    senderNewEnd: sender_new_end,
+                    senderOldDate: sender_old_end,
+                    senderId: sender_id
+                }
+            })
+            const res = data?.CreateTransfer;
+            if (res?.success) {
+                if (res.transfer_id != null && res.transfer_id > 0) {
+                    // The effect below prints and closes once the id lands in state.
+                    setInvoiceDetail({ ...invoice_detail, invoice_id: res.transfer_id })
+                } else {
+                    // Committed server-side but no id came back — finish the flow
+                    // anyway. Leaving the dialog open looking idle invited a retry,
+                    // which double-processed the transfer.
+                    Notifications("ជោគជ័យ", "success")
+                    setOpenPrint(false);
+                    refetch();
+                }
+                return;
             }
-        })
-        if (res.success) {
-            setInvoiceDetail({ ...invoice_detail, invoice_id: res.transfer_id })
-            return;
+            Notifications("បរាជ័យ", "error")
+        } catch {
+            // Network/GraphQL rejection used to escape as an unhandled promise —
+            // no toast, dialog frozen, and the natural retry created duplicates.
+            Notifications("បរាជ័យ", "error")
+        } finally {
+            processingRef.current = false;
         }
-        Notifications("បរាជ័យ", "error")
     }
 
     useEffect(() => {
         // This function will be called after the component re-renders
         if (invoice_detail.invoice_id > 0) {
             Notifications("ជោគជ័យ", "success")
-            buttonRef.current.click();
+            buttonRef.current?.click();
             setOpenPrint(false);
             refetch();
         }
@@ -451,10 +520,10 @@ const TransferRequest = () => {
                         setSearch(term);
                         setPage(1);
                     }}
+                    onSortChange={(key, direction) => setSort({ key, direction })}
                     columnToggle
-                    exportData={filtered_requests}
+                    exportData={sorted_requests}
                     exportFileName="transfer_requests.csv"
-                    emptyMessage="គ្មានទិន្នន័យ"
                 />
             ) : (
                 <LoadingPage message={"Loading"} />
@@ -480,6 +549,7 @@ const TransferRequest = () => {
                         <Input
                             type="text"
                             required
+                            value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
@@ -487,6 +557,7 @@ const TransferRequest = () => {
                         <Button
                             type="button"
                             className="bg-green-600 hover:bg-green-700"
+                            disabled={checker_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
                                 const res = await checkerApprove({
@@ -514,6 +585,7 @@ const TransferRequest = () => {
                         <Button
                             type="button"
                             variant="destructive"
+                            disabled={checker_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
                                 const res = await checkerApprove({
@@ -553,6 +625,7 @@ const TransferRequest = () => {
                         <Input
                             type="text"
                             required
+                            value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
@@ -560,6 +633,7 @@ const TransferRequest = () => {
                         <Button
                             type="button"
                             className="bg-green-600 hover:bg-green-700"
+                            disabled={approver_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
                                 const res = await approveTransfer({
@@ -587,6 +661,7 @@ const TransferRequest = () => {
                         <Button
                             type="button"
                             variant="destructive"
+                            disabled={approver_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
                                 const res = await approveTransfer({
@@ -625,14 +700,14 @@ const TransferRequest = () => {
                         <TransferInvoice
                             ref={InvoiceRef}
                             invoice_detail={invoice_detail}
-                        >
-                        </TransferInvoice>
+                        />
                     </div>
                     <DialogFooter className="flex-row-reverse gap-2">
                         <Button
                             type="button"
                             className="bg-green-600 hover:bg-green-700"
-                            onClick={() => ProcessTransfer()}
+                            disabled={transfer_saving}
+                            onClick={() => { void ProcessTransfer(); }}
                         >
                             Process
                         </Button>

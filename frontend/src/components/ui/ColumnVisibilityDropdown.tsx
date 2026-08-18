@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon as Check, ViewColumnsIcon as Columns3 } from '@heroicons/react/24/outline';
 import { cn } from '../../lib/utils';
 
@@ -24,7 +25,8 @@ export function ColumnVisibilityDropdown({
   className = '',
   triggerClassName = '',
 }: ColumnVisibilityDropdownProps) {
-  const resolvedLabel = label ?? 'ជួរឈរ';
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('ui.columns.label');
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +57,7 @@ export function ColumnVisibilityDropdown({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        title={'បង្ហាញ ឬលាក់ជួរឈរ'}
+        title={t('ui.columns.showOrHide')}
         className={cn(
           'inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-md border border-input bg-background px-3 text-xs font-medium md:text-sm ring-offset-background transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
           triggerClassName
@@ -82,7 +84,7 @@ export function ColumnVisibilityDropdown({
               onClick={showAll}
               className="text-xs text-primary hover:underline"
             >
-              {'បង្ហាញទាំងអស់'}
+              {t('ui.columns.showAll')}
             </button>
             <button
               type="button"
@@ -90,7 +92,7 @@ export function ColumnVisibilityDropdown({
               onClick={hideAll}
               className="text-xs text-muted-foreground hover:underline"
             >
-              {'លាក់ទាំងអស់'}
+              {t('ui.columns.hideAll')}
             </button>
           </div>
 

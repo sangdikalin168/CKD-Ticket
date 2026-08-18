@@ -249,7 +249,6 @@ export const Member = () => {
             }}
             columnToggle
             loading={member_loading}
-            emptyMessage="គ្មានទិន្នន័យ"
             exportFileName="members.csv"
             printTitle="សមាជិក"
             rowActions={(row) => [

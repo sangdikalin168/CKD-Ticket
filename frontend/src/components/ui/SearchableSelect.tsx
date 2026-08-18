@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon as Search, XMarkIcon as X, ChevronDownIcon as ChevronDown } from '@heroicons/react/24/outline';
 
 export interface SearchableSelectOption {
@@ -41,8 +42,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     className = '',
     id,
 }) => {
-    const resolvedPlaceholder = placeholder ?? 'ជ្រើសរើស';
-    const resolvedSearchPlaceholder = searchPlaceholder ?? 'ស្វែងរក...';
+    const { t } = useTranslation();
+    const resolvedPlaceholder = placeholder ?? t('ui.select.placeholder');
+    const resolvedSearchPlaceholder = searchPlaceholder ?? t('common.searchPlaceholder');
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [highlight, setHighlight] = useState(0);
@@ -146,7 +148,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         <span
                             role="button"
                             tabIndex={-1}
-                            aria-label={'សម្អាតការជ្រើសរើស'}
+                            aria-label={t('ui.select.clearSelection')}
                             onClick={clear}
                             className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         >
@@ -178,7 +180,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     )}
                     <div ref={listRef} role="listbox" id={listboxId} className="max-h-60 overflow-auto py-1">
                         {filtered.length === 0 ? (
-                            <div className="px-3 py-2 text-sm text-muted-foreground">{'រកមិនឃើញលទ្ធផលទេ'}</div>
+                            <div className="px-3 py-2 text-sm text-muted-foreground">{t('ui.select.noResults')}</div>
                         ) : (
                             filtered.map((opt, i) => (
                                 <button

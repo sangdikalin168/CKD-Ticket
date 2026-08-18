@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './Button';
 
 /**
@@ -8,6 +9,7 @@ import { Button } from './Button';
  * Uses service worker update detection and periodic version checks
  */
 export const VersionChecker = () => {
+  const { t } = useTranslation();
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -114,9 +116,9 @@ export const VersionChecker = () => {
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-sm">{'មានកំណែថ្មី'}</h3>
+            <h3 className="font-semibold text-sm">{t('ui.version.updateAvailable')}</h3>
             <p className="text-sm opacity-90 mt-1">
-              {'កំណែថ្មីនៃកម្មវិធីមានហើយ សូមផ្ទុកឡើងវិញដើម្បីទទួលបានមុខងារចុងក្រោយ'}
+              {t('ui.version.updateMessage')}
             </p>
             <div className="flex gap-2 mt-3">
               <Button
@@ -125,7 +127,7 @@ export const VersionChecker = () => {
                 onClick={handleRefresh}
                 className="bg-white text-primary hover:bg-white/90"
               >
-                {'ផ្ទុកឡើងវិញឥឡូវនេះ'}
+                {t('ui.version.refreshNow')}
               </Button>
               <Button
                 size="sm"
@@ -133,7 +135,7 @@ export const VersionChecker = () => {
                 onClick={() => setUpdateAvailable(false)}
                 className="text-primary-foreground hover:bg-primary-foreground/10"
               >
-                {'ពេលក្រោយ'}
+                {t('ui.version.later')}
               </Button>
             </div>
           </div>

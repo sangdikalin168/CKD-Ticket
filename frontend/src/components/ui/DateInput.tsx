@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CalendarIcon as Calendar } from '@heroicons/react/24/outline';
 import { cn } from '../../lib/utils';
 
@@ -63,6 +64,7 @@ export const DateInput: React.FC<DateInputProps> = ({
     placeholder = 'DD/MM/YYYY',
     id,
 }) => {
+    const { t } = useTranslation();
     const [display, setDisplay] = useState<string>(() => isoToDisplay(value));
     const pickerRef = useRef<HTMLInputElement>(null);
 
@@ -139,7 +141,7 @@ export const DateInput: React.FC<DateInputProps> = ({
                 type="button"
                 onClick={openPicker}
                 disabled={disabled}
-                aria-label={'បើកកម្មវិធីជ្រើសរើសកាលបរិច្ឆេទ'}
+                aria-label={t('ui.dateInput.openPicker')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
                 <Calendar className="size-4" />

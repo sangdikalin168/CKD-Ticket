@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { ViewColumnsIcon as PanelLeft } from '@heroicons/react/24/outline';
@@ -138,6 +139,7 @@ const Sidebar = React.forwardRef<
     { side = 'left', variant = 'sidebar', collapsible = 'offcanvas', className, children, ...props },
     ref
   ) => {
+    const { t } = useTranslation();
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
     if (collapsible === 'none') {
@@ -163,8 +165,8 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <SheetHeader className="sr-only">
-              <SheetTitle>{'របារចំហៀង'}</SheetTitle>
-              <SheetDescription>{'បង្ហាញរបារចំហៀងសម្រាប់ទូរស័ព្ទ'}</SheetDescription>
+              <SheetTitle>{t('ui.sidebar.title')}</SheetTitle>
+              <SheetDescription>{t('ui.sidebar.description')}</SheetDescription>
             </SheetHeader>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
@@ -218,6 +220,7 @@ const Sidebar = React.forwardRef<
 Sidebar.displayName = 'Sidebar';
 
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
+  const { t } = useTranslation();
   const { toggleSidebar } = useSidebar();
   return (
     <Button
@@ -231,22 +234,23 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       {...props}
     >
       <PanelLeft className="h-6 w-6" />
-      <span className="sr-only">{'បិទ/បើករបារចំហៀង'}</span>
+      <span className="sr-only">{t('ui.sidebar.toggle')}</span>
     </Button>
   );
 }
 
 const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<'button'>>(
   ({ className, ...props }, ref) => {
+    const { t } = useTranslation();
     const { toggleSidebar } = useSidebar();
     return (
       <button
         ref={ref}
         data-sidebar="rail"
-        aria-label={'បិទ/បើករបារចំហៀង'}
+        aria-label={t('ui.sidebar.toggle')}
         tabIndex={-1}
         onClick={toggleSidebar}
-        title={'បិទ/បើករបារចំហៀង'}
+        title={t('ui.sidebar.toggle')}
         className={cn(
           'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
           '[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize',

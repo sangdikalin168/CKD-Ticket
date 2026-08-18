@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon as Search, XMarkIcon as X } from '@heroicons/react/24/outline';
 
 interface Employee {
@@ -24,7 +25,8 @@ export const EmployeeSearchSelect: React.FC<EmployeeSearchSelectProps> = ({
   placeholder,
   className = ''
 }) => {
-  const resolvedPlaceholder = placeholder ?? 'ស្វែងរកបុគ្គលិកតាមឈ្មោះ ឬលេខកូដ...';
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t('ui.employeeSearch.placeholder');
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -146,7 +148,7 @@ export const EmployeeSearchSelect: React.FC<EmployeeSearchSelectProps> = ({
 
       {showDropdown && searchTerm && filteredEmployees.length === 0 && (
         <div className="absolute z-50 w-full mt-1 bg-background border border-input rounded-md shadow-lg p-4 text-center text-sm text-muted-foreground">
-          {'រកមិនឃើញបុគ្គលិកទេ'}
+          {t('ui.employeeSearch.noResults')}
         </div>
       )}
     </div>

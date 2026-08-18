@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useConfirmDialog } from './ModalDialog';
 
 const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
@@ -18,6 +19,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   enableWebcam = false, // Default: hide webcam
   employeeDbId,
 }) => {
+  const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl || null);
   const [showWebcam, setShowWebcam] = useState(false);
   const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
@@ -32,12 +34,12 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('ទំហំឯកសារត្រូវតែតិចជាង 5MB');
+        alert(t('ui.photoUpload.fileTooLarge'));
         return;
       }
 
       if (!file.type.startsWith('image/')) {
-        alert('សូមជ្រើសរើសឯកសាររូបភាព');
+        alert(t('ui.photoUpload.notAnImage'));
         return;
       }
 
@@ -63,7 +65,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       }
     } catch (error) {
       console.error('Error accessing webcam:', error);
-      alert('មិនអាចប្រើកាមេរ៉ាបានទេ សូមពិនិត្យការអនុញ្ញាត');
+      alert(t('ui.photoUpload.webcamError'));
     }
   };
 
@@ -110,10 +112,10 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     // If there's a current photo URL (already uploaded), delete it from backend
     if (currentPhotoUrl && employeeDbId) {
       const confirmed = await confirmDialog.confirm({
-        title: 'លុបរូបថត',
-        message: 'តើអ្នកប្រាកដថាចង់លុបរូបថតនេះមែនទេ?',
-        confirmText: 'លុប',
-        cancelText: 'បោះបង់',
+        title: t('ui.photoUpload.deletePhoto'),
+        message: t('ui.photoUpload.deleteConfirm'),
+        confirmText: t('common.delete'),
+        cancelText: t('common.cancel'),
         variant: 'danger',
       });
       
@@ -145,7 +147,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   return (
     <div className="space-y-4">
       <label className="block text-sm font-medium text-foreground">
-        {'រូបថតបុគ្គលិក'}
+        {t('ui.photoUpload.label')}
       </label>
 
       {/* Preview */}
@@ -153,7 +155,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
         <div className="relative inline-block">
           <img
             src={previewUrl}
-            alt={'រូបភាពមើលជាមុនរបស់បុគ្គលិក'}
+            alt={t('ui.photoUpload.previewAlt')}
             className="w-32 h-32 object-cover rounded-lg border-2 border-border"
           />
           <button
@@ -181,14 +183,14 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
               onClick={capturePhoto}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
             >
-              📸 {'ថតរូប'}
+              📸 {t('ui.photoUpload.capture')}
             </button>
             <button
               type="button"
               onClick={stopWebcam}
               className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
             >
-              {'បោះបង់'}
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -202,7 +204,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
             onClick={() => fileInputRef.current?.click()}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
-            📁 {'ជ្រើសរើសឯកសារ'}
+            📁 {t('ui.photoUpload.chooseFile')}
           </button>
           {enableWebcam && (
             <button
@@ -210,7 +212,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
               onClick={startWebcam}
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
-              📷 {'ប្រើកាមេរ៉ា'}
+              📷 {t('ui.photoUpload.useWebcam')}
             </button>
           )}
         </div>
@@ -227,7 +229,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       <canvas ref={canvasRef} className="hidden" />
 
       <p className="text-xs text-muted-foreground">
-        {'ទម្រង់ដែលទទួលយក៖ JPG, PNG, WEBP (អតិបរមា 5MB)'}
+        {t('ui.photoUpload.acceptedFormats')}
       </p>
 
       {/* Confirmation Dialog */}

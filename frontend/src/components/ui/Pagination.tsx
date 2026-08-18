@@ -1,4 +1,4 @@
-
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { Button } from './Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
@@ -67,6 +67,7 @@ export function Pagination({
   density = 'comfortable',
   className,
 }: PaginationProps) {
+  const { t } = useTranslation();
   const tokens = TABLE_DENSITY[density];
   const { current_page: page, page_size: size, total_items: total, total_pages: pages } = pageInfo;
 
@@ -96,11 +97,11 @@ export function Pagination({
       {/* Mobile — stacked, always arrows: numbered buttons don't fit. */}
       <div className="md:hidden space-y-3">
         <div className="text-xs text-muted-foreground text-center">
-          {`បង្ហាញ ${from} ដល់ ${to} នៃ ${total}`}
+          {t('ui.dataTable.showingRange', { from, to, total })}
         </div>
         {onPageSizeChange && (
           <div className="flex items-center justify-center gap-2">
-            <label className="text-xs text-muted-foreground">{'ក្នុងមួយទំព័រ៖'}</label>
+            <label className="text-xs text-muted-foreground">{t('ui.dataTable.perPage')}</label>
             {pageSizeSelect}
           </div>
         )}
@@ -108,14 +109,14 @@ export function Pagination({
           <Button variant="outline" size="sm" className="flex-1"
             onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}>
             <ChevronLeft />
-            <span className="ml-1">{'មុន'}</span>
+            <span className="ml-1">{t('ui.dataTable.prev')}</span>
           </Button>
           <div className="px-3 py-1.5 text-xs text-muted-foreground whitespace-nowrap">
             {page} / {pages}
           </div>
           <Button variant="outline" size="sm" className="flex-1"
             onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}>
-            <span className="mr-1">{'បន្ទាប់'}</span>
+            <span className="mr-1">{t('common.next')}</span>
             <ChevronRight />
           </Button>
         </div>
@@ -125,12 +126,12 @@ export function Pagination({
       <div className="hidden md:flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0">
           <div className={cn('text-muted-foreground whitespace-nowrap', tokens.paginationText)}>
-            {`បង្ហាញ ${from} ដល់ ${to} នៃ ${total} លទ្ធផល`}
+            {t('ui.dataTable.showingResults', { from, to, total })}
           </div>
           {onPageSizeChange && (
             <div className="flex items-center gap-2 flex-shrink-0">
               <label className={cn('text-muted-foreground whitespace-nowrap', tokens.paginationText)}>
-                {'ធាតុក្នុងមួយទំព័រ៖'}
+                {t('ui.dataTable.itemsPerPage')}
               </label>
               {pageSizeSelect}
             </div>
@@ -140,7 +141,7 @@ export function Pagination({
         {variant === 'numbered' ? (
           <div className="flex items-center gap-1">
             <button type="button" onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}
-              aria-label={'ទំព័រមុន'}
+              aria-label={t('ui.dataTable.previousPage')}
               className="inline-flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <ChevronLeft />
             </button>
@@ -157,31 +158,31 @@ export function Pagination({
               </button>
             ))}
             <button type="button" onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}
-              aria-label={'ទំព័របន្ទាប់'}
+              aria-label={t('ui.dataTable.nextPage')}
               className="inline-flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <ChevronRight />
             </button>
           </div>
         ) : (
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className={tokens.control} title={'ទំព័រដំបូង'}
+            <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.firstPage')}
               onClick={() => onPageChange(1)} disabled={!pageInfo.has_previous}>
               <ChevronsLeft />
             </Button>
-            <Button variant="outline" size="sm" className={tokens.control} title={'ទំព័រមុន'}
+            <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.previousPage')}
               onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}>
               <ChevronLeft />
             </Button>
             <div className="flex items-center gap-2 px-4">
               <span className={cn('text-muted-foreground', tokens.paginationText)}>
-                {`ទំព័រ ${page} នៃ ${pages}`}
+                {t('ui.dataTable.pageOf', { current: page, total: pages })}
               </span>
             </div>
-            <Button variant="outline" size="sm" className={tokens.control} title={'ទំព័របន្ទាប់'}
+            <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.nextPage')}
               onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}>
               <ChevronRight />
             </Button>
-            <Button variant="outline" size="sm" className={tokens.control} title={'ទំព័រចុងក្រោយ'}
+            <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.lastPage')}
               onClick={() => onPageChange(pages)} disabled={!pageInfo.has_next}>
               <ChevronsRight />
             </Button>

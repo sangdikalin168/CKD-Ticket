@@ -323,7 +323,6 @@ const HoldRequest = () => {
                             searchValue={search}
                             onSearchChange={(term) => { setSearch(term); setPage(1); }}
                             columnToggle
-                            emptyMessage="គ្មានទិន្នន័យ"
                             exportFileName="hold_requests.csv"
                             printTitle="សំណើសុំច្បាប់"
                         />

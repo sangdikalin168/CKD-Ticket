@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useOverlay } from './OverlayStack';
 import { StatusProgressBar } from './StatusProgressBar';
 
@@ -17,8 +18,9 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   progress,
   steps,
 }) => {
-  const resolvedMessage = message ?? 'កំពុងផ្ទុក...';
-  const resolvedSubMessage = subMessage ?? 'សូមរង់ចាំ';
+  const { t } = useTranslation();
+  const resolvedMessage = message ?? t('common.loading');
+  const resolvedSubMessage = subMessage ?? t('ui.loading.pleaseWait');
   const { zIndex } = useOverlay('loading', isLoading);
 
   if (!isLoading) return null;

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { XMarkIcon as X } from '@heroicons/react/24/outline';
 
@@ -41,6 +42,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   showClose = true,
   disableBackdropClose = false,
 }) => {
+  const { t } = useTranslation();
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number | null>(null);
   const dragOffset = useRef<number>(0);
@@ -141,7 +143,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label={'បិទ'}
+                aria-label={t('common.close')}
                 className="p-1.5 -mr-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
