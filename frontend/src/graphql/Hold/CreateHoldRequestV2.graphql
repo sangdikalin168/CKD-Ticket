@@ -1,0 +1,17 @@
+mutation CreateHoldRequestV2(
+  $customerId: Float!
+  $reason: String!
+  $fromDate: String!
+  $toDate: String!
+) {
+  CreateHoldRequestV2(
+    customer_id: $customerId
+    reason: $reason
+    from_date: $fromDate
+    to_date: $toDate
+  ) {
+    code
+    success
+    message
+  }
+}

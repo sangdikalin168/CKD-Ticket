@@ -55,7 +55,11 @@ export const MysqlDataSource = new DataSource({
   // auto-alter the live DB — use migrations (and ensure prod schema exists first).
   synchronize: !isProd,
   entities: [...entities],
-  migrations: isProd ? ["dist/migrations/*.js"] : [],
+  // __dirname-relative, matching either extension: production has ALWAYS run
+  // this codebase from src/ via ts-node with no dist/, so the old cwd-relative
+  // "dist/migrations/*.js" matched nothing and runMigrations() was a silent
+  // no-op for its entire life. This glob works from src (ts) and dist (js).
+  migrations: isProd ? [`${__dirname}/migrations/*.{ts,js}`] : [],
   migrationsTableName: "typeorm_migrations",
 });
 

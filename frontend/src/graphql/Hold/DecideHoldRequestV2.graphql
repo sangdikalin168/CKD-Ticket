@@ -1,0 +1,7 @@
+mutation DecideHoldRequestV2($requestId: Float!, $approve: Boolean!, $note: String) {
+  DecideHoldRequestV2(request_id: $requestId, approve: $approve, note: $note) {
+    code
+    success
+    message
+  }
+}

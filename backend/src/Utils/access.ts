@@ -1,3 +1,4 @@
+import { EntityManager } from "typeorm";
 import { Entitlement } from "../Entities/Entitlement";
 import { Package } from "../Entities/Package";
 import { PackageFacility } from "../Entities/PackageFacility";
@@ -73,9 +74,11 @@ export async function activeTimeEntitlement(
  *  row rather than spawning a duplicate. */
 export async function mostRecentTimeEntitlement(
     customer_id: number,
-    product_type: ProductType
+    product_type: ProductType,
+    manager?: EntityManager
 ): Promise<Entitlement | null> {
-    return await Entitlement.findOne({
+    const repo = manager ? manager.getRepository(Entitlement) : Entitlement.getRepository();
+    return await repo.findOne({
         where: { customer_id, product_type },
         order: { entitlement_id: "DESC" },
     });
@@ -95,8 +98,12 @@ export async function upsertTimeEntitlement(opts: {
     valid_until: string;
     shift?: Shift;
     origin_purchase_id?: number;
-}): Promise<Entitlement> {
-    const ent = await mostRecentTimeEntitlement(opts.customer_id, opts.product_type);
+}, manager?: EntityManager): Promise<Entitlement> {
+    // With a manager, every read and write joins the caller's transaction —
+    // the transfer execution uses this so the entitlement mirror commits or
+    // rolls back WITH the legacy customer-date writes, never separately.
+    const repo = manager ? manager.getRepository(Entitlement) : Entitlement.getRepository();
+    const ent = await mostRecentTimeEntitlement(opts.customer_id, opts.product_type, manager);
 
     if (ent) {
         // Revive/extend the existing membership line (keep its original valid_from).
@@ -104,10 +111,10 @@ export async function upsertTimeEntitlement(opts: {
         ent.package_id = opts.package_id;
         ent.status = EntitlementStatus.ACTIVE;
         if (opts.shift) ent.shift = opts.shift;
-        return await ent.save();
+        return await repo.save(ent);
     }
 
-    return await Entitlement.create({
+    return await repo.save(repo.create({
         customer_id: opts.customer_id,
         package_id: opts.package_id,
         product_type: opts.product_type,
@@ -118,7 +125,7 @@ export async function upsertTimeEntitlement(opts: {
         entries_used: 0,
         status: EntitlementStatus.ACTIVE,
         origin_purchase_id: opts.origin_purchase_id,
-    }).save();
+    }));
 }
 
 /**
@@ -130,11 +137,15 @@ export async function upsertTimeEntitlement(opts: {
 export async function extendMembershipEntitlement(
     customer_id: number,
     valid_until: string,
-    valid_from?: string
+    valid_from?: string,
+    manager?: EntityManager
 ): Promise<Entitlement> {
-    const existing = await mostRecentTimeEntitlement(customer_id, ProductType.MEMBERSHIP);
+    const existing = await mostRecentTimeEntitlement(customer_id, ProductType.MEMBERSHIP, manager);
     const package_id =
         existing?.package_id ??
+        // Package seeding stays outside the transaction on purpose: it is
+        // idempotent (unique-index backstopped) and a committed catalog row is
+        // harmless even if the surrounding transfer rolls back.
         (await findOrCreateTimePackage({
             name: "Membership",
             product_type: ProductType.MEMBERSHIP,
@@ -149,7 +160,7 @@ export async function extendMembershipEntitlement(
         product_type: ProductType.MEMBERSHIP,
         valid_from: valid_from ?? existing?.valid_from ?? valid_until,
         valid_until,
-    });
+    }, manager);
 }
 
 /**

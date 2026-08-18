@@ -1,0 +1,9 @@
+query GetActiveHoldRequestV2($customerId: Float!) {
+  GetActiveHoldRequestV2(customer_id: $customerId) {
+    request_id
+    status
+    from_date
+    to_date
+    reason
+  }
+}

@@ -17,6 +17,8 @@ export const AppDataSource = new DataSource({
   logging: false,
   synchronize: false,
   entities: [...entities],
-  migrations: [isProd ? "dist/migrations/*.js" : "src/migrations/*.ts"],
+  // __dirname-relative so the glob survives any working directory — the old
+  // cwd-relative form is exactly what made prod's migrations a silent no-op.
+  migrations: [`${__dirname}/migrations/*.{ts,js}`],
   migrationsTableName: "typeorm_migrations",
 });

@@ -1,7 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { DateTimePicker } from "../../../../components/DateTimePicker/DateTimePicker";
-import { useCreateHoldRequestMutation } from "../../../../generated/graphql";
+import { useCreateHoldRequestV2Mutation } from "../../../../generated/holdV2";
 import Notifications from "../../../../components/Notification";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,7 +12,7 @@ const date_format = (date_time: string | Date) => {
     return date.toLocaleDateString("fr-CA");
 };
 
-const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end }: any) => {
+const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }: any) => {
 
     const cancelButtonRef = useRef(null);
     const [showDateTo, setShowDateTo] = useState(false);
@@ -20,8 +20,10 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end }: any) => {
     const handleCloseDateTo = (state: boolean) => {
         setShowDateTo(state);
     };
+    // setDate returns a timestamp, not a Date — wrap it back up so
+    // date_format receives the type it declares.
     const [selectedDateTo, setSelectedDateTo] = useState(
-        date_format(new Date().setDate(new Date().getDate() + 1))
+        date_format(new Date(new Date().setDate(new Date().getDate() + 1)))
     );
 
     const handleChangeDateTo = (selectedDate: Date) => {
@@ -53,58 +55,48 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end }: any) => {
 
     const [reason, setReason] = useState("")
 
-    const [createHoldRequest] = useCreateHoldRequestMutation();
+    // Inclusive hold length — matches ProcessHoldV2's
+    // DATEDIFF(to_date, from_date) + 1, so the member is told the same number
+    // the server will actually add.
+    const holdDays = useMemo(() => {
+        const from = new Date(selectedDateFrom);
+        const to = new Date(selectedDateTo);
+        const ms = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate())
+                 - Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+        return Math.floor(ms / 86400000) + 1;
+    }, [selectedDateFrom, selectedDateTo]);
 
-    function countDaysBetweenDates(startDate, endDate) {
-        // Convert both dates to UTC to ensure accurate calculation
-        const utcStartDate = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-        const utcEndDate = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    const [createHoldRequest, { loading: submitting }] = useCreateHoldRequestV2Mutation();
 
-        // Calculate the difference in milliseconds
-        const timeDifference = utcEndDate - utcStartDate;
-
-        // Convert the difference from milliseconds to days
-        const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-        return daysDifference;
-    }
-
-    function calculateNewEndDate(startDate, daysToAdd) {
-        // Clone the start date to avoid modifying the original date
-        const endDate = new Date(startDate);
-        // Use setDate to add the specified number of days
-        endDate.setDate(endDate.getDate() + daysToAdd);
-        return date_format(endDate);
-    }
-
+    // No new_end here any more. v1 computed it in the browser from *today*
+    // rather than from from_date, which minted free membership days, and the
+    // value went stale if the member renewed before the hold was processed.
+    // ProcessHoldV2 now derives it server-side at processing time.
     const HandleCreateHoldRequest = async () => {
-        //TODO: Condition Before Insert Data
-        if (reason === "") {
+        if (reason.trim() === "") {
             Notifications("សូមបញ្ចូលមូលហេតុ", "error")
             return;
         }
-
-        const days = countDaysBetweenDates(new Date(), new Date(old_end))
-        const new_end = calculateNewEndDate(new Date(selectedDateTo), days);
-        setNewEnd(new_end)
+        if (submitting) return;   // guard the double-click
 
         const res = await createHoldRequest({
             variables: {
-                requestBy: parseInt(localStorage.getItem("user_id") || "99"),
                 customerId: customer_id,
                 reason: reason,
                 fromDate: selectedDateFrom,
                 toDate: selectedDateTo,
-                oldEnd: old_end,
-                newEnd: new_end
             }
         })
-        if (res.data?.CreateHoldRequest.success) {
+        // The server answers with a real reason on refusal (already has a live
+        // request, bad dates), so surface its message rather than a generic one.
+        if (res.data?.CreateHoldRequestV2.success) {
             Notifications("ជោគជ័យ", "success")
             setOpenHold(false)
+            onSubmitted?.()   // let the profile re-check the live-request gate
             return;
         }
+        Notifications(res.data?.CreateHoldRequestV2.message ?? "បរាជ័យ", "error")
     }
-    const [new_end, setNewEnd] = useState("");
 
     return (
         <Transition.Root show={open_hold} as={Fragment}>
@@ -200,13 +192,13 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end }: any) => {
 
                                                 <div className="sm:col-span-2">
                                                     <Label className="block text-sm font-medium leading-6 text-gray-900">
-                                                        New End
+                                                        ចំនួនថ្ងៃសុំច្បាប់
                                                     </Label>
                                                     <div className="mt-2">
                                                         <Input
                                                             type="text"
                                                             readOnly
-                                                            value={new_end}
+                                                            value={holdDays > 0 ? `${holdDays} ថ្ងៃ` : ""}
                                                         />
                                                     </div>
                                                 </div>
@@ -218,6 +210,7 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end }: any) => {
                                     <Button
                                         type="button"
                                         className="bg-blue-600 hover:bg-green-500 text-white"
+                                        disabled={submitting}
                                         onClick={() => {
                                             HandleCreateHoldRequest()
                                         }}

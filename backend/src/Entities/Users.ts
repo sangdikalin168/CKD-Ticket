@@ -37,4 +37,11 @@ export class Users extends BaseEntity {
 
   @Column("int", { default: 0 })
   tokenVersion!: number;
+
+  // Soft delete. Users are referenced by FK from hold_request_v2 (and by id
+  // throughout historical rows), so they are deactivated, never deleted —
+  // hard deletes are what orphaned 60% of the v1 hold audit trail.
+  @Field()
+  @Column({ type: "tinyint", default: 1 })
+  is_active!: number;
 }

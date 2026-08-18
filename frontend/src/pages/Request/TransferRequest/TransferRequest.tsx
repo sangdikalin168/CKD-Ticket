@@ -72,8 +72,10 @@ const TransferRequest = () => {
             key: 'request_date',
             header: 'ថ្ងៃស្នើ',
             sortable: true,
-            // accessor feeds export/copy/print and sorting; the formatted string
-            // ('YYYY-MM-DD HH:mm') sorts chronologically and matches the cell.
+            // accessor feeds export/copy/print so the spreadsheet matches the
+            // cell. Sorting does NOT use it — the string carries a 12-hour clock
+            // ('09:05 AM' / '02:05 PM'), which string-compares out of order, so
+            // the comparator below sorts this column on the raw timestamp.
             accessor: (row) => datetime_format(row.request_date),
             render: (row) => datetime_format(row.request_date),
         },
@@ -99,6 +101,9 @@ const TransferRequest = () => {
             key: 'checker_name',
             header: 'អ្នកពិនិត្យ',
             sortable: true,
+            // Sort/export mirror the rendered status — the raw checker_name is
+            // NULL for exactly the Pending rows a sorter is trying to group.
+            accessor: (row) => row.checker_status,
             render: (row) => (
                 <>
                     {
@@ -140,6 +145,7 @@ const TransferRequest = () => {
             key: 'approver_name',
             header: 'អ្នកសម្រេច',
             sortable: true,
+            accessor: (row) => row.approver_status,
             render: (row) => (
                 <>
                     {
@@ -200,6 +206,13 @@ const TransferRequest = () => {
                                                 variant="outline"
                                                 size="icon"
                                                 onClick={() => {
+                                                    // A zero-day transfer (sender already expired) would mark the
+                                                    // request Done and print an invoice for a move that never
+                                                    // happens — refuse up front instead.
+                                                    if (SenderRemainingDays(row_data.sender_old_end) === 0) {
+                                                        Notifications("សមាជិកភាពអ្នកផ្ទេរផុតកំណត់ហើយ — គ្មានថ្ងៃនៅសល់សម្រាប់ផ្ទេរទេ", "error")
+                                                        return;
+                                                    }
                                                     setOpenPrint(true)
                                                     setRequestID(row_data.request_id)
 
@@ -374,8 +387,12 @@ const TransferRequest = () => {
         if (!sort.key) return filtered_requests;
         const col = columns.find((c) => c.key === sort.key);
         if (!col) return filtered_requests;
-        const valueOf = (row: TransferRequest) =>
-            col.accessor ? col.accessor(row) : row[sort.key as keyof TransferRequest];
+        const valueOf = (row: TransferRequest) => {
+            // The date accessor exists for export formatting; its 12-hour string
+            // does not compare chronologically, so sort on the real timestamp.
+            if (sort.key === 'request_date') return new Date(row.request_date).getTime();
+            return col.accessor ? col.accessor(row) : row[sort.key as keyof TransferRequest];
+        };
         return [...filtered_requests].sort((a, b) => {
             const va = valueOf(a);
             const vb = valueOf(b);
@@ -402,6 +419,9 @@ const TransferRequest = () => {
     const handlePrint = useReactToPrint({
         content: () => InvoiceRef.current,
         print: (printIframe: HTMLIFrameElement) => SendToElectronPrinter(printIframe),
+        // Without this, react-to-print's post-print cleanup is a no-op and the
+        // hidden print iframe lingers in document.body until the next print.
+        removeAfterPrint: true,
         // Without this, a print failure (e.g. running in a plain browser, where
         // window.electronAPI does not exist) was swallowed with only a console
         // line — the transfer was committed but no invoice appeared and no one
@@ -444,12 +464,20 @@ const TransferRequest = () => {
         try {
             const { sender_id, sender_old_end, sender_new_end, receiver_id, receiver_old_end, receiver_new_end } = invoice_detail
 
-            const stored_user = parseInt(localStorage.getItem("user_id") || "0", 10);
+            // processed_by === 0 is this page's "not yet processed" sentinel (and
+            // the column default server-side), so a fallback of 0 would commit the
+            // transfer yet leave the row looking unprocessed — re-offering the
+            // Process button. No valid user id -> refuse to attribute, abort.
+            const stored_user = parseInt(localStorage.getItem("user_id") || "", 10);
+            if (Number.isNaN(stored_user) || stored_user <= 0) {
+                Notifications("មិនស្គាល់អ្នកប្រើប្រាស់ សូមចូលប្រើម្ដងទៀត", "error")
+                return;
+            }
 
             const { data } = await createTransfer({
                 variables: {
                     requestId: request_id,
-                    processedBy: Number.isNaN(stored_user) ? 0 : stored_user,
+                    processedBy: stored_user,
                     receiverNewEnd: receiver_new_end,
                     receiverOldEnd: receiver_old_end,
                     receiverId: receiver_id,
@@ -691,7 +719,10 @@ const TransferRequest = () => {
             </Dialog>
 
             {/* Receiptionist Print Payment */}
-            <Dialog open={open_print} onOpenChange={setOpenPrint}>
+            {/* Closing (X/Esc/overlay included) is blocked while the mutation is
+                in flight: unmounting the dialog nulls InvoiceRef, and the print
+                triggered after commit would silently become a no-op. */}
+            <Dialog open={open_print} onOpenChange={(open) => { if (!transfer_saving) setOpenPrint(open); }}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>វិក្កយបត្រ</DialogTitle>
@@ -714,6 +745,7 @@ const TransferRequest = () => {
                         <Button
                             type="button"
                             variant="destructive"
+                            disabled={transfer_saving}
                             onClick={() => setOpenPrint(false)}
                         >
                             Close

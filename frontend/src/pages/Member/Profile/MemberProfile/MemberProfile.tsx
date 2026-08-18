@@ -1,10 +1,10 @@
 import { PencilSquareIcon, BackwardIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import { CachedImage } from "@/components/ui/CachedImage";
+import { useGetActiveHoldRequestV2Query } from "../../../../generated/holdV2";
 import {
   useGetCustomerDetailQuery,
   useGetFruitPaymentQuery,
-  useGetHoldRequestQuery,
   useGetMemberPaymentQuery,
   useGetTrainningPaymentQuery,
 } from "../../../../generated/graphql";
@@ -80,7 +80,7 @@ const MemberProfile = ({ ID }: any) => {
     fetchPolicy: "no-cache",
   });
 
-  const { data: request_data } = useGetHoldRequestQuery({
+  const { data: request_data, refetch: refetchHoldRequest } = useGetActiveHoldRequestV2Query({
     variables: { customerId: ID },
     fetchPolicy: "no-cache",
   });
@@ -150,24 +150,19 @@ const MemberProfile = ({ ID }: any) => {
     const currentDate = new Date();
     const end_date = new Date(date);
     if (end_date >= currentDate) {
-      if (request_data?.GetHoldRequest.length > 0) {
-        const end_hold = new Date(request_data?.GetHoldRequest[0].to_date);
-        if (end_hold >= currentDate && request_data?.GetHoldRequest[0].checker_status == "Approved" && request_data?.GetHoldRequest[0].process == "Done") {
-          Notifications("អតិថិជនកំពុងសុំច្បាប់", "info");
-        } else {
-          if (request_data?.GetHoldRequest[0].checker_status === "Approved" && request_data?.GetHoldRequest[0].process == "Pending") {
-            Notifications("ការសុំច្បាប់បានឯកភាពរួច! សូមចូលមើលតារាងស្នើសុំ", "info");
-            return;
-          }
-          if (request_data?.GetHoldRequest[0].checker_status === "Pending") {
-            Notifications("សំណើបានដាក់រួចហើយ សូមអោយថ្នាក់លើពិនិត្យ", "info");
-            return;
-          }
-          setOpenHold(true);
-        }
-      } else {
-        setOpenHold(true);
+      // One live request per customer is enforced by the database
+      // (uq_one_active); this is just the friendly message before the attempt.
+      const active = request_data?.GetActiveHoldRequestV2?.[0];
+      if (active) {
+        Notifications(
+          active.status === "APPROVED"
+            ? "ការសុំច្បាប់បានឯកភាពរួច! សូមចូលមើលតារាងស្នើសុំ"
+            : "សំណើបានដាក់រួចហើយ សូមអោយថ្នាក់លើពិនិត្យ",
+          "info"
+        );
+        return;
       }
+      setOpenHold(true);
     } else {
       Notifications("សមាជិកផុតសុពលភាពហើយ", "info");
     }
@@ -475,6 +470,7 @@ const MemberProfile = ({ ID }: any) => {
       />
 
       <HoldForm
+        onSubmitted={() => refetchHoldRequest()}
         open_hold={open_hold}
         setOpenHold={setOpenHold}
         customer_id={ID}

@@ -1,0 +1,26 @@
+query HoldRequestsV2 {
+  HoldRequestsV2 {
+    request_id
+    customer_id
+    customer_name
+    phone
+    requested_by
+    requested_by_name
+    requested_at
+    reason
+    from_date
+    to_date
+    status
+    decided_by
+    decided_by_name
+    decided_at
+    decision_note
+    processed_by
+    processed_by_name
+    processed_at
+    old_end
+    new_end
+    fee
+    legacy
+  }
+}

@@ -1,0 +1,8 @@
+mutation ProcessHoldV2($requestId: Float!, $fee: Float) {
+  ProcessHoldV2(request_id: $requestId, fee: $fee) {
+    code
+    success
+    message
+    new_end
+  }
+}

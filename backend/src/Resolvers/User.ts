@@ -103,7 +103,9 @@ export class UserResolver {
       where: [{ username: username }, { phone: username }],
     });
 
-    if (!existingUser) {
+    if (!existingUser || !existingUser.is_active) {
+      // Deactivated accounts (soft-deleted staff) get the same answer as
+      // unknown ones — no probing which usernames still exist.
       return {
         code: 400,
         success: false,

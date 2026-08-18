@@ -1,5 +1,6 @@
 import LoadingPage from "../../../components/LoadingPage/LoadingPage"
-import { useApproveHoldRequestMutation, useCheckHoldRequestMutation, useCreateHoldMutation, useGetCustomerDetailLazyQuery, useGetMemberPaymentLazyQuery, useHoldRequestsQuery } from "../../../generated/graphql";
+import { useGetCustomerDetailLazyQuery, useGetMemberPaymentLazyQuery } from "../../../generated/graphql";
+import { useDecideHoldRequestV2Mutation, useHoldRequestsV2Query, useProcessHoldV2Mutation } from "../../../generated/holdV2";
 import { CheckCircleIcon, PrinterIcon, XCircleIcon } from "@heroicons/react/20/solid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Notifications from "../../../components/Notification";
@@ -22,31 +23,28 @@ import { Card, CardContent } from "@/components/ui/Card";
 
 
 type HoldRequestType = {
-    display_name: string
     request_id: number
-    request_date: string
-    reason: string
-    from_date: string
-    to_date: string
-    old_end: string
-    new_end: string
     customer_id: number
     customer_name: string
     phone: string
-    checker_name: string
-    checked_by: number
-    checked_date: string
-    checker_status: string
-    checker_comment: string
-    approved_name: string
-    approved_by: number
-    approved_date: string
-    approver_comment: string
-    approver_status: string
-    process: string
-    processed_by: number
-    processed_name: string
-
+    requested_by: number
+    requested_by_name?: string | null
+    requested_at: string
+    reason: string
+    from_date: string
+    to_date: string
+    status: string
+    decided_by?: number | null
+    decided_by_name?: string | null
+    decided_at?: string | null
+    decision_note?: string | null
+    processed_by?: number | null
+    processed_by_name?: string | null
+    processed_at?: string | null
+    old_end?: string | null
+    new_end?: string | null
+    fee: string
+    legacy: number
 }
 
 const datetime_format = (date_time: string | Date) => {
@@ -60,27 +58,33 @@ const date_format = (date_time: string) => {
 };
 
 
+const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
+    PENDING:   { text: "មិនទាន់ពិនិត្យ", cls: "bg-yellow-500/10 text-yellow-600" },
+    APPROVED:  { text: "ឯកភាព",        cls: "bg-emerald-500/10 text-emerald-600" },
+    REJECTED:  { text: "បដិសេធ",        cls: "bg-rose-500/10 text-red-500" },
+    PROCESSED: { text: "ដំណើរការរួច",   cls: "bg-sky-500/10 text-sky-600" },
+    CANCELLED: { text: "បានលុប",        cls: "bg-gray-500/10 text-gray-500" },
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+    const meta = STATUS_LABEL[status];
+    // Unknown values are shown verbatim rather than silently bucketed —
+    // v1's catch-all rendered every unrecognised status as "pending".
+    return <Badge variant="outline" className={meta?.cls ?? ""}>{meta?.text ?? status}</Badge>;
+};
+
 const HoldRequest = () => {
 
-    const { data, loading, refetch } = useHoldRequestsQuery({ fetchPolicy: "no-cache" })
+    const { data, loading, refetch } = useHoldRequestsV2Query({ fetchPolicy: "no-cache" })
 
-    const [checkerApprove] = useCheckHoldRequestMutation();
-    const [approveHold] = useApproveHoldRequestMutation();
-
-
-    const CheckApproverRole = async () => {
-        //TODO: Check Permission
-        const userRole = localStorage.getItem("role");
-        if (userRole === "Admin") {
-            setOpenApprove(true)
-            return;
-        }
-        Notifications("អ្នកមិនមានសិទ្ធិទេ", "error")
-    }
+    // One decision mutation replaces check+approve. Permission is checked by
+    // the server (DecideHoldRequestV2 verifies the role and refuses
+    // self-decision); the client no longer gates on localStorage.
+    const [decideRequest, { loading: deciding }] = useDecideHoldRequestV2Mutation();
+    const [processHold, { loading: processing }] = useProcessHoldV2Mutation();
 
     const [getCustomer, { data: member }] = useGetCustomerDetailLazyQuery({ fetchPolicy: "no-cache" });
     const [getCustomerPayment, { data: payment }] = useGetMemberPaymentLazyQuery({ fetchPolicy: "no-cache" });
-    const [createHold] = useCreateHoldMutation()
 
     const [open, setOpen] = useState(false)
     const cancelButtonRef = useRef(null)
@@ -88,12 +92,10 @@ const HoldRequest = () => {
     const [description, setDescription] = useState("")
     const [request_info, setRequestInfo] = useState({
         request_id: 0,
-        customer_id: 0, customer_name: "Init Name", phone: "", end_membership_date: "", reason: "",
+        customer_id: 0, customer_name: "", phone: "", end_membership_date: "", reason: "",
         from_date: "",
         to_date: "",
-        new_end: "",
-        checker_status: ""
-
+        status: ""
     })
 
     const [open_approve, setOpenApprove] = useState(false)
@@ -112,21 +114,23 @@ const HoldRequest = () => {
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     async function ProcessHold(): Promise<void> {
-        const { data: { CreateHold: res } } = await createHold({
-            variables: {
-                newEnd: invoice_detail.new_end,
-                customerId: request_info.customer_id,
-                requestId: request_info.request_id,
-                processedBy: parseInt(localStorage.getItem("user_id") || "99")
-            }
-        })
+        if (processing) return;   // double-click guard; the server CAS is the real one
+        // Only request_id crosses the wire. customer_id and new_end are
+        // derived server-side from the request row and the customer's CURRENT
+        // end date, so a renewal made while this sat in the queue survives.
+        const res = await processHold({ variables: { requestId: request_info.request_id } });
+        const out = res.data?.ProcessHoldV2;
 
-        if (res.success) {
-            setInvoiceDetail({ ...invoice_detail, invoice_id: res.hold_id })
+        if (out?.success) {
+            // Print the date the server actually applied, not a prediction.
+            setInvoiceDetail({
+                ...invoice_detail,
+                invoice_id: request_info.request_id,
+                new_end: date_format(out.new_end ?? ""),
+            })
             return;
         }
-
-        Notifications("បរាជ័យ", "error")
+        Notifications(out?.message ?? "បរាជ័យ", "error")
     }
 
     const handlePrint = useReactToPrint({
@@ -166,7 +170,7 @@ const HoldRequest = () => {
     const [pageSize, setPageSize] = useState(20)
 
     const requests = useMemo(
-        () => (data?.HoldRequests ?? []) as HoldRequestType[],
+        () => (data?.HoldRequestsV2 ?? []) as HoldRequestType[],
         [data]
     );
 
@@ -191,19 +195,18 @@ const HoldRequest = () => {
             sortable: true,
             render: (row) => <div className="flex items-center"
                 onClick={() => {
-                    CheckApproverRole()
                     setRequestInfo({
                         request_id: row.request_id,
                         customer_id: row.customer_id,
                         customer_name: row.customer_name,
                         phone: row.phone,
-                        end_membership_date: row.old_end,
+                        end_membership_date: row.old_end ?? "",
                         reason: row.reason,
                         from_date: row.from_date,
                         to_date: row.to_date,
-                        new_end: row.new_end,
-                        checker_status: row.checker_status
+                        status: row.status
                     })
+                    setOpenApprove(true)
                 }}
             >
                 <a href="#" className="text-gray-600 text-sm font-medium hover:text-blue-500 truncate">{row.customer_name}</a>
@@ -215,78 +218,49 @@ const HoldRequest = () => {
             sortable: true,
         },
         {
-            key: "checker_status",
+            key: "status",
             header: "ស្ថានភាព",
             sortable: true,
-            render: (row) => <>
-                {
-                    row.checker_status === "Approved" ?
-                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600">Approved</Badge>
-                        :
-                        <>
-                            {
-                                row.checker_status === "Rejected" ?
-                                    <Badge variant="destructive" className="bg-rose-500/10 text-red-500">Rejected</Badge>
-                                    :
-                                    <Badge variant="outline" className="text-yellow-600">មានទាន់ពិនិត្យ</Badge>
-                            }
-
-                        </>
-
-                }
-            </>,
+            render: (row) => <StatusBadge status={row.status} />,
         },
         {
             key: "process",
             header: "Process",
             sortable: false,
-            render: (row) => <>
-                {
-                    row.checker_status === "Approved" ?
-                        <>
-                            {
-                                row.process === "Pending" ?
-                                    <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none" onClick={() => {
-                                        setOpenPrint(true)
-                                        setRequestInfo({ ...request_info, customer_id: row.customer_id, request_id: row.request_id })
-                                        setInvoiceDetail({
-                                            invoice_id: 0,
-                                            payment_date: datetime_format(new Date()),
-                                            cashier: localStorage.getItem("display_name"),
-                                            customer_name: row.customer_name,
-                                            phone: row.phone,
-                                            start_date: date_format(row.from_date),
-                                            end_date: date_format(row.to_date),
-                                            old_end: date_format(row.old_end),
-                                            new_end: date_format(row.new_end)
-                                        })
-                                    }}
-                                    >
-                                        <PrinterIcon
-                                            className="h-4 w-4 text-gray-500"
-                                            aria-hidden="true"
-                                        />
-                                    </span>
-                                    :
-                                    <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none">
-                                        <CheckCircleIcon
-                                            className="h-4 w-4 text-emerald-500"
-                                            aria-hidden="true"
-                                        />
-                                    </span>
-
-                            }
-
-                        </>
-                        :
-                        <span className="inline-block p-1 rounded bg-emerald-500/10 text-yellow-500 font-medium text-[12px] leading-none">
-                            <XCircleIcon
-                                className="h-4 w-4 text-red-500"
-                                aria-hidden="true"
-                            />
-                        </span>
-                }
-            </>,
+            // Only an APPROVED request can be processed — same condition the
+            // server enforces, so the button never offers an action that fails.
+            render: (row) => row.status === "APPROVED" ? (
+                <button
+                    type="button"
+                    title="ដំណើរការ"
+                    className="inline-block p-1 rounded bg-emerald-500/10"
+                    onClick={() => {
+                        setOpenPrint(true)
+                        setRequestInfo({ ...request_info, customer_id: row.customer_id, request_id: row.request_id })
+                        setInvoiceDetail({
+                            invoice_id: 0,
+                            payment_date: datetime_format(new Date()),
+                            cashier: localStorage.getItem("display_name") ?? "",
+                            customer_name: row.customer_name,
+                            phone: row.phone,
+                            start_date: date_format(row.from_date),
+                            end_date: date_format(row.to_date),
+                            old_end: date_format(row.old_end ?? ""),
+                            new_end: "",   // filled from the server's answer
+                        })
+                    }}
+                >
+                    <PrinterIcon className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                </button>
+            ) : row.status === "PROCESSED" ? (
+                <span className="inline-block p-1 rounded bg-emerald-500/10">
+                    <CheckCircleIcon className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+                </span>
+            ) : (
+                <span className="inline-block p-1 rounded bg-rose-500/10">
+                    <XCircleIcon className="h-4 w-4 text-red-500" aria-hidden="true" />
+                </span>
+            ),
         },
     ];
 
@@ -533,13 +507,8 @@ const HoldRequest = () => {
                         </div>
 
                         <div className="w-full space-y-1">
-                            <Label>ថ្ងៃផុតសពលភាពថ្មី</Label>
-                            <Input
-                                type="text"
-                                readOnly
-                                disabled
-                                value={date_format(request_info.new_end)}
-                            />
+                            <Label>មូលហេតុ</Label>
+                            <Input type="text" readOnly disabled value={request_info.reason} />
                         </div>
 
                         <div className="w-full space-y-1">
@@ -554,7 +523,7 @@ const HoldRequest = () => {
                     </div>
                     <DialogFooter className="flex-row-reverse gap-2">
                         {
-                            request_info.checker_status !== "Pending" ?
+                            request_info.status !== "PENDING" ?
                                 <Button
                                     type="button"
                                     variant="default"
@@ -570,26 +539,24 @@ const HoldRequest = () => {
                                     <Button
                                         type="button"
                                         className="bg-green-600 hover:bg-green-700"
+                                        disabled={deciding}
                                         onClick={async () => {
-                                            //TODO: Update To Checked
-                                            const res = await checkerApprove({
+                                            const res = await decideRequest({
                                                 variables: {
-                                                    checkedBy: parseInt(localStorage.getItem("user_id") || "0"),
                                                     requestId: request_info.request_id,
-                                                    checkerComment: description,
-                                                    checkerStatus: "Approved"
+                                                    approve: true,
+                                                    note: description,
                                                 }
                                             })
-
-                                            if (res.data?.CheckHoldRequest.success) {
-                                                Notifications("Approved", "success")
+                                            const out = res.data?.DecideHoldRequestV2;
+                                            if (out?.success) {
+                                                Notifications(out.message ?? "Approved", "success")
                                                 setOpenApprove(false);
                                                 refetch();
                                                 return;
                                             }
-
-                                            Notifications("Failed", "error")
-
+                                            // Server explains: no permission, own request, already decided.
+                                            Notifications(out?.message ?? "Failed", "error")
                                         }}
                                     >
                                         Approve
@@ -597,26 +564,23 @@ const HoldRequest = () => {
                                     <Button
                                         type="button"
                                         variant="destructive"
+                                        disabled={deciding}
                                         onClick={async () => {
-                                            //TODO: Update To Checked
-                                            const res = await checkerApprove({
+                                            const res = await decideRequest({
                                                 variables: {
-                                                    checkedBy: parseInt(localStorage.getItem("user_id") || "0"),
                                                     requestId: request_info.request_id,
-                                                    checkerComment: description,
-                                                    checkerStatus: "Rejected"
+                                                    approve: false,
+                                                    note: description,
                                                 }
                                             })
-
-                                            if (res.data?.CheckHoldRequest.success) {
+                                            const out = res.data?.DecideHoldRequestV2;
+                                            if (out?.success) {
                                                 setOpenApprove(false);
                                                 refetch();
-                                                Notifications("Rejected", "success")
+                                                Notifications(out.message ?? "Rejected", "success")
                                                 return;
                                             }
-
-                                            Notifications("Failed", "error")
-
+                                            Notifications(out?.message ?? "Failed", "error")
                                         }}
                                     >
                                         Reject
@@ -684,6 +648,7 @@ const HoldRequest = () => {
                         <Button
                             type="button"
                             className="bg-green-600 hover:bg-green-700"
+                            disabled={processing}
                             onClick={() => ProcessHold()}
                         >
                             យល់ព្រម
