@@ -17,7 +17,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { HiOutlineTicket, HiOutlineUserCircle } from "react-icons/hi";
+import { HiOutlinePrinter, HiOutlineTicket, HiOutlineUserCircle } from "react-icons/hi";
 import { FaUserCog } from "react-icons/fa";
 import { MdOutlineDashboard } from "react-icons/md";
 import { BsChevronDown } from "react-icons/bs";
@@ -105,6 +105,13 @@ const MENU: MenuItem[] = [
       { nameKey: "menu.customerReport", path: "/customer_report" },
       { nameKey: "menu.customerTypeReport", path: "/customer_type_report" },
     ],
+  },
+  {
+    key: "printer",
+    nameKey: "menu.printer",
+    path: "/printers",
+    access: ["Sale", "Admin"],
+    icon: <HiOutlinePrinter className={ICON} />,
   },
   {
     key: "user",

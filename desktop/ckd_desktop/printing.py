@@ -28,9 +28,15 @@ import os
 import shutil
 import subprocess
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 log = logging.getLogger("ckd-desktop.printing")
+
+# Where a SumatraPDF fetched from the Ticket server is kept (per Windows user).
+TOOLS_DIR = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()) / "CKD-Ticket" / "tools"
+# Served by the backend's /desktop static mount (shared\desktop\tools\SumatraPDF.exe).
+SUMATRA_URL_PATH = "/desktop/tools/SumatraPDF.exe"
 
 
 class PrintError(RuntimeError):
@@ -47,6 +53,7 @@ _CHROME_CANDIDATES = (
 _SUMATRA_CANDIDATES = (
     r"C:\Program Files\SumatraPDF\SumatraPDF.exe",
     r"C:\Program Files (x86)\SumatraPDF\SumatraPDF.exe",
+    str(TOOLS_DIR / "SumatraPDF.exe"),
 )
 
 
@@ -134,20 +141,112 @@ def spool_pdf(pdf_path: Path, copies: int = 1, printer: "str | None" = None) -> 
     return "shell-print-verb"
 
 
-def print_html(html: str, copies: int = 1, printer: "str | None" = None) -> dict:
+# ─── printer selection & SumatraPDF provisioning ─────────────────────────────
+
+def list_printers() -> "list[str]":
+    """Every printer Windows knows on this PC (local + network connections)."""
+    import win32print  # type: ignore
+
+    flags = win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS
+    return sorted({p[2] for p in win32print.EnumPrinters(flags)})
+
+
+def default_printer() -> "str | None":
+    try:
+        import win32print  # type: ignore
+
+        return win32print.GetDefaultPrinter() or None
+    except Exception:
+        return None
+
+
+def resolve_printer(explicit: "str | None" = None) -> "str | None":
+    """Explicit name > config.json "printer" > Windows default printer."""
+    from . import settings
+
+    return explicit or settings.get("printer") or default_printer()
+
+
+def ensure_sumatra(base_url: "str | None") -> "str | None":
+    """SumatraPDF if installed; otherwise fetch the copy the Ticket server
+    publishes at /desktop/tools/SumatraPDF.exe into TOOLS_DIR. Returns the
+    path, or None when neither is available (the shell-print fallback is used)."""
+    found = find_sumatra()
+    if found:
+        return found
+    if not base_url or not base_url.startswith("http"):
+        return None
+    import urllib.request
+
+    url = base_url.rstrip("/") + SUMATRA_URL_PATH
+    local = TOOLS_DIR / "SumatraPDF.exe"
+    tmp = local.with_suffix(".part")
+    try:
+        TOOLS_DIR.mkdir(parents=True, exist_ok=True)
+        with urllib.request.urlopen(url, timeout=60) as resp, tmp.open("wb") as fh:
+            shutil.copyfileobj(resp, fh)
+        if tmp.stat().st_size < 1_000_000:
+            raise PrintError("downloaded SumatraPDF is too small to be real")
+        tmp.replace(local)
+        log.info("SumatraPDF fetched from %s", url)
+        return str(local)
+    except Exception as exc:
+        log.warning("could not fetch SumatraPDF from %s: %s", url, exc)
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        return None
+
+
+TEST_SLIP = """<!doctype html><html><head><meta charset="utf-8"><style>
+@page {{ size: 80mm auto; margin: 4mm; }}
+body {{ font-family: 'Khmer OS Battambang', 'Khmer UI', sans-serif; font-size: 12pt; width: 72mm; margin: 0; }}
+h2 {{ text-align: center; margin: 0 0 6px; }}
+p {{ margin: 2px 0; }}
+</style></head><body>
+<h2>CKD Ticket</h2>
+<p>Printer test / សាកល្បងបោះពុម្ព</p>
+<p>{when}</p>
+<p>Printer: {printer}</p>
+<p style="text-align:center">------------------------</p>
+</body></html>"""
+
+
+def print_test(printer: "str | None" = None, base_url: "str | None" = None) -> dict:
+    """A short slip so staff can see which printer they picked actually prints."""
+    target = resolve_printer(printer)
+    if not target:
+        raise PrintError("No printer selected. Choose one under Printer in the menu.")
+    html = TEST_SLIP.format(when=datetime.now().strftime("%Y-%m-%d %H:%M"), printer=target)
+    return print_html(html, copies=1, printer=target, base_url=base_url)
+
+
+def print_html(
+    html: str,
+    copies: int = 1,
+    printer: "str | None" = None,
+    base_url: "str | None" = None,
+) -> dict:
     if not html or not html.strip():
         raise PrintError("nothing to print (empty document)")
+    target = resolve_printer(printer)
+    if not target:
+        raise PrintError(
+            "No printer selected and Windows has no default printer. "
+            "Choose one under Printer in the menu."
+        )
+    ensure_sumatra(base_url)
 
     tmpdir = Path(tempfile.mkdtemp(prefix="ckd-print-"))
     pdf_path = tmpdir / "receipt.pdf"
     try:
         html_to_pdf(html, pdf_path)
-        route = spool_pdf(pdf_path, copies=copies, printer=printer)
-        return {"ok": True, "route": route, "copies": copies}
+        route = spool_pdf(pdf_path, copies=copies, printer=target)
+        return {"ok": True, "route": route, "copies": copies, "printer": target}
     finally:
         if os.environ.get("CKD_KEEP_PRINT_TEMP") != "1":
             shutil.rmtree(tmpdir, ignore_errors=True)
-
 
 def render_pdf_only(html: str) -> dict:
     """previewComponent's replacement: render, don't spool, hand back a path."""

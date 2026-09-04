@@ -50,6 +50,12 @@
     }
     // The old preload called callback(response) unconditionally.
     if (typeof callback === "function") callback(result);
+    // The call sites only console.log the response, so a failed print used to
+    // be invisible at the counter. Say so.
+    if (!result || !result.ok) {
+      window.alert("Print failed: " + ((result && result.error) || "unknown error") +
+        "\n\nCheck the printer under Printer in the menu.");
+    }
     return result;
   }
 
@@ -75,6 +81,12 @@
       if (typeof callback === "function") callback(result);
       return result;
     },
+
+    // Printer page (pages/Settings/Printers.tsx).
+    listPrinters: () => api().list_printers(),
+    getPrintSettings: () => api().get_print_settings(),
+    setPrintSettings: (printer) => api().set_print_settings(printer),
+    printTest: (printer) => api().print_test(printer),
 
     fpBegin: (customerId) => api().fp_begin(customerId),
     fpCancel: () => api().fp_cancel(),

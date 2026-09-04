@@ -47,11 +47,10 @@ nssm\nssm.exe              NSSM 2.24 win64 (sha256 f689ee9a…)
 docs\DEPLOY-kiosk-gateway.md
 ```
 
-`frontend\dist` is deliberately **not** in the bundle: the server already has
-the identical build (`assets/index-66f3ebed.js`, 19 Aug). Runtime dependencies
-are unchanged, so **no `npm ci` is needed** (verified: every module `dist`
-requires loads from the server's existing `node_modules`). Skipping it matters
-on this 3.9 GB box, which had ~900 MB free.
+`frontend\dist` is **not** in the bundle; it ships separately (see 1b).
+Runtime dependencies are unchanged, so **no `npm ci` is needed** (verified:
+every module `dist` requires loads from the server's existing `node_modules`).
+Skipping it matters on this 3.9 GB box, which had ~900 MB free.
 
 Never overwrite: `backend\prod.env`, `D:\CKD-System\shared\uploads`.
 
@@ -70,6 +69,32 @@ copy /y D:\CKD-System\backend\package-lock.json D:\CKD-System-backups\deploy-<da
 powershell -NoProfile -Command "Expand-Archive -Force D:\CKD-System-deploy.zip D:\CKD-System"
 dir D:\CKD-System\backend\dist\index.js D:\CKD-System\nssm\nssm.exe
 ```
+
+### 1b. Frontend (the SPA the API serves and the desktop app loads)
+
+The API serves `D:\CKD-System\frontend\dist` as the web UI, and the desktop
+app (`CKD-Ticket.exe`) loads the same pages from `http://localhost:4000`, so
+shipping a new `frontend\dist` updates both at once and needs no restart.
+Build on the dev machine (`npm run build` in `frontend`, ~3.8 MB), stage it,
+then mirror it over the live folder (robocopy never leaves the folder missing
+mid-swap):
+
+```powershell
+# from the dev machine, in CKD-Ticket
+scp -r frontend/dist root@100.94.217.72:D:/CKD-System/frontend/dist.new
+ssh root@100.94.217.72 "robocopy D:\CKD-System\frontend\dist.new D:\CKD-System\frontend\dist /mir /r:2 /w:2 /np /nfl /ndl & rmdir /s /q D:\CKD-System\frontend\dist.new & curl -s http://localhost:4000/ | findstr index-"
+```
+
+The last line must print the `assets/index-<hash>.js` of the build you just
+made (robocopy exit codes 0–7 are success). Verify from the server itself: the
+firewall blocks :4000 over Tailscale.
+
+Deployed this way on 2026-09-04: `index-a751e100.js`, which adds the
+**Printer** menu page (Sale + Admin). On the till, open Printer once, pick the
+receipt printer (`RP80` on the current till, which has no Windows default
+printer) and use *Test print*. The choice is saved in `config.json` next to
+`CKD-Ticket.exe`, and the desktop app fetches SumatraPDF from
+`/desktop/tools/SumatraPDF.exe` on the server the first time it prints.
 
 ## 2. Stop the console-launched API
 

@@ -18,6 +18,7 @@ import IncomeReport from "./pages/Report/IncomeReport";
 import { MemberPriceTable } from "./pages/PriceTable/MemberPriceTable";
 import { CustomerReport } from "./pages/Report/CustomerReport";
 import CustomerTypeReport from "./pages/Report/CustomerTypeReport";
+import Printers from "./pages/Settings/Printers";
 
 function NoMatch() {
   return (
@@ -179,6 +180,7 @@ const router = createBrowserRouter([
       { path: "/income_report", Component: IncomeReport },
       { path: "/customer_report", Component: CustomerReport },
       { path: "/customer_type_report", Component: CustomerTypeReport },
+      { path: "/printers", Component: Printers },
     ],
   },
 ]);

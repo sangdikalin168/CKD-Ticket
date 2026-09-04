@@ -41,6 +41,12 @@ def _base_dir() -> Path:
     return Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
 
 
+def _storage_dir() -> Path:
+    """Persistent WebView2 profile (cookies, localStorage) for this Windows user."""
+    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    return Path(base) / "CKD-Ticket" / "webview"
+
+
 def _config() -> dict:
     """config.json sits next to the exe so a counter PC can be repointed
     without a rebuild. Missing or malformed file is not fatal.
@@ -136,6 +142,7 @@ def main() -> None:
         updater.start_background_check(url)
 
     api = JsApi()
+    api.base_url = url if url.startswith("http") else ""
     window = webview.create_window(
         title=cfg.get("title", "CKD Ticket"),
         url=url,
@@ -153,7 +160,17 @@ def main() -> None:
         fullscreen=bool(cfg.get("fullscreen", False)),
         text_select=False,
     )
-    webview.start(api.attach, window, debug=dev)
+    # private_mode=False with a fixed storage folder: pywebview defaults to a
+    # throwaway (in-private) WebView2 profile, which wiped localStorage and the
+    # refresh cookie on every launch - so every start of the app was a logout.
+    # The Electron shell kept its profile; so does this now.
+    webview.start(
+        api.attach,
+        window,
+        debug=dev,
+        private_mode=False,
+        storage_path=str(_storage_dir()),
+    )
     api.detach()
 
     # Last thing before the process ends: if a verified newer exe is staged,

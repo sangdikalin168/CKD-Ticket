@@ -165,7 +165,8 @@
     "customerTypeReport": "Member Types",
     "user": "Users",
     "userList": "Users",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "printer": "Printer"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -337,6 +338,25 @@
       "downloadPdf": "Download PDF",
       "fallbackTitle": "Fallback preview for {{fileName}}",
       "previewUnavailable": "Browser preview is unavailable. Please download the PDF instead."
+    }
+  },
+  "settings": {
+    "printers": {
+      "title": "Receipt printer",
+      "subtitle": "Choose which printer this counter's CKD Ticket app prints receipts to. Saved on this PC only.",
+      "refresh": "Refresh",
+      "loadError": "Could not list printers",
+      "default": "Windows default printer",
+      "selected": "In use",
+      "select": "Use this printer",
+      "selectedToast": "Receipts will print to {{name}}",
+      "selectError": "Could not save the printer",
+      "testPrint": "Test print",
+      "testSent": "Test slip sent to {{name}}",
+      "testError": "Test print failed",
+      "none": "No printers found on this PC",
+      "connecting": "Connecting to the desktop app…",
+      "desktopOnly": "Printer settings are only available in the CKD Ticket desktop app on the counter PC."
     }
   }
 }

@@ -18,7 +18,7 @@ import sys
 import threading
 from pathlib import Path
 
-from . import printing, updater
+from . import printing, settings, updater
 
 log = logging.getLogger("ckd-desktop.api")
 
@@ -38,10 +38,18 @@ class JsApi:
         self._window = None
         self._fp: "subprocess.Popen | None" = None
         self._pump: "threading.Thread | None" = None
+        # Origin the SPA is served from; set by main.py. printing.py fetches
+        # SumatraPDF from there when it is not installed on this PC.
+        self.base_url = ""
 
     # ── lifecycle (called by main.py, not exposed to JS) ──────────────────
     def attach(self, window) -> None:
         self._window = window
+        # On every document load, not just this first one: a reload or a full
+        # navigation would otherwise drop the shim and the SPA would decide it
+        # is running in a plain browser. bridge.js is idempotent, so the direct
+        # call below and the event firing for the same load do no harm.
+        window.events.loaded += self._inject_bridge
         self._inject_bridge()
 
     def detach(self) -> None:
@@ -51,9 +59,9 @@ class JsApi:
         """Install the electronAPI shim.
 
         pywebview's own window.pywebview.api is not ready the instant the DOM
-        is, so the shim is injected here (after start) and also re-armed on
-        pywebviewready — a SPA route change never reloads the document, but a
-        manual refresh does.
+        is, so the shim is injected here (evaluate_js waits for the document)
+        and again from the window's `loaded` event for later document loads.
+        A SPA route change never reloads the document, but a refresh does.
         """
         try:
             js = (_HERE / "bridge.js").read_text(encoding="utf-8")
@@ -64,7 +72,7 @@ class JsApi:
     # ── JS API: printing ──────────────────────────────────────────────────
     def print_html(self, html: str, copies: int = 1) -> dict:
         try:
-            return printing.print_html(html, copies=int(copies or 1))
+            return printing.print_html(html, copies=int(copies or 1), base_url=self.base_url)
         except Exception as exc:
             log.exception("print failed")
             return _err(str(exc))
@@ -74,6 +82,40 @@ class JsApi:
             return printing.render_pdf_only(html)
         except Exception as exc:
             log.exception("preview failed")
+            return _err(str(exc))
+
+    # ── JS API: printer settings (Printer page in the SPA) ────────────────
+    def list_printers(self) -> dict:
+        try:
+            return _ok(
+                printers=printing.list_printers(),
+                default=printing.default_printer(),
+                configured=settings.get("printer"),
+            )
+        except Exception as exc:
+            log.exception("list printers failed")
+            return _err(str(exc))
+
+    def get_print_settings(self) -> dict:
+        return _ok(
+            printer=settings.get("printer"),
+            default=printing.default_printer(),
+            sumatra=printing.find_sumatra(),
+        )
+
+    def set_print_settings(self, printer: "str | None" = None) -> dict:
+        try:
+            settings.save(printer=(printer or None))
+            return _ok(printer=settings.get("printer"))
+        except Exception as exc:
+            log.exception("saving print settings failed")
+            return _err(str(exc))
+
+    def print_test(self, printer: "str | None" = None) -> dict:
+        try:
+            return printing.print_test(printer, base_url=self.base_url)
+        except Exception as exc:
+            log.exception("test print failed")
             return _err(str(exc))
 
     # ── JS API: version / update ──────────────────────────────────────────
