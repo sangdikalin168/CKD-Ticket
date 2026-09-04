@@ -27,10 +27,38 @@ import os
 import sys
 from pathlib import Path
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
+LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+
+def _local_app_dir() -> Path:
+    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    return Path(base) / "CKD-Ticket"
+
+
+def _setup_logging() -> "Path | None":
+    r"""stderr as before, plus a small rolling log file.
+
+    A --windowed PyInstaller build has no console, so until now every message
+    (update checks, print failures, bridge injection) vanished. The file lets
+    a till be diagnosed over SSH: %LOCALAPPDATA%\CKD-Ticket\logs\desktop.log.
+    """
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    try:
+        from logging.handlers import RotatingFileHandler
+
+        log_dir = _local_app_dir() / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        path = log_dir / "desktop.log"
+        handler = RotatingFileHandler(path, maxBytes=1_000_000, backupCount=3, encoding="utf-8")
+        handler.setFormatter(logging.Formatter(LOG_FORMAT))
+        logging.getLogger().addHandler(handler)
+        return path
+    except Exception:
+        logging.getLogger("ckd-desktop").exception("file logging unavailable")
+        return None
+
+
+LOG_PATH = _setup_logging()
 log = logging.getLogger("ckd-desktop")
 
 DEFAULT_URL = "http://localhost:4000"
@@ -43,8 +71,7 @@ def _base_dir() -> Path:
 
 def _storage_dir() -> Path:
     """Persistent WebView2 profile (cookies, localStorage) for this Windows user."""
-    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
-    return Path(base) / "CKD-Ticket" / "webview"
+    return _local_app_dir() / "webview"
 
 
 def _config() -> dict:
@@ -132,6 +159,7 @@ def main() -> None:
     dev = os.environ.get("CKD_DEV") == "1"
 
     log.info("CKD Ticket %s — loading %s", __version__, url)
+    log.info("exe=%s storage=%s log=%s", sys.executable, _storage_dir(), LOG_PATH)
     _allow_camera_on_plain_http(url)
 
     # Update check runs in the background against the same server the UI comes

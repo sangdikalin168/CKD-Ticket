@@ -42,8 +42,15 @@ const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(defaultisLoading);
 
   const checkAuth = useCallback(async () => {
-    const isAuth = JWTManager.isAuth();
-    if (isAuth) setIsAuthenticated(true);
+    if (JWTManager.isAuth()) {
+      setIsAuthenticated(true);
+      return;
+    }
+    // No valid access token: first launch of the day, or the 12 h token has
+    // expired. The refresh cookie set at login can mint a new one, so the
+    // counter does not log in again after every restart. Log Out invalidates
+    // that cookie server-side, so this never revives a session the user ended.
+    if (await JWTManager.refreshAccessToken()) setIsAuthenticated(true);
   }, []);
 
   const logoutClient = () => {

@@ -51,9 +51,43 @@ class JsApi:
         # call below and the event firing for the same load do no harm.
         window.events.loaded += self._inject_bridge
         self._inject_bridge()
+        # Belt and braces: pywebview does not report every way a document can
+        # be replaced (an <a href> in the SPA, F5, location.reload()). A cheap
+        # probe every few seconds catches whatever the loaded event missed.
+        self._watchdog_stop = threading.Event()
+        threading.Thread(
+            target=self._bridge_watchdog, name="bridge-watchdog", daemon=True
+        ).start()
 
     def detach(self) -> None:
+        stop = getattr(self, "_watchdog_stop", None)
+        if stop is not None:
+            stop.set()
         self._stop_fp()
+
+    _BRIDGE_PROBE = "!!(window.electronAPI && window.electronAPI.__ckdPywebview)"
+
+    def _bridge_present(self) -> bool:
+        try:
+            return bool(self._window.evaluate_js(self._BRIDGE_PROBE))
+        except Exception as exc:
+            log.debug("bridge probe failed: %s", exc)
+            return False
+
+    def _bridge_watchdog(self) -> None:
+        lost = False
+        while not self._watchdog_stop.wait(3.0):
+            if self._window is None:
+                continue
+            if self._bridge_present():
+                lost = False
+                continue
+            if self._watchdog_stop.is_set():
+                break
+            if not lost:
+                log.warning("electronAPI bridge missing from the page — re-injecting")
+                lost = True
+            self._inject_bridge()
 
     def _inject_bridge(self) -> None:
         """Install the electronAPI shim.
@@ -66,6 +100,11 @@ class JsApi:
         try:
             js = (_HERE / "bridge.js").read_text(encoding="utf-8")
             self._window.evaluate_js(js)
+            try:
+                url = self._window.get_current_url()
+            except Exception:
+                url = "?"
+            log.info("electronAPI bridge injected (present=%s) at %s", self._bridge_present(), url)
         except Exception:
             log.exception("failed to inject the electronAPI bridge")
 

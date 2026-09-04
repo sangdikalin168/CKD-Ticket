@@ -40,6 +40,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { gql, useMutation } from "@apollo/client";
+
+// Ends the session server-side: bumps the user's tokenVersion and clears the
+// refresh cookie, so AuthContext.checkAuth cannot silently log them back in.
+const LOGOUT_MUTATION = gql`
+  mutation Logout {
+    logout {
+      success
+    }
+  }
+`;
 
 type Role = "Admin" | "Sale";
 
@@ -155,7 +166,15 @@ export default function SideBar() {
   const isActiveSubMenu = (subItems?: SubMenuItem[]) =>
     !!subItems?.some((s) => location.pathname === s.path);
 
-  const handleLogout = () => {
+  const [logoutMutation] = useMutation(LOGOUT_MUTATION);
+  const handleLogout = async () => {
+    // Needs the access token, so it goes before the local wipe. Best effort:
+    // a network failure must still log the counter out locally.
+    try {
+      await logoutMutation();
+    } catch (e) {
+      console.warn("logout mutation failed", e);
+    }
     JWTManager.deleteToken();
     localStorage.removeItem("accessToken");
     setIsAuthenticated(false);

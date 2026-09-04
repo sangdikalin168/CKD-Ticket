@@ -96,6 +96,16 @@ printer) and use *Test print*. The choice is saved in `config.json` next to
 `CKD-Ticket.exe`, and the desktop app fetches SumatraPDF from
 `/desktop/tools/SumatraPDF.exe` on the server the first time it prints.
 
+Later the same day: `index-87d3dbf9.js` fixed the Customer Report page
+(its inline `GetCustomers` query lacked the required `limit`/`offset`), made
+the counter stay logged in across restarts (the 12 h access token is now
+renewed from the 30-day refresh cookie at start-up and five minutes before it
+expires; **Log Out** calls the `logout` mutation so the cookie is invalidated
+server-side), and desktop 1.0.7 writes
+`%LOCALAPPDATA%\CKD-Ticket\logs\desktop.log` on the till (read it over SSH:
+`type C:\Users\MHG\AppData\Local\CKD-Ticket\logs\desktop.log`) and
+re-injects the print/fingerprint bridge whenever a page reload drops it.
+
 ## 2. Stop the console-launched API
 
 Today the API runs from an interactive window: `cmd /K npm start` →

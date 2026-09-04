@@ -26,9 +26,11 @@ const CUSTOMER_SCAN_REPORT_QUERY = gql`
 import React, { useState, useRef } from "react";
 import { gql, useQuery } from "@apollo/client";
 
+// GetCustomers has required limit/offset since the member list was paged;
+// this dropdown wants every customer, so ask for one very large page.
 const CUSTOMERS = gql`
-  query GetCustomers {
-    GetCustomers{
+  query CustomerReportCustomers {
+    GetCustomers(limit: 100000, offset: 0) {
       customer_id
       created_date
       created_by
