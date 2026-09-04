@@ -133,6 +133,29 @@ picker) because the old popup calendar was clipped by the dialog's scroll
 box on 1366x768. Tailwind is 3.4 now (the `size-*` utilities the shadcn
 components use did not exist in 3.3, so several icons rendered unsized).
 
+### 1c. Change feed for the gates (backend commit 5752701, kiosks 1.0.3)
+
+The kiosks no longer poll `checkinFingerprints` every five minutes. The API
+keeps an in-memory change feed (`backend/src/Utils/changeFeed.ts`) and serves
+it as Server-Sent Events at `GET /events/checkin` (any valid access token,
+`Authorization: Bearer` or `?token=`). `checkinSaveFingerprint`, renewals,
+holds, transfers and customer create/update call `emitChange()`; each kiosk
+holds the stream open (`ckd_checkin/changes.py`) and, on an event, fetches
+just that customer with `checkinFingerprints(customer_ids: [...])` (no
+membership window) and replaces that one entry in the reader database. On a
+reconnect the kiosk sends `Last-Event-ID`; the server replays missed events
+or answers `resync`, and the kiosk reloads the full set once. While the feed
+is down the kiosk falls back to a full reload every `fingerprint.refresh_seconds`
+(config.json, default 300). On an unknown finger the kiosk also does one
+reload and retries before saying "unknown" (at most every 30 s).
+
+Deploy the API part like any backend build: `npm run build`, `scp -r
+backend/dist ...:D:/CKD-System/backend/dist.new`, robocopy /mir over `dist`,
+then `scripts\install-service.ps1 -SkipBuild -DbService mysql -Commit <sha>`
+(restarts the service; ~10 s without the API). Check with
+`curl -s -o NUL -w "%{http_code}" http://localhost:4000/events/checkin`
+on the server: 401 means the route is live.
+
 ## 2. Stop the console-launched API
 
 Today the API runs from an interactive window: `cmd /K npm start` →
