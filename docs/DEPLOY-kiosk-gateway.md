@@ -19,18 +19,19 @@ Node 18, no nssm. `prod.env` already has `UPLOADS_DIR=D:\CKD-System\shared\uploa
 ## 0. Before you start — is the hold-v2 / transfer work deployed?
 
 This branch sits on top of `main` at `e15e829`, which includes the
-hold-request v2 and transfer-guardrail migrations that
-[DEPLOY-transfer-guardrails.md](DEPLOY-transfer-guardrails.md) marks
-**"prepared, not deployed"**. Check on the server:
+hold-request v2 and transfer-guardrail migrations. **Verified 2026-09-04 by a
+read-only probe:** `typeorm_migrations` holds all three rows
+(RedesignAdditive, HoldRequestV2, TransferWorkflowGuardrails), the
+`hold_request_v2` / `facility` / `entitlement` / `check_in` / `transfer*`
+tables and `customer.image_path` exist, and the server's `backend\src` matches
+`origin/main` (it was file-copied there; its git HEAD lags at `90b5191`, which
+is why `git status` shows many "modified" files — that is not drift).
+Nothing in this branch adds a migration. If you deploy from a different
+commit later, re-check with the same query:
 
-```bat
-git -c safe.directory=* -C D:\CKD-System log -1 --oneline
+```sql
+SELECT id, name FROM typeorm_migrations ORDER BY id;
 ```
-
-If that commit is older than `e15e829`, the compiled `dist` in this bundle
-expects tables the production database may not have. **Follow the
-transfer-guardrails runbook first** (backup, pre-flight, `migration:run:prod`),
-then come back here. Nothing in this branch adds a migration of its own.
 
 ## 1. What to copy to the server
 
@@ -38,49 +39,62 @@ Built on the dev machine (`CKD-Ticket-deploy-<date>.zip` on the Desktop):
 
 ```
 backend\dist\              compiled API (node dist\index.js)
-backend\package.json       adds the kiosk:create-user scripts
+backend\package.json       adds the kiosk:create-user scripts (deps unchanged)
 backend\package-lock.json
-frontend\dist\             SPA, served by the API
 scripts\install-service.ps1
+scripts\stop-console-backend.ps1
 nssm\nssm.exe              NSSM 2.24 win64 (sha256 f689ee9a…)
 docs\DEPLOY-kiosk-gateway.md
 ```
+
+`frontend\dist` is deliberately **not** in the bundle: the server already has
+the identical build (`assets/index-66f3ebed.js`, 19 Aug). Runtime dependencies
+are unchanged, so **no `npm ci` is needed** (verified: every module `dist`
+requires loads from the server's existing `node_modules`). Skipping it matters
+on this 3.9 GB box, which had ~900 MB free.
 
 Never overwrite: `backend\prod.env`, `D:\CKD-System\shared\uploads`.
 
 ```powershell
 # from the dev machine
-scp -o BatchMode=yes "$env:USERPROFILE\Desktop\CKD-Ticket-deploy-<date>.zip" root@100.94.217.72:D:\CKD-System-deploy.zip
+scp -o BatchMode=yes "$env:USERPROFILE\Desktop\CKD-Ticket-deploy-<date>.zip" root@100.94.217.72:D:/CKD-System-deploy.zip
 ssh root@100.94.217.72
 ```
 
-On the server (cmd.exe):
+On the server (the SSH session lands in cmd.exe and is already elevated):
 
 ```bat
+mkdir D:\CKD-System-backups\deploy-<date>
+copy /y D:\CKD-System\backend\package.json D:\CKD-System-backups\deploy-<date>\
+copy /y D:\CKD-System\backend\package-lock.json D:\CKD-System-backups\deploy-<date>\
 powershell -NoProfile -Command "Expand-Archive -Force D:\CKD-System-deploy.zip D:\CKD-System"
-cd /d D:\CKD-System\backend
-npm ci --omit=dev --no-audit --no-fund
+dir D:\CKD-System\backend\dist\index.js D:\CKD-System\nssm\nssm.exe
 ```
 
-## 2. Stop whatever serves :4000 today
+## 2. Stop the console-launched API
 
-The API currently runs outside a service manager (the old `ckd-server`
-node-windows service is *Stopped*). Find and stop it, and remove whatever
-starts it at logon (Task Scheduler / Startup folder), or the new service will
-fail to bind port 4000 after the next reboot.
+Today the API runs from an interactive window: `cmd /K npm start` →
+`dotenv -e prod.env nodemon` → `node ts-node src/index.ts` (PID chain seen
+2026-09-04; nothing in Task Scheduler / Startup / Run keys starts it, so it is
+started by hand after a reboot). Killing only the listener is useless because
+nodemon restarts it. This script kills the whole tree, leaves the frontend's
+own `npm start` (vite) window alone, confirms :4000 is free, and sets the old
+stopped `ckdserver.exe` wrapper service to Disabled so it cannot grab the port
+at boot (reverse with `sc config "ckdserver.exe" start= auto`):
 
 ```bat
-netstat -ano | findstr :4000 | findstr LISTENING
-wmic process where "name='node.exe'" get processid,commandline
-taskkill /PID <pid> /F
+powershell -NoProfile -ExecutionPolicy Bypass -File D:\CKD-System\scripts\stop-console-backend.ps1
 ```
 
-## 3. Install the service (elevated PowerShell)
+## 3. Install the service
 
-```powershell
-cd D:\CKD-System
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-service.ps1 -SkipBuild -DbService mysql
+```bat
+cd /d D:\CKD-System
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-service.ps1 -SkipBuild -DbService mysql -Commit d1fab7b
 ```
+
+`-Commit` stamps `/version.json` with the commit the bundle was built from,
+because the server checkout's HEAD is not what is running.
 
 `-SkipBuild` because dist was built on the dev machine (the 4 GB server should
 not run tsc/vite). The script writes `build-info.json`, installs/updates the
