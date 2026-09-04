@@ -5,7 +5,7 @@ import { useCreateCustomerPaymentMutation } from "../../../../generated/graphql"
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
-import { DateTimePicker } from "../../../../components/DateTimePicker/DateTimePicker";
+import { DateInput } from "@/components/ui/DateInput";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -22,6 +22,12 @@ const notify = (message: string, auto_Close: boolean | number, toastType: TypeOp
 };
 
 const date_format = (date_time: Date) => new Date(date_time).toLocaleDateString("fr-CA");
+// DateInput emits YYYY-MM-DD; build a local-midnight Date from it (new Date("YYYY-MM-DD")
+// would be UTC midnight, a day off in some time zones).
+const parse_iso = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
 const datetime_format = (date_time: Date) =>
   new Date(date_time).toLocaleDateString("fr-CA") + " " + new Date(date_time).toLocaleTimeString();
 
@@ -241,7 +247,6 @@ const ConfirmModal = (props: any) => {
   const [start_date, setStartDate] = useState(date_format(new Date()));
   const [renewalDate, setRenewalDate] = useState(getRenewalDate(oldEndDate, selectedPrice.monthQty));
   const [payment_id, setPaymentID] = useState(0);
-  const [showDateTo, setShowDateTo] = useState(false);
 
   const [createMemberPayment] = useCreateCustomerPaymentMutation();
   const componentRef = useRef<HTMLDivElement>(null);
@@ -346,16 +351,13 @@ const ConfirmModal = (props: any) => {
       {/* Start date picker */}
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-muted-foreground">ថ្ងៃចាប់ផ្តើម:</span>
-        <div className="relative">
-          <Button variant="outline" size="sm" type="button">
-            {start_date}
-          </Button>
-          <DateTimePicker
-            onChange={handleChangeStartDate}
+        <div className="w-44">
+          <DateInput
+            name="start_date"
             value={start_date}
-            show={showDateTo}
-            setShow={setShowDateTo}
-            classNames={"top-[-62px]"}
+            onChange={(e) => {
+              if (e.target.value) handleChangeStartDate(parse_iso(e.target.value));
+            }}
           />
         </div>
         <span className="text-sm text-muted-foreground">→</span>

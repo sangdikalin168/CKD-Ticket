@@ -144,7 +144,7 @@ export const DateInput: React.FC<DateInputProps> = ({
                 aria-label={t('ui.dateInput.openPicker')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-                <Calendar className="size-4" />
+                <Calendar className="h-4 w-4" />
             </button>
             <input
                 ref={pickerRef}

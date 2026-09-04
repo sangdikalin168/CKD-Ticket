@@ -1,6 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useMemo, useRef, useState } from "react";
-import { DateTimePicker } from "../../../../components/DateTimePicker/DateTimePicker";
+import { DateInput } from "@/components/ui/DateInput";
 import { useCreateHoldRequestV2Mutation } from "../../../../generated/holdV2";
 import Notifications from "../../../../components/Notification";
 import { Button } from "@/components/ui/Button";
@@ -11,15 +11,15 @@ const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);
     return date.toLocaleDateString("fr-CA");
 };
+// DateInput emits YYYY-MM-DD; build a local-midnight Date from it.
+const parse_iso = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d);
+};
 
 const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }: any) => {
 
     const cancelButtonRef = useRef(null);
-    const [showDateTo, setShowDateTo] = useState(false);
-
-    const handleCloseDateTo = (state: boolean) => {
-        setShowDateTo(state);
-    };
     // setDate returns a timestamp, not a Date — wrap it back up so
     // date_format receives the type it declares.
     const [selectedDateTo, setSelectedDateTo] = useState(
@@ -34,10 +34,6 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }:
         }
     };
 
-    const [showDateFrom, setShowDateFrom] = useState<boolean>(false);
-    const handleCloseDateFrom = (state: boolean) => {
-        setShowDateFrom(state);
-    };
     const [selectedDateFrom, setSelectedDateFrom] = useState(
         date_format(new Date())
     );
@@ -154,12 +150,12 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }:
                                                         ចាប់ពីថ្ងៃ
                                                     </Label>
 
-                                                    <DateTimePicker
-                                                        onChange={handleChangeDateFrom}
+                                                    <DateInput
+                                                        name="from_date"
                                                         value={selectedDateFrom}
-                                                        show={showDateFrom}
-                                                        setShow={handleCloseDateFrom}
-                                                        classNames={"top-[-62px]"}
+                                                        onChange={(e) => {
+                                                            if (e.target.value) handleChangeDateFrom(parse_iso(e.target.value));
+                                                        }}
                                                     />
                                                 </div>
 
@@ -168,12 +164,12 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }:
                                                     <Label className="mb-2 block text-sm font-medium leading-6 text-gray-900">
                                                         ដល់ថ្ងៃទី
                                                     </Label>
-                                                    <DateTimePicker
-                                                        onChange={handleChangeDateTo}
+                                                    <DateInput
+                                                        name="to_date"
                                                         value={selectedDateTo}
-                                                        show={showDateTo}
-                                                        setShow={handleCloseDateTo}
-                                                        classNames={"top-[-62px]"}
+                                                        onChange={(e) => {
+                                                            if (e.target.value) handleChangeDateTo(parse_iso(e.target.value));
+                                                        }}
                                                     />
                                                 </div>
 
