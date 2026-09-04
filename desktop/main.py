@@ -79,7 +79,8 @@ def _config() -> dict:
     without a rebuild. Missing or malformed file is not fatal.
 
     Recognised keys: url, title, width, height, maximized, fullscreen.
-    A till that should never be minimised can set {"fullscreen": true}.
+    The packaged exe runs full screen by default; {"fullscreen": false} (or
+    the environment variable CKD_WINDOWED=1) gives a normal window instead.
     """
     for candidate in (Path(sys.executable).parent / "config.json",
                       _base_dir() / "config.json",
@@ -169,6 +170,15 @@ def main() -> None:
     if os.environ.get("CKD_NO_UPDATE") != "1" and url.startswith("http"):
         updater.start_background_check(url)
 
+    # Full screen by default in the packaged app: a counter PC runs nothing
+    # else, and the kiosks already work this way. config.json
+    # {"fullscreen": false} or CKD_WINDOWED=1 keeps a normal window (handy on
+    # a developer machine, which is also the default from a source checkout).
+    # Alt+F4 still closes the app.
+    frozen = bool(getattr(sys, "frozen", False))
+    fullscreen = bool(cfg.get("fullscreen", frozen)) and os.environ.get("CKD_WINDOWED") != "1"
+    log.info("window mode: %s", "fullscreen" if fullscreen else "windowed")
+
     api = JsApi()
     api.base_url = url if url.startswith("http") else ""
     window = webview.create_window(
@@ -185,7 +195,7 @@ def main() -> None:
         # Must stay under 1366x768 or the window cannot be restored down on the
         # tills at all.
         min_size=(1024, 600),
-        fullscreen=bool(cfg.get("fullscreen", False)),
+        fullscreen=fullscreen,
         text_select=False,
     )
     # private_mode=False with a fixed storage folder: pywebview defaults to a
