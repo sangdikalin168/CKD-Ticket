@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -37,6 +38,110 @@ log = logging.getLogger("ckd-desktop.printing")
 TOOLS_DIR = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()) / "CKD-Ticket" / "tools"
 # Served by the backend's /desktop static mount (shared\desktop\tools\SumatraPDF.exe).
 SUMATRA_URL_PATH = "/desktop/tools/SumatraPDF.exe"
+
+# ─── page geometry ────────────────────────────────────────────────────────────
+# Electron handed the HTML to Chromium's print stack, which laid it out on the
+# receipt printer's own paper (80 mm roll) and shrank over-wide content to fit.
+# Headless Chrome knows nothing about the printer: without a page size it
+# renders Letter, and SumatraPDF then shrinks a whole Letter sheet onto the roll
+# — a tiny receipt in one corner, rotated. So the PDF page is made the size of
+# the paper: as wide as the roll, as tall as the content (measured first).
+MM_PER_PX = 25.4 / 96.0
+DEFAULT_PAPER_WIDTH_MM = 80.0      # config.json "paper_width_mm" overrides (58 for narrow rolls)
+MIN_PAGE_HEIGHT_MM = 100.0         # shorter than wide and SumatraPDF would rotate it
+MAX_PAGE_HEIGHT_MM = 3000.0
+FALLBACK_PAGE_HEIGHT_MM = 250.0    # when measuring fails; still portrait, still roll-width
+PAGE_BOTTOM_MARGIN_MM = 3.0
+
+# Runs at the end of <body> and again on load: records the ink extent of the
+# document (bounding boxes, not scrollHeight — new headless enforces a minimum
+# window size, so scrollHeight/scrollWidth just report the viewport).
+_MEASURE_JS = """<script>(function () {
+  function measure() {
+    var body = document.body, root = document.documentElement;
+    if (!body) return;
+    var maxBottom = 0, maxRight = 0;
+    var all = body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var r = all[i].getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      if (r.bottom > maxBottom) maxBottom = r.bottom;
+      if (r.right > maxRight) maxRight = r.right;
+    }
+    var b = body.getBoundingClientRect();
+    var mb = parseFloat(getComputedStyle(body).marginBottom) || 0;
+    maxBottom = Math.max(maxBottom, b.bottom) + mb + window.scrollY;
+    maxRight = Math.max(maxRight, b.right) + window.scrollX;
+    root.setAttribute('data-ckd-height', String(Math.ceil(maxBottom)));
+    root.setAttribute('data-ckd-width', String(Math.ceil(maxRight)));
+  }
+  measure();
+  window.addEventListener('load', measure);
+})();</script>"""
+
+
+def paper_width_mm() -> float:
+    from . import settings
+
+    try:
+        value = float(settings.get("paper_width_mm") or DEFAULT_PAPER_WIDTH_MM)
+    except (TypeError, ValueError):
+        value = DEFAULT_PAPER_WIDTH_MM
+    return value if 30.0 <= value <= 300.0 else DEFAULT_PAPER_WIDTH_MM
+
+
+def _inject(html: str, head_first: str = "", head_last: str = "", body_last: str = "") -> str:
+    """Insert fragments into a full HTML document without touching its content."""
+    out = html
+    if head_first or head_last:
+        m = re.search(r"<head[^>]*>", out, re.I)
+        if m:
+            out = out[: m.end()] + head_first + out[m.end():]
+        else:
+            m = re.search(r"<html[^>]*>", out, re.I)
+            pos = m.end() if m else 0
+            out = out[:pos] + "<head>" + head_first + "</head>" + out[pos:]
+        if head_last:
+            m = re.search(r"</head\s*>", out, re.I)
+            out = out[: m.start()] + head_last + out[m.start():]
+    if body_last:
+        m = re.search(r"</body\s*>", out, re.I)
+        out = out[: m.start()] + body_last + out[m.start():] if m else out + body_last
+    return out
+
+
+def _base_tag(html: str, base_url: "str | None") -> str:
+    """<base href> so the receipt's /assets fonts and /uploads images resolve
+    against the server instead of file://. Must be the first thing in <head>."""
+    if not base_url or not base_url.startswith("http"):
+        return ""
+    if re.search(r"<base\s", html, re.I):
+        return ""
+    origin = base_url.rstrip("/").replace('"', "%22")
+    return f'<base href="{origin}/">'
+
+
+def _measure(browser: str, html_path: Path) -> "tuple[int, int] | None":
+    cmd = [
+        browser,
+        "--headless=new",
+        "--disable-gpu",
+        "--hide-scrollbars",
+        "--virtual-time-budget=2000",
+        "--dump-dom",
+        html_path.as_uri(),
+    ]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, timeout=60)
+    except Exception as exc:
+        log.warning("receipt measurement failed to run: %s", exc)
+        return None
+    h = re.search(rb'data-ckd-height="(\d+)"', proc.stdout)
+    w = re.search(rb'data-ckd-width="(\d+)"', proc.stdout)
+    if not (h and w):
+        log.warning("receipt measurement returned nothing (exit %s)", proc.returncode)
+        return None
+    return int(h.group(1)), int(w.group(1))
 
 
 class PrintError(RuntimeError):
@@ -76,8 +181,19 @@ def find_sumatra() -> "str | None":
     return _find(_SUMATRA_CANDIDATES, "SumatraPDF")
 
 
-def html_to_pdf(html: str, pdf_path: Path) -> None:
-    """Render HTML to PDF with headless Chrome/Edge.
+def html_to_pdf(
+    html: str,
+    pdf_path: Path,
+    base_url: "str | None" = None,
+    width_mm: "float | None" = None,
+) -> None:
+    """Render HTML to a PDF whose single page is the size of the receipt.
+
+    Two headless passes: the first lays the document out at the roll width and
+    reports its ink extent; the second prints with a matching CSS @page size.
+    Content wider than the roll (the invoices are 405 px) is shrunk to fit by
+    Blink exactly as Electron's print did, so the measured height is scaled
+    by the same factor.
 
     --no-pdf-header-footer keeps the page URL and timestamp off the receipt;
     without it every ticket prints with 'blob:http://...' across the top.
@@ -89,8 +205,46 @@ def html_to_pdf(html: str, pdf_path: Path) -> None:
             "switch to the backend ESC/POS route."
         )
 
+    width_mm = float(width_mm or paper_width_mm())
+    page_px = max(1, round(width_mm / MM_PER_PX))
+    base = _base_tag(html, base_url)
+
+    measure_path = pdf_path.with_name(pdf_path.stem + ".measure.html")
+    measure_path.write_text(
+        _inject(
+            html,
+            head_first=base,
+            head_last=f"<style>html {{ width: {page_px}px !important; }}</style>",
+            body_last=_MEASURE_JS,
+        ),
+        encoding="utf-8",
+    )
+    dims = _measure(browser, measure_path)
+    if dims:
+        content_h_px, content_w_px = dims
+        scale = min(1.0, page_px / content_w_px) if content_w_px > 0 else 1.0
+        height_mm = content_h_px * scale * MM_PER_PX + PAGE_BOTTOM_MARGIN_MM
+    else:
+        content_h_px = content_w_px = 0
+        scale = 1.0
+        height_mm = FALLBACK_PAGE_HEIGHT_MM
+    height_mm = min(MAX_PAGE_HEIGHT_MM, max(MIN_PAGE_HEIGHT_MM, height_mm))
+    log.info(
+        "receipt page %.0fx%.0f mm (content %dx%d px, shrink %.2f)",
+        width_mm, height_mm, content_w_px, content_h_px, scale,
+    )
+
     html_path = pdf_path.with_suffix(".html")
-    html_path.write_text(html, encoding="utf-8")
+    html_path.write_text(
+        _inject(
+            html,
+            head_first=base,
+            head_last=(
+                f"<style>@page {{ size: {width_mm:.2f}mm {height_mm:.2f}mm; margin: 0; }}</style>"
+            ),
+        ),
+        encoding="utf-8",
+    )
 
     cmd = [
         browser,
@@ -113,9 +267,13 @@ def spool_pdf(pdf_path: Path, copies: int = 1, printer: "str | None" = None) -> 
     sumatra = find_sumatra()
     if sumatra:
         target = ["-print-to", printer] if printer else ["-print-to-default"]
+        # "portrait": SumatraPDF turns the page to match the paper, and the
+        # RP80 driver's default paper came up landscape — that is the second
+        # half of why receipts printed sideways. The page itself is portrait
+        # (never shorter than it is wide), so nothing else gets rotated.
         for _ in range(max(1, copies)):
             subprocess.run(
-                [sumatra, "-silent", *target, str(pdf_path)],
+                [sumatra, "-silent", "-print-settings", "portrait", *target, str(pdf_path)],
                 capture_output=True,
                 timeout=120,
             )
@@ -200,7 +358,7 @@ def ensure_sumatra(base_url: "str | None") -> "str | None":
 
 
 TEST_SLIP = """<!doctype html><html><head><meta charset="utf-8"><style>
-@page {{ size: 80mm auto; margin: 4mm; }}
+@page {{ margin: 4mm; }}
 body {{ font-family: 'Khmer OS Battambang', 'Khmer UI', sans-serif; font-size: 12pt; width: 72mm; margin: 0; }}
 h2 {{ text-align: center; margin: 0 0 6px; }}
 p {{ margin: 2px 0; }}
@@ -236,21 +394,32 @@ def print_html(
             "No printer selected and Windows has no default printer. "
             "Choose one under Printer in the menu."
         )
+    # Route 1: Chromium rasterises, GDI hands the bitmap to the driver
+    # top-aligned on its default paper (see gdi_print.py). Route 2, PDF via
+    # SumatraPDF, only when route 1 fails BEFORE spooling — a RasterError —
+    # so a receipt can never print twice.
+    from . import gdi_print
+
+    try:
+        return gdi_print.print_receipt(html, target, copies=copies, base_url=base_url)
+    except gdi_print.RasterError as exc:
+        log.warning("raster route unavailable (%s) — falling back to PDF", exc)
+
     ensure_sumatra(base_url)
 
     tmpdir = Path(tempfile.mkdtemp(prefix="ckd-print-"))
     pdf_path = tmpdir / "receipt.pdf"
     try:
-        html_to_pdf(html, pdf_path)
+        html_to_pdf(html, pdf_path, base_url=base_url)
         route = spool_pdf(pdf_path, copies=copies, printer=target)
         return {"ok": True, "route": route, "copies": copies, "printer": target}
     finally:
         if os.environ.get("CKD_KEEP_PRINT_TEMP") != "1":
             shutil.rmtree(tmpdir, ignore_errors=True)
 
-def render_pdf_only(html: str) -> dict:
+def render_pdf_only(html: str, base_url: "str | None" = None) -> dict:
     """previewComponent's replacement: render, don't spool, hand back a path."""
     tmpdir = Path(tempfile.mkdtemp(prefix="ckd-preview-"))
     pdf_path = tmpdir / "preview.pdf"
-    html_to_pdf(html, pdf_path)
+    html_to_pdf(html, pdf_path, base_url=base_url)
     return {"ok": True, "path": str(pdf_path)}

@@ -106,6 +106,18 @@ server-side), and desktop 1.0.7 writes
 `type C:\Users\MHG\AppData\Local\CKD-Ticket\logs\desktop.log`) and
 re-injects the print/fingerprint bridge whenever a page reload drops it.
 
+Desktop 1.0.8 fixed the physical receipt. The PDF route rendered a Letter
+page that SumatraPDF shrank and centred on the RP80's continuous roll
+("80(72.1) x 99999 mm"): a tiny receipt after a long blank feed. Receipts now
+go the way Electron sent them: headless Chrome rasterises the ticket at the
+printer's DPI (`desktop/ckd_desktop/gdi_print.py`), the bitmap is scaled to
+the driver's printable width and drawn top-left on its default paper over
+GDI, and the driver cuts after the content. The PDF route stays as fallback
+(now with a page sized to the paper and `-print-settings portrait`). Every
+print logs `receipt raster WxH px @ dpi -> printer` in `desktop.log`.
+`paper_width_mm` in `config.json` only affects the fallback; the raster route
+reads the width from the driver.
+
 ## 2. Stop the console-launched API
 
 Today the API runs from an interactive window: `cmd /K npm start` →

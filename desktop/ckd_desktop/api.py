@@ -118,7 +118,7 @@ class JsApi:
 
     def preview_html(self, html: str) -> dict:
         try:
-            return printing.render_pdf_only(html)
+            return printing.render_pdf_only(html, base_url=self.base_url)
         except Exception as exc:
             log.exception("preview failed")
             return _err(str(exc))
@@ -140,6 +140,7 @@ class JsApi:
             printer=settings.get("printer"),
             default=printing.default_printer(),
             sumatra=printing.find_sumatra(),
+            paper_width_mm=printing.paper_width_mm(),
         )
 
     def set_print_settings(self, printer: "str | None" = None) -> dict:
