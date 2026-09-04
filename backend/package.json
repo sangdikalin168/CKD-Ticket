@@ -48,6 +48,7 @@
     "type-check": "tsc --noEmit -p .",
     "kiosk:create-user": "dotenv -e prod.env -- ts-node src/scripts/createKioskUser.ts",
     "kiosk:create-user:dev": "dotenv -e dev.env -- ts-node src/scripts/createKioskUser.ts",
+    "kiosk:create-user:prod": "dotenv -e prod.env -- node dist/scripts/createKioskUser.js",
     "migration:generate": "dotenv -e dev.env typeorm-ts-node-commonjs migration:generate -d src/data-source.ts",
     "migration:run": "dotenv -e dev.env typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:run:prod": "dotenv -e prod.env typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
