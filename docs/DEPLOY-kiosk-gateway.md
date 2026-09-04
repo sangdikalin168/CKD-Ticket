@@ -118,6 +118,21 @@ print logs `receipt raster WxH px @ dpi -> printer` in `desktop.log`.
 `paper_width_mm` in `config.json` only affects the fallback; the raster route
 reads the width from the driver.
 
+Desktop 1.0.9 (and kiosks 1.0.2) fixed the update relaunch. The swap batch
+file inherited PyInstaller's `_PYI_*` environment from the exiting app, so
+the new exe took itself for a child of a running instance, tried to verify
+its parent process (cmd.exe, already gone) and died with "Security
+validation failure: failed to obtain executable path for parent process".
+The updater now strips those variables and sets
+`PYINSTALLER_RESET_ENVIRONMENT=1`. The very first update *from* a build older
+than this still shows that dialog once: click OK and start the exe by hand.
+
+Frontend `index-9ca90d87.js`: the Renew and Hold dialogs use the same
+DateInput as the reports (typed DD/MM/YYYY plus the browser's own date
+picker) because the old popup calendar was clipped by the dialog's scroll
+box on 1366x768. Tailwind is 3.4 now (the `size-*` utilities the shadcn
+components use did not exist in 3.3, so several icons rendered unsized).
+
 ## 2. Stop the console-launched API
 
 Today the API runs from an interactive window: `cmd /K npm start` →
