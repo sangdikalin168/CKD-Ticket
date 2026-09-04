@@ -46,3 +46,15 @@ backend/desktop/
 backend/build-info.json
 # Windows service logs written by NSSM (scripts/install-service.ps1)
 backend/logs/
+
+# Impeccable (design agent) — vendored tool, installed per-machine via
+# `npx impeccable skills install -y --providers=claude --scope=project`,
+# updated via `npx impeccable skills update`. The design *context* it reads
+# (PRODUCT.md, DESIGN.md, .impeccable/config.json, .impeccable/design.json)
+# IS committed; the tool, its agents, and per-developer state are not.
+.claude/skills/impeccable/
+.claude/agents/impeccable-*.md
+.claude/settings.local.json
+.impeccable/config.local.json
+.impeccable/hook.ndjson
+.impeccable/live/

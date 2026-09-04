@@ -1,0 +1,42 @@
+{
+  "detector": {
+    "ignoreRules": [
+      "overused-font"
+    ],
+    "ignoreFiles": [
+      "backend/**",
+      "desktop/**",
+      "print-worker/**",
+      "scripts/**",
+      "docs/**",
+      "backups/**",
+      "frontend/dist/**",
+      "frontend/node_modules/**",
+      "frontend/public/**",
+      "frontend/_ui-backup-pre-nanhr/**",
+      "frontend/src/generated/**",
+      "frontend/src/assets/**"
+    ],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "frontend/src/components/LoadingPage/LoadingPage.tsx",
+          "frontend/src/components/ui/DataTable.tsx"
+        ],
+        "createdAt": "2026-09-04T13:22:03.743Z",
+        "reason": "Agent: border-t-8 and border-b-2 are the rounded-full animate-spin loading-spinner idiom, not an accent border on a card"
+      }
+    ],
+    "designSystem": {
+      "enabled": true
+    }
+  },
+  "hook": {
+    "enabled": true,
+    "quiet": true,
+    "auditLog": ".impeccable/hook.ndjson"
+  },
+  "projectRoots": []
+}
