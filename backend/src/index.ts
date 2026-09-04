@@ -20,6 +20,7 @@ import path from "path";
 import { UPLOADS_DIR, UPLOADS_URL_PREFIX, ensureUploadDirs, DESKTOP_DIR, DESKTOP_URL_PREFIX, ensureDesktopDir } from "./Utils/paths";
 import { requireAuthForUploads } from "./MiddleWare/requireAuthForUploads";
 import { startPrinting } from "./Print/service";
+import { buildInfo } from "./Utils/buildInfo";
 
 // Production toggles — NODE_ENV=production disables dev-only conveniences.
 const isProd = process.env.NODE_ENV === "production";
@@ -92,6 +93,25 @@ const main = async () => {
   }
 
   const app = express();
+
+  // Liveness + build identity for the service manager, deploy scripts and the
+  // gate kiosks. Registered before the SPA static mount and the "*" fallback
+  // so nothing can shadow them. /health round-trips the database, so a wedged
+  // connection reads as down rather than as a live server that fails every
+  // lookup. Both are unauthenticated: they reveal nothing about the data.
+  app.get("/health", async (_req, res) => {
+    try {
+      await MysqlDataSource.query("SELECT 1");
+      res.json({ status: "ok", db: "up", uptime: Math.round(process.uptime()) });
+    } catch {
+      res.status(503).json({ status: "down", db: "down", uptime: Math.round(process.uptime()) });
+    }
+  });
+  app.get("/version.json", (_req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.json(buildInfo());
+  });
+
   // Built SPA. Only used when Node fronts the app directly (Cloudflare Tunnel ->
   // localhost:4000); under docker-compose nginx serves these files instead.
   const SPA_DIR = path.resolve(__dirname, "../../frontend/dist");

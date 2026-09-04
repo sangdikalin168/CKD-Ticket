@@ -19,6 +19,7 @@ import { TicketPayment } from "../Entities/TicketPayment";
 import { CouponPayment } from "../Entities/CouponPayment";
 import { TicketPriceConfig } from "../Entities/TicketPriceConfig";
 import { AccessMethod, EntitlementStatus, ProductType } from "../Entities/enums";
+import { KIOSK_ROLE } from "../Utils/roles";
 
 /**
  * Door / check-in operations for the CKD-Check-In kiosk app.
@@ -49,6 +50,9 @@ export class CheckinMember {
     @Field() active: boolean;
     @Field() key_status: string;
     @Field() towel_status: string;
+    /** Stored photo path ("/uploads/members/member_<id>_<ms>.jpg") or null. The
+     *  kiosk fetches it through the authenticated /uploads mount. */
+    @Field(() => String, { nullable: true }) image_path?: string | null;
 }
 
 @ObjectType()
@@ -75,6 +79,7 @@ export class CheckinCoupon {
     @Field() gender: string;
     @Field(() => Int) quantity: number;
     @Field() price: number;
+    @Field(() => String, { nullable: true }) image_path?: string | null;
 }
 
 @ObjectType()
@@ -116,6 +121,17 @@ function todayYMD(): string {
 function ymd(value: unknown): string {
     if (value === null || value === undefined || value === "") return "";
     return String(value).slice(0, 10);
+}
+
+/** Default fingerprint-template window for kiosk accounts: members active or
+ *  expired within this many days. Set KIOSK_FINGERPRINT_WINDOW_DAYS on the
+ *  server to change it; "all" or a negative number disables the filter. */
+function kioskFingerprintWindowDays(): number | null {
+    const raw = (process.env.KIOSK_FINGERPRINT_WINDOW_DAYS || "90").trim().toLowerCase();
+    if (raw === "all") return null;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0) return null;
+    return Math.floor(n);
 }
 
 /** facility_id of the place a gate guards (null when unset / "*" / not found).
@@ -196,6 +212,7 @@ export class DoorCheckInResolver {
             active,
             key_status: c.key_status || "un_take",
             towel_status: c.towel_status || "un_take",
+            image_path: c.image_path || null,
         };
     }
 
@@ -251,6 +268,7 @@ export class DoorCheckInResolver {
         const rows: any[] = await CouponPayment.getRepository().query(
             "SELECT customer.customer_id AS customer_id, customer.customer_name AS customer_name, " +
                 "customer.phone AS phone, customer.gender AS gender, " +
+                "customer.image_path AS image_path, " +
                 "coupon_payment.quantity AS quantity, coupon_payment.price AS price " +
                 "FROM coupon_payment " +
                 "INNER JOIN customer ON customer.customer_id = coupon_payment.customer_id " +
@@ -267,18 +285,44 @@ export class DoorCheckInResolver {
             gender: r.gender || "",
             quantity: r.quantity !== null && r.quantity !== undefined ? Number(r.quantity) : 0,
             price: r.price !== null && r.price !== undefined ? Number(r.price) : 0,
+            image_path: r.image_path || null,
         };
     }
 
-    /** Customers with an enrolled fingerprint template. Used by the kiosk to
+    /** Customers with an enrolled fingerprint template. Used by the kiosks to
      *  preload the local SDK matcher and to render the enrolled list.
-     *  Port of api.py:list_fingerprints + fingerprint.py:_load_templates_from_db. */
+     *  Port of api.py:list_fingerprints + fingerprint.py:_load_templates_from_db.
+     *
+     *  active_within_days limits the set to members whose membership is active
+     *  or expired at most that many days ago (0 = active only). When omitted,
+     *  kiosk accounts get the server default (KIOSK_FINGERPRINT_WINDOW_DAYS,
+     *  90) and staff callers get everything: enrolment tooling needs the full
+     *  list, while a gate only needs members who could plausibly be let in.
+     *  With ~3k enrolled and ~470 inside the window that is an 85% smaller
+     *  1:N set. Long-expired members still get in by scanning their member
+     *  code; the kiosks tell them so on a no-match. */
     @UseMiddleware(checkAuth)
     @Query(() => [CheckinFingerprint])
-    async checkinFingerprints(): Promise<CheckinFingerprint[]> {
+    async checkinFingerprints(
+        @Arg("active_within_days", () => Int, { nullable: true }) active_within_days?: number | null,
+        @Ctx() ctx?: Context
+    ): Promise<CheckinFingerprint[]> {
+        let windowDays: number | null;
+        if (active_within_days !== null && active_within_days !== undefined) {
+            windowDays = Math.max(0, Math.floor(active_within_days));
+        } else {
+            const role = ctx && ctx.user ? ctx.user.role : undefined;
+            windowDays = role === KIOSK_ROLE ? kioskFingerprintWindowDays() : null;
+        }
+        const params: any[] = [];
+        let where = "WHERE fingerprint IS NOT NULL AND fingerprint != ''";
+        if (windowDays !== null) {
+            where += " AND end_membership_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)";
+            params.push(windowDays);
+        }
         const rows: any[] = await Customer.getRepository().query(
-            "SELECT customer_id, fingerprint FROM customer " +
-                "WHERE fingerprint IS NOT NULL AND fingerprint != ''"
+            "SELECT customer_id, fingerprint FROM customer " + where,
+            params
         );
         return rows.map((r) => ({
             customer_id: Number(r.customer_id),

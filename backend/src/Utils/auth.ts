@@ -9,6 +9,8 @@ export const createToken = (
   sign(
     {
       user_id: user.user_id,
+      // Lets permissions.ts scope kiosk accounts without a DB round-trip.
+      role: user.role,
       ...(type === "refreshToken" ? { tokenVersion: user.tokenVersion } : {}),
     },
     type === "accessToken"

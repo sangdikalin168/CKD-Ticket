@@ -78,8 +78,17 @@ def build() -> Path:
         "--add-data", "ckd_desktop/bridge.js;ckd_desktop",
         "--hidden-import", "ckd_desktop.fp_enroll",
         "--collect-all", "webview",
-        "main.py",
     ]
+    # Club logo as the exe icon (taskbar, title bar, Explorer). Built from
+    # assets/logo.png by make_icon.py; skipped, with a warning, if absent so a
+    # missing asset never blocks a release.
+    icon = HERE / "assets" / "icon.ico"
+    if icon.is_file():
+        cmd += ["--icon", str(icon)]
+    else:
+        print(f"warning: {icon} not found - exe will have the default icon "
+              "(run make_icon.py after saving assets/logo.png)")
+    cmd.append("main.py")
     print("building…")
     subprocess.run(cmd, cwd=HERE, check=True)
     exe = DIST / EXE_NAME
