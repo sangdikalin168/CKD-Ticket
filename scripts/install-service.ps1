@@ -47,6 +47,9 @@ param(
     [string]$AllowFrom = 'LocalSubnet',
     [string]$DbService = '',
     [string]$NssmPath = '',
+    # Commit the deployed dist was built from. Pass it when deploying a bundle
+    # built elsewhere: the server checkout's HEAD is not what is running.
+    [string]$Commit = '',
     [switch]$SkipBuild,
     [switch]$DryRun
 )
@@ -143,7 +146,9 @@ if ($SkipBuild) {
 # -- 3. build-info.json (-> /version.json) ----------------------------------
 Step 'Writing build-info.json'
 $commit = $null
-if (Get-Command git -ErrorAction SilentlyContinue) {
+if ($Commit) {
+    $commit = $Commit
+} elseif (Get-Command git -ErrorAction SilentlyContinue) {
     try { $commit = (& git -C $Root rev-parse --short HEAD 2>$null | Out-String).Trim() } catch { $commit = $null }
     if (-not $commit) { $commit = $null }
 }
