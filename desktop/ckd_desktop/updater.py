@@ -148,6 +148,25 @@ def start_background_check(base_url: str) -> None:
     ).start()
 
 
+def _swapper_env() -> dict:
+    """Environment for the swap batch file and, through it, the relaunched exe.
+
+    A PyInstaller onefile app runs as two processes, and the bootloader hands
+    the inner one its state through _PYI_* environment variables. Our Python
+    process inherits them, so anything we spawn — the batch file, then the new
+    exe — inherits them too. The new exe then does not start as a fresh app: it
+    believes it is a child of a running one and verifies that its parent
+    process is that exe. Its parent is cmd.exe, already gone after `start`,
+    and the bootloader dies with "Security validation failure: failed to
+    obtain executable path for parent process". Dropping the variables and
+    setting PYINSTALLER_RESET_ENVIRONMENT (the bootloader's own switch for
+    "start me as an independent instance") makes the relaunch a normal launch.
+    """
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("_PYI_") and k != "_MEIPASS2"}
+    env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    return env
+
+
 def apply_if_staged() -> bool:
     """Swap in a staged update and relaunch. Call last, as the app exits.
 
@@ -196,6 +215,7 @@ del "%~f0" >nul 2>&1
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
             | getattr(subprocess, "DETACHED_PROCESS", 0),
             close_fds=True,
+            env=_swapper_env(),
         )
         log.info("update will be applied on exit")
         return True
