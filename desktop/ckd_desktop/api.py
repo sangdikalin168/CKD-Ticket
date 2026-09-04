@@ -58,6 +58,73 @@ class JsApi:
         threading.Thread(
             target=self._bridge_watchdog, name="bridge-watchdog", daemon=True
         ).start()
+        self._grant_camera()
+
+    # ── camera permission ────────────────────────────────────────────────
+    def _grant_camera(self) -> None:
+        """Let the member-photo webcam work without WebView2's permission
+        prompt. pywebview leaves CoreWebView2.PermissionRequested unhandled,
+        so getUserMedia depends on a browser-style prompt the cashier can miss
+        or deny once — and a denial is remembered in the profile. The app's
+        own origin gets the camera outright, both as a stored profile
+        permission and by answering any prompt that still comes through."""
+        origin = self._origin()
+        if not origin:
+            return
+        try:
+            control = self._window.native.browser.webview  # WinForms WebView2 control
+        except AttributeError:
+            log.info("camera permission: no WebView2 control (not the Windows backend?)")
+            return
+        try:
+            from System import Func, Object  # type: ignore
+            from Microsoft.Web.WebView2.Core import (  # type: ignore
+                CoreWebView2PermissionKind,
+                CoreWebView2PermissionState,
+            )
+
+            def apply():
+                core = control.CoreWebView2
+                if core is None:
+                    return None
+                core.PermissionRequested += self._on_permission_requested
+                try:
+                    core.Profile.SetPermissionStateAsync(
+                        CoreWebView2PermissionKind.Camera, origin, CoreWebView2PermissionState.Allow
+                    )
+                except Exception as exc:  # older runtime without the profile API
+                    log.info("camera permission: profile API unavailable (%s)", exc)
+                return None
+
+            control.Invoke(Func[Object](apply))
+            log.info("camera permission granted for %s", origin)
+        except Exception:
+            log.exception("camera permission setup failed")
+
+    def _origin(self) -> str:
+        from urllib.parse import urlsplit
+
+        if not self.base_url or not self.base_url.startswith("http"):
+            return ""
+        parts = urlsplit(self.base_url)
+        return f"{parts.scheme}://{parts.netloc}"
+
+    def _on_permission_requested(self, _sender, args) -> None:
+        try:
+            from Microsoft.Web.WebView2.Core import (  # type: ignore
+                CoreWebView2PermissionKind,
+                CoreWebView2PermissionState,
+            )
+
+            uri = str(args.Uri)
+            kind = args.PermissionKind
+            if kind == CoreWebView2PermissionKind.Camera and uri.startswith(self._origin()):
+                args.State = CoreWebView2PermissionState.Allow
+                log.info("camera permission request from %s: allowed", uri)
+            else:
+                log.info("permission request %s from %s: left to WebView2", kind, uri)
+        except Exception:
+            log.exception("permission handler failed")
 
     def detach(self) -> None:
         stop = getattr(self, "_watchdog_stop", None)
