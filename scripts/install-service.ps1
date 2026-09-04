@@ -145,20 +145,22 @@ if ($SkipBuild) {
 
 # -- 3. build-info.json (-> /version.json) ----------------------------------
 Step 'Writing build-info.json'
-$commit = $null
+# PowerShell variable names are case-insensitive, so this must not be called
+# $commit or it would clobber the -Commit parameter.
+$buildCommit = $null
 if ($Commit) {
-    $commit = $Commit
+    $buildCommit = $Commit
 } elseif (Get-Command git -ErrorAction SilentlyContinue) {
-    try { $commit = (& git -C $Root rev-parse --short HEAD 2>$null | Out-String).Trim() } catch { $commit = $null }
-    if (-not $commit) { $commit = $null }
+    try { $buildCommit = (& git -C $Root rev-parse --short HEAD 2>$null | Out-String).Trim() } catch { $buildCommit = $null }
+    if (-not $buildCommit) { $buildCommit = $null }
 }
 $info = [ordered]@{
     version   = Get-Date -Format 'yyyy.MM.dd.HHmm'
-    commit    = $commit
+    commit    = $buildCommit
     buildTime = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 }
 $infoJson = $info | ConvertTo-Json
-Change "backend\build-info.json <- version $($info.version) commit $commit" {
+Change "backend\build-info.json <- version $($info.version) commit $buildCommit" {
     Set-Content -Path (Join-Path $Backend 'build-info.json') -Value $infoJson -Encoding ascii
 }
 
