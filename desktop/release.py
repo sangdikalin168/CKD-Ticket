@@ -114,11 +114,11 @@ def write_manifest(exe: Path, version: str, notes: str) -> Path:
 
 def publish(exe: Path, manifest: Path) -> None:
     """Copy the build to the server's DESKTOP_DIR over SSH (key auth)."""
-    host = os.environ.get("CKD_SSH_HOST")
-    user = os.environ.get("CKD_SSH_USER")
+    # Defaults are the Ticket server over Tailscale (key auth); override with
+    # CKD_SSH_HOST / CKD_SSH_USER / CKD_DESKTOP_DIR for another box.
+    host = os.environ.get("CKD_SSH_HOST", "100.94.217.72")
+    user = os.environ.get("CKD_SSH_USER", "root")
     remote = os.environ.get("CKD_DESKTOP_DIR", r"D:\CKD-System\shared\desktop")
-    if not host or not user:
-        sys.exit("set CKD_SSH_HOST and CKD_SSH_USER to publish")
 
     target = f"{user}@{host}"
     subprocess.run(["ssh", "-o", "BatchMode=yes", target,
@@ -135,10 +135,13 @@ def main() -> int:
     ap.add_argument("--bump", choices=["major", "minor", "patch"])
     ap.add_argument("--notes", default="")
     ap.add_argument("--publish", action="store_true")
+    ap.add_argument("--skip-build", action="store_true", help="reuse dist\\ from a previous build")
     args = ap.parse_args()
 
     version = bump(args.bump) if args.bump else read_version()
-    exe = build()
+    exe = DIST / EXE_NAME if args.skip_build else build()
+    if not exe.is_file():
+        sys.exit(f"no {exe} - run without --skip-build")
     manifest = write_manifest(exe, version, args.notes)
     if args.publish:
         publish(exe, manifest)
