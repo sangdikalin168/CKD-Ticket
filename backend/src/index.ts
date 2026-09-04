@@ -21,6 +21,7 @@ import { UPLOADS_DIR, UPLOADS_URL_PREFIX, ensureUploadDirs, DESKTOP_DIR, DESKTOP
 import { requireAuthForUploads } from "./MiddleWare/requireAuthForUploads";
 import { startPrinting } from "./Print/service";
 import { buildInfo } from "./Utils/buildInfo";
+import { checkinEventsHandler } from "./Utils/changeFeed";
 
 // Production toggles — NODE_ENV=production disables dev-only conveniences.
 const isProd = process.env.NODE_ENV === "production";
@@ -107,6 +108,10 @@ const main = async () => {
       res.status(503).json({ status: "down", db: "down", uptime: Math.round(process.uptime()) });
     }
   });
+  // Live change feed for the gate kiosks (Server-Sent Events): fingerprint
+  // saved / membership changed -> the kiosk refreshes that one reader entry.
+  app.get("/events/checkin", checkinEventsHandler);
+
   app.get("/version.json", (_req, res) => {
     res.set("Cache-Control", "no-store");
     res.json(buildInfo());

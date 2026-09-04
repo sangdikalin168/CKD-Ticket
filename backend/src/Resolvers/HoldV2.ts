@@ -5,6 +5,7 @@ import { Users } from "../Entities/Users";
 import { extendMembershipEntitlement } from "../Utils/access";
 import { checkAuth } from "../MiddleWare/checkAuth";
 import { Context } from "../Context/Context";
+import { emitChange } from "../Utils/changeFeed";
 
 /**
  * v2 hold workflow. Every rule the v1 resolver left to the browser is
@@ -223,6 +224,7 @@ export class HoldV2Resolver {
                 [request_id]
             );
             await runner.commitTransaction();
+            emitChange("member", row.customer_id);
 
             // Dual-write to the unified entitlement model, same as renewals do.
             // Outside the transaction on purpose: a sync failure must not void

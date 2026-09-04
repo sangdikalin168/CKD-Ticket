@@ -16,6 +16,7 @@ import { MEMBER_PHOTOS_DIR, resolveUploadPath } from "../Utils/paths";
 import { MutationResponseBase } from "../Types/MutationResponse";
 import * as fs from "fs";
 import * as path from "path";
+import { emitChange } from "../Utils/changeFeed";
 
 @ObjectType()
 export class CustomerMutationResponse extends MutationResponseBase {}
@@ -106,12 +107,13 @@ export class CustomerResolver {
                 message: "Already Exist",
             };
         }
-        await Customer.create({
+        const created = await Customer.create({
             customer_name: customer_name,
             phone: phone,
             gender: gender,
             created_by: created_by
         }).save();
+        emitChange("customer", created.customer_id);
 
         return {
             code: 200,
@@ -143,6 +145,7 @@ export class CustomerResolver {
             phone: phone
         })
         if (update.affected) {
+            emitChange("member", customer_id);
             return {
                 code: 200,
                 success: true,

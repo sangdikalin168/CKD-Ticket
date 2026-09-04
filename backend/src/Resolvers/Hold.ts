@@ -14,6 +14,7 @@ import {
     UseMiddleware,
 } from "type-graphql";
 import { checkAuth } from "../MiddleWare/checkAuth";
+import { emitChange } from "../Utils/changeFeed";
 
 @InterfaceType()
 export abstract class HoldResponse {
@@ -181,6 +182,7 @@ export class HoldResolver {
                 end_membership_date: new_end
             })
             if (update.affected) {
+                emitChange("member", customer_id);
                 // Dual-write: push the membership entitlement's end out to match.
                 try {
                     // Revives/extends the membership line even if it had expired.

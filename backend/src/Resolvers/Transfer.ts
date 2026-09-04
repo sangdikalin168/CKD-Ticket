@@ -7,6 +7,7 @@ import { extendMembershipEntitlement } from "../Utils/access";
 import { Arg, Ctx, Field, Float, InterfaceType, Mutation, ObjectType, Query, Resolver, UseMiddleware } from "type-graphql";
 import { checkAuth } from "../MiddleWare/checkAuth";
 import { Context } from "../Context/Context";
+import { emitChange } from "../Utils/changeFeed";
 
 /**
  * Membership transfers, rewritten after a production incident.
@@ -277,6 +278,8 @@ export class TransferResolver {
             // executor's job title.
             await requireRole(user.user_id, ["Admin", "Sale"]);
 
+            // Customer ids to announce on the change feed once the transaction commits.
+            let feedIds: number[] = [];
             const transferId = await TransferRequest.getRepository().manager.transaction(
                 async (mgr) => {
                     // 1. Claim. The WHERE is the entire legal-state check, and
@@ -372,6 +375,7 @@ export class TransferResolver {
                         { end_membership_date: receiverNewEnd }
                     );
                     if (receiverUpdate.affected !== 1) throw new Error("Failed to update receiver");
+                    feedIds = [request.sender_id, request.receiver_id];
 
                     // 6. Entitlement mirror, INSIDE the transaction: the
                     // unified-model copy commits or rolls back with the legacy
@@ -384,6 +388,7 @@ export class TransferResolver {
                 }
             );
 
+            for (const cid of feedIds) emitChange("member", cid);
             return { code: 200, success: true, message: "Update Member Success", transfer_id: transferId };
         } catch (err) {
             // Conflicts and validation failures are expected outcomes of the

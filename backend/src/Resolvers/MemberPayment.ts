@@ -18,6 +18,7 @@ import moment from "moment";
 import { Purchase } from "../Entities/Purchase";
 import { ProductType, Shift } from "../Entities/enums";
 import { findOrCreateTimePackage, upsertTimeEntitlement } from "../Utils/access";
+import { emitChange } from "../Utils/changeFeed";
 
 @ObjectType()
 export class MemberPaymentMutationResponse extends PaymentMutationResponseBase {}
@@ -128,6 +129,7 @@ export class MemberPaymentResolver {
             })
 
             if (update.affected) {
+                emitChange("member", customer_id);
                 // Dual-write to the unified model: record the money (Purchase) and
                 // create/extend the membership Entitlement. Best-effort — a hiccup
                 // here must not fail the existing (invoice-bearing) flow.

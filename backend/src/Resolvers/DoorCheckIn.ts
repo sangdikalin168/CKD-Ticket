@@ -20,6 +20,7 @@ import { CouponPayment } from "../Entities/CouponPayment";
 import { TicketPriceConfig } from "../Entities/TicketPriceConfig";
 import { AccessMethod, EntitlementStatus, ProductType } from "../Entities/enums";
 import { KIOSK_ROLE } from "../Utils/roles";
+import { emitChange } from "../Utils/changeFeed";
 
 /**
  * Door / check-in operations for the CKD-Check-In kiosk app.
@@ -305,20 +306,30 @@ export class DoorCheckInResolver {
     @Query(() => [CheckinFingerprint])
     async checkinFingerprints(
         @Arg("active_within_days", () => Int, { nullable: true }) active_within_days?: number | null,
+        @Arg("customer_ids", () => [Int], { nullable: true }) customer_ids?: number[] | null,
         @Ctx() ctx?: Context
     ): Promise<CheckinFingerprint[]> {
-        let windowDays: number | null;
-        if (active_within_days !== null && active_within_days !== undefined) {
-            windowDays = Math.max(0, Math.floor(active_within_days));
-        } else {
-            const role = ctx && ctx.user ? ctx.user.role : undefined;
-            windowDays = role === KIOSK_ROLE ? kioskFingerprintWindowDays() : null;
-        }
         const params: any[] = [];
         let where = "WHERE fingerprint IS NOT NULL AND fingerprint != ''";
-        if (windowDays !== null) {
-            where += " AND end_membership_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)";
-            params.push(windowDays);
+        // Named customers (change-feed refresh): no membership window, so a
+        // member who lapsed long ago and renews today is loaded on the spot.
+        const ids = (customer_ids || []).map((n) => Math.floor(Number(n))).filter((n) => Number.isFinite(n) && n > 0);
+        if (customer_ids && ids.length === 0) return [];
+        if (ids.length > 0) {
+            where += " AND customer_id IN (?)";
+            params.push(ids);
+        } else {
+            let windowDays: number | null;
+            if (active_within_days !== null && active_within_days !== undefined) {
+                windowDays = Math.max(0, Math.floor(active_within_days));
+            } else {
+                const role = ctx && ctx.user ? ctx.user.role : undefined;
+                windowDays = role === KIOSK_ROLE ? kioskFingerprintWindowDays() : null;
+            }
+            if (windowDays !== null) {
+                where += " AND end_membership_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)";
+                params.push(windowDays);
+            }
         }
         const rows: any[] = await Customer.getRepository().query(
             "SELECT customer_id, fingerprint FROM customer " + where,
@@ -416,6 +427,7 @@ export class DoorCheckInResolver {
         @Arg("template") template: string
     ): Promise<CheckinResponse> {
         await Customer.update({ customer_id }, { fingerprint: template });
+        emitChange("fingerprint", customer_id);
         return { success: true };
     }
 
