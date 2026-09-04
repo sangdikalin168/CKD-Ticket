@@ -84,6 +84,27 @@ def _resolve_url(cfg: dict) -> str:
     return DEFAULT_URL
 
 
+def _allow_camera_on_plain_http(url: str) -> None:
+    """Let the webcam work when the SPA is loaded over plain http from the LAN.
+
+    Chromium only exposes getUserMedia on secure contexts (https or localhost),
+    so a till pointed at http://192.168.1.20:4000 can show photos but not take
+    them. The Electron shell dodged this with webSecurity off. WebView2 reads
+    extra Chromium switches from this environment variable, so mark just that
+    one origin as secure. No-op for https and localhost URLs.
+    """
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(url)
+    if parts.scheme != "http" or parts.hostname in (None, "localhost", "127.0.0.1"):
+        return
+    flag = f"--unsafely-treat-insecure-origin-as-secure=http://{parts.netloc}"
+    existing = os.environ.get("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "")
+    if flag not in existing:
+        os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = f"{existing} {flag}".strip()
+    log.info("camera allowed on plain-http origin http://%s", parts.netloc)
+
+
 def main() -> None:
     # A frozen build has no python.exe to spawn, so the fingerprint sidecar is
     # re-entered through this same exe. Must be the first thing checked: the
@@ -105,6 +126,7 @@ def main() -> None:
     dev = os.environ.get("CKD_DEV") == "1"
 
     log.info("CKD Ticket %s — loading %s", __version__, url)
+    _allow_camera_on_plain_http(url)
 
     # Update check runs in the background against the same server the UI comes
     # from, so a till needs no extra configuration. It only ever STAGES a new
