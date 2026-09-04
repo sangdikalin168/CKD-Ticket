@@ -176,10 +176,11 @@ export const CustomerReport = () => {
     skip: !fromDate || !toDate, // Skip query if no date is provided
   });
 
-  // Handle loading and error states for both queries
-  if ((selectedTab === 'active' && loadingActive) || (selectedTab === 'expiring' && loadingExpiring)) return <p className="text-center">Loading...</p>;
-  if (selectedTab === 'active' && errorActive) return <p className="text-center text-red-500">Error: {errorActive.message}</p>;
-  if (selectedTab === 'expiring' && errorExpiring) return <p className="text-center text-red-500">Error: {errorExpiring.message}</p>;
+  // Loading / error state of the current tab, rendered below the tab bar.
+  // An early return here used to replace the whole page, so one failing
+  // query hid the tabs and the Expiring tab's date fields with it.
+  const tabLoading = (selectedTab === 'active' && loadingActive) || (selectedTab === 'expiring' && loadingExpiring);
+  const tabError = selectedTab === 'active' ? errorActive : selectedTab === 'expiring' ? errorExpiring : undefined;
 
   // Extract data for both queries
   const { total: totalActive, customers: customersActive } = dataActive?.activeCustomers || { total: 0, customers: [] };
@@ -284,6 +285,10 @@ export const CustomerReport = () => {
           Scan Report
         </Button>
       </div>
+      {tabLoading && <p className="text-center">Loading...</p>}
+      {tabError && (
+        <p className="text-center text-red-500 mb-4">Error: {tabError.message}</p>
+      )}
       {/* Scan Report Tab */}
       {selectedTab === 'scan' && (
         <Card className="max-w-2xl mx-auto">

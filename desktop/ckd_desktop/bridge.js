@@ -97,5 +97,48 @@
     },
   };
 
+  // ── client-side diagnostics → desktop.log ──────────────────────────────
+  // What the cashier sees (error toasts, crashes) is otherwise invisible to
+  // anyone reading the till's log over SSH. Rate-limited so a loop cannot
+  // flood the file.
+  (function () {
+    var sent = 0, windowStart = Date.now();
+    function ship(level, msg) {
+      try {
+        var now = Date.now();
+        if (now - windowStart > 60000) { windowStart = now; sent = 0; }
+        if (sent++ > 40) return;
+        var a = api();
+        if (a && a.log_client) a.log_client(level, String(msg).slice(0, 1000));
+      } catch (e) { /* never break the page over logging */ }
+    }
+    window.addEventListener("error", function (e) {
+      ship("error", "uncaught: " + (e.message || e.type) + " @ " + (e.filename || "?") + ":" + (e.lineno || 0));
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      var r = e.reason; ship("error", "unhandled rejection: " + (r && (r.stack || r.message) || r));
+    });
+    var origError = console.error.bind(console);
+    console.error = function () {
+      try { ship("error", "console.error: " + Array.prototype.map.call(arguments, function (x) { return typeof x === "string" ? x : (x && x.message) || JSON.stringify(x); }).join(" ")); } catch (e) {}
+      return origError.apply(console, arguments);
+    };
+    function watchToasts() {
+      if (!document.body) return setTimeout(watchToasts, 500);
+      new MutationObserver(function (muts) {
+        muts.forEach(function (m) {
+          Array.prototype.forEach.call(m.addedNodes, function (n) {
+            if (!(n instanceof HTMLElement)) return;
+            var toast = n.matches && n.matches(".Toastify__toast, [data-sonner-toast]") ? n : (n.querySelector && n.querySelector(".Toastify__toast, [data-sonner-toast]"));
+            if (!toast) return;
+            var isErr = /error/i.test(toast.className) || /error|destructive/i.test(toast.getAttribute("data-type") || "");
+            ship(isErr ? "error" : "info", "toast: " + (toast.textContent || "").trim().slice(0, 400));
+          });
+        });
+      }).observe(document.body, { childList: true, subtree: true });
+    }
+    watchToasts();
+  })();
+
   console.info("[ckd] electronAPI shim ready (pywebview host)");
 })();

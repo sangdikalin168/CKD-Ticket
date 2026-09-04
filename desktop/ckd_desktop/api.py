@@ -123,6 +123,17 @@ class JsApi:
             log.exception("preview failed")
             return _err(str(exc))
 
+    # ── JS API: client-side diagnostics ───────────────────────────────────
+    def log_client(self, level: str = "info", message: str = "") -> dict:
+        """bridge.js forwards error toasts, uncaught errors and console.error
+        here, so what the cashier saw on screen ends up in desktop.log."""
+        text = str(message)[:1000]
+        if str(level).lower() in ("error", "warning", "warn"):
+            log.warning("client: %s", text)
+        else:
+            log.info("client: %s", text)
+        return _ok()
+
     # ── JS API: printer settings (Printer page in the SPA) ────────────────
     def list_printers(self) -> dict:
         try:
@@ -198,17 +209,20 @@ class JsApi:
         if self._fp is not None and self._fp.poll() is None:
             return
 
-        script = _HERE / "fp_enroll.py"
-        if not script.is_file():
-            raise RuntimeError(f"fingerprint sidecar missing at {script}")
-
         # Frozen builds have no python.exe to re-invoke, so the sidecar is run
         # through this same executable with a marker argv the entry point
-        # understands (see main.py / the spec's hiddenimports).
+        # understands (see main.py). The module lives inside the PyInstaller
+        # archive there, not as a .py on disk, so the file check below applies
+        # only to a source checkout — checking it in a frozen build was why
+        # enrolment failed on the till with "fingerprint sidecar missing".
         if getattr(sys, "frozen", False):
             cmd = [sys.executable, "--fp-sidecar"]
         else:
+            script = _HERE / "fp_enroll.py"
+            if not script.is_file():
+                raise RuntimeError(f"fingerprint sidecar missing at {script}")
             cmd = [sys.executable, str(script)]
+        log.info("starting fingerprint sidecar: %s", " ".join(cmd))
 
         self._fp = subprocess.Popen(
             cmd,
