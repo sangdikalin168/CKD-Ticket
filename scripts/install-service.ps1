@@ -215,6 +215,23 @@ Change "replace inbound rule '$ruleName' (RemoteAddress: $($remote -join ', '))"
     New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP `
         -LocalPort $Port -RemoteAddress $remote -Profile Any | Out-Null
 }
+# An allow rule scoped to LocalSubnet is not enough on its own: Tailscale installs
+# its own allow-everything rule for its adapter, and Windows Firewall permits a
+# packet if ANY allow rule matches. Verified 2026-09-04: :4000 answered over
+# Tailscale despite the rule above. Block rules win over allow rules, so pin one
+# to the Tailscale interface unless the caller opted Tailscale in via -AllowFrom.
+$blockName = "$ruleName block Tailscale"
+if ($AllowFrom -match '100\.64\.0\.0/10') {
+    Change "remove '$blockName' (Tailscale allowed via -AllowFrom)" {
+        Get-NetFirewallRule -DisplayName $blockName -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+    }
+} elseif (Get-NetAdapter -InterfaceAlias Tailscale -ErrorAction SilentlyContinue) {
+    Change "replace inbound BLOCK rule '$blockName' on the Tailscale interface" {
+        Get-NetFirewallRule -DisplayName $blockName -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+        New-NetFirewallRule -DisplayName $blockName -Direction Inbound -Action Block -Protocol TCP `
+            -LocalPort $Port -InterfaceAlias Tailscale -Profile Any | Out-Null
+    }
+}
 
 # -- 6. Start + verify ------------------------------------------------------
 Step 'Starting service'

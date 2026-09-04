@@ -150,7 +150,17 @@ sc query ckd-ticket-api
 ```
 
 From a gate PC: `curl http://192.168.1.20:4000/health` must answer; from
-outside the LAN it must not (firewall rule is LocalSubnet only).
+outside the LAN it must not. Note the LocalSubnet allow rule alone is NOT
+enough: Tailscale adds its own allow-all rule for its adapter, so the script
+also installs an explicit *block* for TCP 4000 on the Tailscale interface
+(verified 2026-09-04: :4000 answered over Tailscale until that block existed).
+Pass `-AllowFrom 'LocalSubnet,100.64.0.0/10'` to allow Tailscale instead.
+
+Deployed 2026-09-04 12:57 with this runbook; every check above passed.
+Known pre-existing issue seen in `service.err.log`: the print dispatcher polls
+`print_job` every 2 s and that table does not exist in production (no
+migration creates it; dev relied on synchronize). Receipt printing through
+the print worker cannot work until a migration adds the table.
 
 ## Rollback
 
