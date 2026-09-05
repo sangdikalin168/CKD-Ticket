@@ -45,7 +45,7 @@ export function CompanyLogo({ src, name, alt, size = 'md', className = '', fallb
     return (
       <div
         className={`flex flex-shrink-0 items-center justify-center overflow-hidden rounded-md
-          border border-border bg-muted ${sizeClassName} ${className}`}
+ border border-border bg-muted ${sizeClassName} ${className}`}
         style={style}
       >
         <Building2 className="h-1/2 w-1/2 text-muted-foreground/50" />

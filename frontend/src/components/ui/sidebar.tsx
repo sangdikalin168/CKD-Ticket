@@ -6,8 +6,8 @@ import { PanelLeft } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
 import { useIsMobile } from '../../hooks/use-mobile';
-import { Button } from './Button';
-import { Input } from './Input';
+import { Button } from './button';
+import { Input } from './input';
 import { Separator } from './separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from './sheet';
 import { Skeleton } from './skeleton';

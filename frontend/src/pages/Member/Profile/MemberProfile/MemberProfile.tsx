@@ -40,7 +40,7 @@ import Transfer from "../Transfer/Transfer";
 import WebcamCapture from "../../../../components/WebcamCapture/WebcamCapture";
 import { useMutation } from "@apollo/client";
 import { UPDATE_CUSTOMER_PHOTO } from "../../../../graphql/Customer/UpdateCustomerPhoto";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs-line";
 import {
   Dialog,
@@ -50,7 +50,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { Chip } from "@/components/ui/Chip";
 import { EnrollFingerprintModal } from "../EnrollFingerprint/EnrollFingerprintModal";
 
 const MemberProfile = ({ ID }: any) => {
@@ -203,7 +203,7 @@ const MemberProfile = ({ ID }: any) => {
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
           <button
             type="button"
-            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-rule bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-rule bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
             onClick={() => setOpenPreview(true)}
             aria-label="រូបភាព"
           >
@@ -220,7 +220,7 @@ const MemberProfile = ({ ID }: any) => {
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="truncate text-heading font-black leading-tight text-ink">{details?.customer_name}</h1>
+              <h1 className="truncate text-xl font-semibold leading-tight text-ink">{details?.customer_name}</h1>
               <Button
                 type="button"
                 variant="ghost"
@@ -231,16 +231,16 @@ const MemberProfile = ({ ID }: any) => {
               >
                 <Pencil aria-hidden="true" />
               </Button>
-              <MagnetChip tone={isActive ? "done" : "rejected"} size="md">
+              <Chip tone={isActive ? "paid" : "void"}>
                 {isActive ? "មានសុពលភាព" : "ផុតសុពលភាព"}
-              </MagnetChip>
-              <MagnetChip tone={details?.fingerprint ? "done" : "off"} size="md">
+              </Chip>
+              <Chip tone={details?.fingerprint ? "paid" : "muted"}>
                 {details?.fingerprint ? "មានម្រាមដៃ" : "គ្មានម្រាមដៃ"}
-              </MagnetChip>
+              </Chip>
               {activeHold && (
-                <MagnetChip tone={activeHold.status === "APPROVED" ? "info" : "pending"} size="md">
+                <Chip tone={activeHold.status === "APPROVED" ? "notice" : "pending"}>
                   {activeHold.status === "APPROVED" ? "ច្បាប់បានឯកភាព" : "កំពុងសុំច្បាប់"}
-                </MagnetChip>
+                </Chip>
               )}
             </div>
 
@@ -273,7 +273,7 @@ const MemberProfile = ({ ID }: any) => {
                 <Camera aria-hidden="true" />
                 ថតរូប
               </Button>
-              <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-rule bg-card px-2.5 text-sm font-medium text-ink transition-colors hover:bg-tray focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+              <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-rule bg-card px-2.5 text-sm font-medium text-ink transition-colors hover:bg-wash focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 បញ្ចូលរូប
                 <input type="file" className="sr-only" accept="image/*" onChange={handleFileUpload} />
@@ -284,7 +284,7 @@ const MemberProfile = ({ ID }: any) => {
 
         {/* Marker tray: everything that can be sold to or done for this member */}
         <div className="marker-rule mx-4" />
-        <div className="flex flex-wrap items-center gap-2 rounded-b-xl bg-tray px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2 rounded-b-xl bg-wash px-4 py-3">
           <Button type="button" size="sm" variant="outline" onClick={() => setOpenMember(true)}>
             <RefreshCw aria-hidden="true" />
             សមាជិក
@@ -479,7 +479,7 @@ const MemberProfile = ({ ID }: any) => {
                 alt={details?.customer_name || "Profile Preview"}
               />
             ) : (
-              <div className="flex h-64 items-center justify-center rounded-lg bg-tray">
+              <div className="flex h-64 items-center justify-center rounded-lg bg-wash">
                 <UserRound className="h-24 w-24 text-ink-soft" aria-hidden="true" />
               </div>
             )}

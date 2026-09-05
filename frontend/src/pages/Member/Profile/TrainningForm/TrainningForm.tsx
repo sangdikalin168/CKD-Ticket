@@ -9,7 +9,7 @@ import { useCreateTrainningPaymentMutation, useGetTranningPriceQuery } from "../
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { CouponInvoice } from "../../../../components/ComponentToPrint/CouponInvoice";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -212,7 +212,7 @@ const ConfirmModal = ((props) => {
             <button className="hidden" ref={buttonRef} type="button" onClick={handlePrint}>Print</button>
 
             {/* The slip as it will print, so the cashier checks it before committing. */}
-            <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+            <div className="overflow-x-auto rounded-lg border border-rule bg-wash p-3">
                 <p className="mb-2 text-caption text-ink-soft">វិក្កយបត្រ</p>
                 <CouponInvoice ref={componentRef}
                     invoice_id={payment_id}

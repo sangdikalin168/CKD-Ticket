@@ -11,10 +11,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlaskConical, Loader2, RefreshCw } from "lucide-react";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Chip } from "@/components/ui/Chip";
 
 interface PrinterList {
   ok: boolean;
@@ -124,7 +124,7 @@ export default function Printers() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <BoardHeader
+      <PageHeader
         titleKey="settings.printers.title"
         subtitle={t("settings.printers.subtitle")}
         actions={
@@ -163,9 +163,9 @@ export default function Printers() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="truncate font-semibold text-ink">{name}</span>
-                    <MagnetChip tone={isSelected ? "done" : "off"}>
+                    <Chip tone={isSelected ? "paid" : "muted"}>
                       {isSelected ? t("settings.printers.selected") : isDefault ? t("settings.printers.default") : "—"}
-                    </MagnetChip>
+                    </Chip>
                   </div>
                   {isSelected && isDefault && (
                     <div className="text-caption text-ink-soft">{t("settings.printers.default")}</div>

@@ -109,7 +109,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       <div
         ref={sheetRef}
         className="
-          relative w-full md:max-w-lg
+ relative w-full md:max-w-lg
           bg-white dark:bg-zinc-900
           rounded-t-3xl md:rounded-2xl
           shadow-2xl

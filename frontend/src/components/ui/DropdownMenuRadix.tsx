@@ -31,8 +31,8 @@ const DropdownMenuSubTrigger = React.forwardRef<
 >(({ className = "", children, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
-    className={`flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-tray data-[state=open]:bg-tray ${
-      inset ? "pl-8" : ""
+    className={`flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-wash data-[state=open]:bg-wash ${
+ inset ? "pl-8" : ""
     } ${className}`}
     {...props}
   >
@@ -77,8 +77,8 @@ const DropdownMenuItem = React.forwardRef<
 >(({ className = "", inset, children, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
-    className={`relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-tray focus:text-ink data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 ${
-      inset ? "pl-8" : ""
+    className={`relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-wash focus:text-ink data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 ${
+ inset ? "pl-8" : ""
     } ${className}`}
     {...props}
   >
@@ -93,7 +93,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 >(({ className = "", children, checked, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
-    className={`relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-tray focus:text-ink data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}
+    className={`relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-wash focus:text-ink data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}
     checked={checked}
     {...props}
   >
@@ -113,7 +113,7 @@ const DropdownMenuRadioItem = React.forwardRef<
 >(({ className = "", children, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
-    className={`relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-tray focus:text-ink data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}
+    className={`relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-wash focus:text-ink data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">

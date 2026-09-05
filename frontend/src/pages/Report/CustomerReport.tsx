@@ -5,17 +5,17 @@
 import html2pdf from "html2pdf.js";
 import * as XLSX from 'xlsx';
 import { useTranslation } from "react-i18next";
-import { FileDown, FileSpreadsheet, Search } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { AlertCircle, FileDown, FileSpreadsheet, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { DateInput } from "@/components/ui/DateInput";
-import { Label } from "@/components/ui/Label";
+import { Label } from "@/components/ui/label";
 import { DataTable } from "@/components/ui/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";
 import type { ColumnDef } from "@/types/datatable";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { BoardSection } from "@/components/board/BoardSection";
-import { MagnetDot } from "@/components/board/MagnetChip";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
+
 import { formatCount } from "@/lib/money";
 const CUSTOMER_SCAN_REPORT_QUERY = gql`
   query CustomerScanReport($toDate: String!, $fromDate: String!, $memberId: Float!) {
@@ -119,7 +119,7 @@ function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div className="inline-flex items-baseline gap-3 rounded-lg border border-rule bg-card px-4 py-3">
       <span className="text-caption text-ink-soft">{label}</span>
-      <span className="text-heading font-black leading-none text-ink">{value}</span>
+      <span className="text-xl font-semibold leading-none text-ink">{value}</span>
     </div>
   );
 }
@@ -332,7 +332,7 @@ export const CustomerReport = () => {
 
   return (
     <div className="space-y-4">
-      <BoardHeader titleKey="reports.customers" />
+      <PageHeader titleKey="reports.customers" />
 
       <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as typeof selectedTab)}>
         <TabsList>
@@ -344,14 +344,14 @@ export const CustomerReport = () => {
         {tabLoading && <p className="mt-4 text-sm text-ink-soft" role="status">{t("common.loading")}</p>}
         {tabError && (
           <p className="mt-4 flex items-center gap-2 text-sm text-ink" role="alert">
-            <MagnetDot tone="rejected" size="sm" />
+            <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
             Error: {tabError.message}
           </p>
         )}
 
         {/* Scan Report Tab */}
         <TabsContent value="scan">
-          <BoardSection title="Scan Report">
+          <Section title="Scan Report">
             <div className="flex flex-col gap-3 md:flex-row md:items-end">
               <div className="relative flex-1 space-y-1.5">
                 <Label htmlFor="scan-customer">Customer Search</Label>
@@ -375,7 +375,7 @@ export const CustomerReport = () => {
                     {filteredCustomers.map((c: any) => (
                       <li
                         key={c.customer_id}
-                        className="cursor-pointer px-3 py-2 text-sm text-ink hover:bg-tray"
+                        className="cursor-pointer px-3 py-2 text-sm text-ink hover:bg-wash"
                         onClick={() => {
                           setSelectedCustomer(c);
                           setSearchValue(c.customer_name + ' (' + c.customer_id + ')');
@@ -415,7 +415,7 @@ export const CustomerReport = () => {
             {/* Scan results */}
             <div className="mt-4" ref={scanLogRef}>
               {loadingScan && <p className="text-center text-sm text-ink-soft">Loading scan results...</p>}
-              {errorScan && <p className="text-center text-sm text-magnet-rejected">Error: {errorScan.message}</p>}
+              {errorScan && <p className="text-center text-sm text-void">Error: {errorScan.message}</p>}
               {dataScan && dataScan.customerScanReport && (
                 <div>
                   <div className="mb-2 text-sm font-semibold text-ink">Scan Log for {selectedCustomer?.customer_name} ({dataScan.customerScanReport.FromDate} to {dataScan.customerScanReport.ToDate})</div>
@@ -439,7 +439,7 @@ export const CustomerReport = () => {
                 </div>
               )}
             </div>
-          </BoardSection>
+          </Section>
         </TabsContent>
 
         {/* Active Members Tab */}
@@ -494,7 +494,7 @@ export const CustomerReport = () => {
             </div>
 
             {toDate && (
-              <BoardSection title={`${totalExpiring} Customers Expiring from ${fromDate} to ${toDate}`}>
+              <Section title={`${totalExpiring} Customers Expiring from ${fromDate} to ${toDate}`}>
                 {customersExpiring.length > 0 ? (
                   <DataTable<CustomerRow>
                     data={expiringRows}
@@ -512,7 +512,7 @@ export const CustomerReport = () => {
                 ) : (
                   <p className="text-sm text-ink-soft">No customers found for the selected expiration date.</p>
                 )}
-              </BoardSection>
+              </Section>
             )}
           </div>
         </TabsContent>

@@ -14,15 +14,15 @@ import CreateMember from "./CreateMember";
 import JWTManager from "../../utils/jwt";
 import MemberProfile from "./Profile/MemberProfile/MemberProfile";
 import { TypeOptions, toast } from "react-toastify";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Chip } from "@/components/ui/Chip";
 
 const notify = (
   message: string,
@@ -59,9 +59,9 @@ const isValid = (date: string) => (date ? new Date(date) >= new Date() : false);
 const StatusMagnet = ({ date }: { date: string }) => {
   const active = isValid(date);
   return (
-    <MagnetChip tone={active ? "done" : "rejected"}>
+    <Chip tone={active ? "paid" : "void"}>
       {active ? "មានសុពលភាព" : "ផុតកំណត់"}
-    </MagnetChip>
+    </Chip>
   );
 };
 
@@ -76,7 +76,7 @@ const AvatarName = ({ name, imagePath }: { name: string; imagePath: string }) =>
       {src ? (
         <CachedImage src={src} alt={name} className="h-7 w-7 shrink-0 rounded-full border border-rule object-cover" />
       ) : (
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rule bg-tray text-ink-soft">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rule bg-wash text-ink-soft">
           <UserRound className="h-4 w-4" aria-hidden="true" />
         </span>
       )}
@@ -188,7 +188,7 @@ export const Member = () => {
 
   return (
     <>
-      <BoardHeader
+      <PageHeader
         titleKey="members.title"
         subtitle={t("members.count", { total: totalCount, active: activeCount })}
         actions={

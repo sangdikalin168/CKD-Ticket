@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import { DateInput } from "@/components/ui/DateInput";
-import { Label } from "@/components/ui/Label";
+import { Label } from "@/components/ui/label";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/types/datatable";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { BoardSection } from "@/components/board/BoardSection";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -126,7 +126,7 @@ function SellerChip({ active, onClick, children }: { active: boolean; onClick: (
       aria-pressed={active}
       className={cn(
         "inline-flex h-9 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray"
+        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-wash"
       )}
     >
       {children}
@@ -342,7 +342,7 @@ function IncomeReport() {
 
   return (
     <div className="space-y-6">
-      <BoardHeader
+      <PageHeader
         titleKey="reports.income"
         subtitle={`${selectedDateFrom} → ${selectedDateTo}`}
         actions={
@@ -389,12 +389,12 @@ function IncomeReport() {
           </div>
 
           {/* The ledger and its total */}
-          <BoardSection
+          <Section
             title="ចំណូល"
             aside={
               <span className="inline-flex items-baseline gap-2">
                 <span className="text-caption text-ink-soft">{t("common.total")}</span>
-                <span className="text-heading font-black leading-none text-ink">{formatMoney(total)}</span>
+                <span className="text-xl font-semibold leading-none text-ink">{formatMoney(total)}</span>
               </span>
             }
           >
@@ -411,10 +411,10 @@ function IncomeReport() {
               densityToggle={false}
               defaultDensity="compact"
             />
-          </BoardSection>
+          </Section>
 
           {/* Detail ledgers: who bought what in the range */}
-          <BoardSection
+          <Section
             title="លម្អិត"
             aside={
               <div className="flex flex-wrap gap-2" role="group" aria-label="លម្អិត">
@@ -444,7 +444,7 @@ function IncomeReport() {
                 ជ្រើសរើស សមាជិក / គូប៉ុន / ហ្វឹកហាត់ ដើម្បីមើលអ្នកទិញក្នុងចន្លោះថ្ងៃនេះ
               </p>
             )}
-          </BoardSection>
+          </Section>
         </>
       ) : (
         <LoadingPage message={t("common.loading")} />

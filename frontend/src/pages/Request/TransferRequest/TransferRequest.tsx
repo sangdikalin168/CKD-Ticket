@@ -7,9 +7,9 @@ import Notifications from '../../../components/Notification';
 import { FileSpreadsheet, Printer } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { TransferInvoice } from '../../../components/ComponentToPrint/TransferInvoice';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
@@ -17,9 +17,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { BoardHeader } from '@/components/board/BoardHeader';
-import { RequestColumns, type RequestCard } from '@/components/board/RequestColumns';
-import { MagnetChip, statusTone, type MagnetTone } from '@/components/board/MagnetChip';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { RequestColumns, type RequestCard } from '@/components/ui/RequestColumns';
+import { Chip, statusTone, type ChipTone } from '@/components/ui/Chip';
 import { exportToExcel } from '@/utils/excelExport';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
@@ -69,15 +69,15 @@ const DECISION_LABEL: Record<string, string> = {
     Rejected: "បដិសេធ",
 };
 
-/** Which column of the board a transfer sits in. */
+/** Which column a transfer sits in. */
 const columnOf = (r: TransferRequest) =>
     r.processed_by != null ? "processed" : r.checker_status === "Pending" ? "requested" : "checked";
 
-/** The card's headline magnet: the furthest the request has got. */
-const overallTone = (r: TransferRequest): { tone: MagnetTone; label: string } => {
-    if (r.processed_by != null) return { tone: "done", label: "ដំណើរការរួច" };
-    if (r.checker_status === "Rejected" || r.approver_status === "Rejected") return { tone: "rejected", label: "បដិសេធ" };
-    if (r.checker_status === "Approved" && r.approver_status === "Approved") return { tone: "info", label: "រង់ចាំដំណើរការ" };
+/** The card's headline state: the furthest the request has got. */
+const overallTone = (r: TransferRequest): { tone: ChipTone; label: string } => {
+    if (r.processed_by != null) return { tone: "paid", label: "ដំណើរការរួច" };
+    if (r.checker_status === "Rejected" || r.approver_status === "Rejected") return { tone: "void", label: "បដិសេធ" };
+    if (r.checker_status === "Approved" && r.approver_status === "Approved") return { tone: "notice", label: "រង់ចាំដំណើរការ" };
     if (r.checker_status === "Approved") return { tone: "pending", label: "រង់ចាំសម្រេច" };
     return { tone: "pending", label: "រង់ចាំពិនិត្យ" };
 };
@@ -374,12 +374,12 @@ const TransferRequest = () => {
             toneLabel: overall.label,
             extra: (
                 <>
-                    <MagnetChip tone={statusTone(row.checker_status)} className="text-ink-soft">
+                    <Chip tone={statusTone(row.checker_status)} className="text-ink-soft">
                         {t("requests.checker")}: <span className="text-ink" title={row.checker_comment || undefined}>{DECISION_LABEL[row.checker_status] ?? row.checker_status}</span>
-                    </MagnetChip>
-                    <MagnetChip tone={statusTone(row.approver_status)} className="text-ink-soft">
+                    </Chip>
+                    <Chip tone={statusTone(row.approver_status)} className="text-ink-soft">
                         {t("requests.approver")}: <span className="text-ink" title={row.approver_comment || undefined}>{DECISION_LABEL[row.approver_status] ?? row.approver_status}</span>
-                    </MagnetChip>
+                    </Chip>
                 </>
             ),
             actions: (row.checker_status === "Pending" || row.approver_status === "Pending" || canProcess) ? (
@@ -407,7 +407,7 @@ const TransferRequest = () => {
 
     return (
         <>
-            <BoardHeader
+            <PageHeader
                 titleKey="requests.transfer"
                 actions={
                     <>
@@ -497,7 +497,7 @@ const TransferRequest = () => {
                         </Button>
                         <Button
                             type="button"
-                            variant="success"
+                            variant="paid"
                             disabled={checker_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
@@ -573,7 +573,7 @@ const TransferRequest = () => {
                         </Button>
                         <Button
                             type="button"
-                            variant="success"
+                            variant="paid"
                             disabled={approver_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
@@ -611,7 +611,7 @@ const TransferRequest = () => {
                     <DialogHeader>
                         <DialogTitle>វិក្កយបត្រ</DialogTitle>
                     </DialogHeader>
-                    <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+                    <div className="overflow-x-auto rounded-lg border border-rule bg-wash p-3">
                         <TransferInvoice
                             ref={InvoiceRef}
                             invoice_detail={invoice_detail}

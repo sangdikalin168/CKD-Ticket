@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { useOverlay } from './OverlayStack';
 import { StatusProgressBar } from './StatusProgressBar';
-import { MagnetDot } from '../board/MagnetChip';
+import { StateDot } from './Chip';
 
 interface LoadingOverlayProps {
   isLoading: boolean;
@@ -32,7 +32,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       className="fixed inset-0 bg-black/50 flex items-center justify-center"
       style={{ zIndex }}
     >
-      <div className="bg-card border border-rule rounded-xl p-8 shadow-overlay flex flex-col items-center max-w-md mx-4 w-full">
+      <div className="bg-card border border-rule rounded-lg p-8 shadow-overlay flex flex-col items-center max-w-md mx-4 w-full">
         {/* A determinate percentage is more informative than a spinner, so the
             spinner only appears when there is no progress figure to show. */}
         {progress === undefined && (
@@ -40,7 +40,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         )}
 
         {/* Messages */}
-        <p className={`text-title font-black text-ink text-center ${progress === undefined ? 'mt-5' : ''}`}>
+        <p className={`text-lg font-semibold text-ink text-center ${progress === undefined ? 'mt-5' : ''}`}>
           {resolvedMessage}
         </p>
         {resolvedSubMessage && (
@@ -50,7 +50,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         {/* Overall progress */}
         {progress !== undefined && (
           <div className="w-full mt-5">
-            <div className="w-full bg-tray rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-wash rounded-full h-2.5 overflow-hidden">
               <div
                 className="relative bg-ink h-2.5 rounded-full overflow-hidden transition-all duration-500 ease-out"
                 style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
@@ -73,17 +73,16 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
             {steps.map((step, i) => (
               <div key={i} className="space-y-1">
                 <div className="flex items-center gap-2 text-sm">
-                  <MagnetDot
-                    size="sm"
+                  <StateDot
                     tone={
-                      step.status === 'done' ? 'done'
-                        : step.status === 'error' ? 'rejected'
-                          : step.status === 'active' ? 'info'
-                            : 'off'
+                      step.status === 'done' ? 'paid'
+                        : step.status === 'error' ? 'void'
+                          : step.status === 'active' ? 'notice'
+                            : 'muted'
                     }
                   />
                   <span className={`truncate ${
-                    step.status === 'active' ? 'text-ink font-medium' :
+ step.status === 'active' ? 'text-ink font-medium' :
                       step.status === 'pending' ? 'text-ink-soft' :
                         'text-ink'
                   }`}>

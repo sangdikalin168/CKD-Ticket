@@ -6,16 +6,18 @@ import { v4 as uuidv4 } from "uuid";
 import { gql, useQuery } from "@apollo/client";
 import { useCreateTicketPaymentMutation } from "../../generated/graphql";
 import { TypeOptions, toast } from "react-toastify";
-import { Settings2, Ticket as TicketIcon } from "lucide-react";
+import { Printer, Settings2, Ticket as TicketIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { PriceTile } from "@/components/board/PriceTile";
-import { TodayBoard, type BoardLine, type TallyRow } from "@/components/board/TodayBoard";
-import { FacilityDot } from "@/components/board/FacilityMark";
-import { FACILITIES, FACILITY_ORDER, facilityColumn, facilityColor } from "@/lib/facility";
-import { todayIso } from "@/lib/money";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { PriceCard } from "@/components/ui/PriceCard";
+import { Section } from "@/components/ui/Section";
+import { FacilityDot, FacilityMarks } from "@/components/ui/FacilityMark";
+import { FACILITIES, FACILITY_ORDER, facilityGroup, type FacilityRef } from "@/lib/facility";
+import { formatMoney, formatTime, todayIso } from "@/lib/money";
 import TicketPriceConfigPage from "../TicketConfig/TicketPriceConfig";
 
 /** The desktop shell's print bridge; absent in a plain browser. */
@@ -40,21 +42,40 @@ const datetime_format = (date_time: string | Date) => {
   );
 };
 
+/** One line of today's sales at this counter. */
+export interface SaleLine {
+  id: string;
+  /** ISO timestamp of the sale. */
+  at: string;
+  seller: string;
+  /** The ticket code printed on the slip. */
+  code: string;
+  facilities: FacilityRef[];
+  amount: number;
+  printed: boolean;
+}
+
+/** Today's tally for one price, from the server: how many sold, at what price. */
+interface TallyRow {
+  price: number;
+  qty: number;
+}
+
 /** Today's lines at this counter survive a page change but not the day. */
-const linesKey = () => `board-lines:${todayIso()}`;
-const readLines = (): BoardLine[] => {
+const linesKey = () => `ticket-lines:${todayIso()}`;
+const readLines = (): SaleLine[] => {
   try {
     const raw = sessionStorage.getItem(linesKey());
-    return raw ? (JSON.parse(raw) as BoardLine[]) : [];
+    return raw ? (JSON.parse(raw) as SaleLine[]) : [];
   } catch {
     return [];
   }
 };
-const writeLines = (lines: BoardLine[]) => {
+const writeLines = (lines: SaleLine[]) => {
   try {
     sessionStorage.setItem(linesKey(), JSON.stringify(lines.slice(0, 200)));
   } catch {
-    /* storage full or unavailable: the board just does not persist */
+    /* storage full or unavailable: the list just does not persist */
   }
 };
 
@@ -70,7 +91,7 @@ const GET_TICKET_CONFIGS = gql`
 `;
 
 // The same aggregate the income report reads: how many tickets at each price
-// today, every seller. Keeps the board's tally and the report on one row set.
+// today, every seller. Keeps this page's tally and the report on one row set.
 const TODAY_TALLY = gql`
   query BoardTicketTally($dateFrom: String!, $dateTo: String!, $userId: Float!) {
     GetTicketPayment(dateFrom: $dateFrom, dateTo: $dateTo, userId: $userId) {
@@ -88,7 +109,7 @@ function TicketSale() {
   const [price, setPrice] = useState(0);
   const [seller, setSeller] = useState("");
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [lines, setLines] = useState<BoardLine[]>(() => readLines());
+  const [lines, setLines] = useState<SaleLine[]>(() => readLines());
 
   const { data: configData, loading: configLoading } = useQuery(GET_TICKET_CONFIGS, {
     fetchPolicy: "no-cache",
@@ -102,32 +123,31 @@ function TicketSale() {
 
   const allConfigs: any[] = configData?.GetTicketPriceConfigs ?? [];
 
-  // The four fixed columns of the board, each owned by a facility; a product
-  // that grants more than one facility is written in the combination column.
-  const columns = useMemo(
+  // Prices are filed under the facility they grant; a product that grants more
+  // than one is filed under the combination heading. Groups with no prices are
+  // not drawn at all — an empty heading teaches nothing.
+  const groups = useMemo(
     () =>
       FACILITY_ORDER.map((code) => ({
         code,
         meta: FACILITIES[code],
         label: t(`ticket.column.${code.toLowerCase()}`),
-        tiles: allConfigs
-          .filter((cfg) => facilityColumn(cfg.facilities) === code)
+        cards: allConfigs
+          .filter((cfg) => facilityGroup(cfg.facilities) === code)
           .sort((a, b) => a.price - b.price),
-      })),
+      })).filter((g) => g.cards.length > 0),
     [allConfigs, t]
   );
 
-  // Today's tally, coloured by the tile that sells at that price.
   const tally: TallyRow[] = useMemo(() => {
     const rows = (tallyData?.GetTicketPayment ?? []) as { price: number | string; qty: number | string }[];
     return rows
-      .map((row) => ({
-        price: Number(row.price),
-        qty: Number(row.qty),
-        facilities: allConfigs.find((c) => Number(c.price) === Number(row.price))?.facilities ?? [],
-      }))
+      .map((row) => ({ price: Number(row.price), qty: Number(row.qty) }))
       .sort((a, b) => a.price - b.price);
-  }, [tallyData, allConfigs]);
+  }, [tallyData]);
+
+  const soldToday = tally.reduce((n, r) => n + r.qty, 0);
+  const totalToday = tally.reduce((n, r) => n + r.qty * r.price, 0);
 
   useEffect(() => {
     writeLines(lines);
@@ -175,7 +195,6 @@ function TicketSale() {
 
     if (result.data?.CreateTicketPayment.success) {
       notify("Success", true, "success");
-      // The board gains a line.
       setLines((prev) => [
         {
           id: uid,
@@ -204,72 +223,144 @@ function TicketSale() {
   };
 
   const isLoading = activeId !== null;
+  const newest = lines[0];
 
   return (
     <div className="space-y-6">
-      <BoardHeader titleKey="menu.sellTicket" subtitle={t("board.sellHint")} />
+      <PageHeader titleKey="menu.sellTicket" subtitle={t("ticket.sellHint")} />
 
       {/* Hidden print button */}
       <button ref={buttonRef} className="hidden" onClick={handlePrint} />
 
       {configLoading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" role="status" aria-live="polite">
-          {FACILITY_ORDER.map((code) => (
-            <div key={code} className="rounded-lg border border-rule bg-card p-3">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="mt-4 h-28 w-40 rounded-xl" />
-              <Skeleton className="mt-3 h-28 w-40 rounded-xl" />
+        <div className="space-y-6" role="status" aria-live="polite">
+          {[0, 1].map((g) => (
+            <div key={g}>
+              <Skeleton className="h-5 w-28" />
+              <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {[0, 1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-[8.5rem] rounded-lg" />
+                ))}
+              </div>
             </div>
           ))}
         </div>
       ) : allConfigs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule bg-card py-16">
-          <TicketIcon className="h-8 w-8 text-ink-soft" aria-hidden="true" />
-          <p className="font-semibold text-ink">{t("board.noPrices")}</p>
-          <p className="text-caption text-ink-soft">{t("board.noPricesHint")}</p>
+        <div className="rounded-lg border border-rule bg-card">
+          <EmptyState
+            icon={TicketIcon}
+            title={t("ticket.noPrices")}
+            description={t("ticket.noPricesHint")}
+          />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {columns.map((col) => (
-            <section
-              key={col.code}
-              aria-label={col.label}
-              className={cn("min-w-0 rounded-lg border border-rule p-3", col.meta.tint)}
-            >
-              <header className="flex items-center gap-2">
-                <FacilityDot code={col.code} size={12} />
-                <h2 className="marker-caps text-ink">{col.label}</h2>
-                <span className="ml-auto text-caption text-ink-soft">{col.tiles.length}</span>
-              </header>
-              <div className="mt-2 h-0.5 rounded-full" style={{ background: facilityColor(col.code) }} />
-              {col.tiles.length === 0 ? (
-                <p className="py-6 text-center text-caption text-ink-soft">{t("board.emptyColumn")}</p>
-              ) : (
-                <div className="mt-3 flex flex-wrap items-stretch gap-3 md:max-h-[calc(100vh-32rem)] md:overflow-y-auto md:pb-1">
-                  {col.tiles.map((cfg) => (
-                    <PriceTile
-                      key={cfg.config_id}
-                      price={cfg.price}
-                      ageGroup={cfg.age_group}
-                      facilities={cfg.facilities}
-                      busy={activeId === cfg.config_id}
-                      disabled={isLoading && activeId !== cfg.config_id}
-                      onSelect={() => handleSelect(cfg)}
-                    />
-                  ))}
-                </div>
-              )}
+        <div className="space-y-5">
+          {groups.map((group) => (
+            <section key={group.code} aria-label={group.label} className="min-w-0">
+              <div className="mb-2 flex items-center gap-2">
+                <FacilityDot code={group.code} />
+                <h2 className="text-sm font-semibold text-ink">{group.label}</h2>
+                <span className="figure text-caption text-ink-soft">{group.cards.length}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {group.cards.map((cfg) => (
+                  <PriceCard
+                    key={cfg.config_id}
+                    price={cfg.price}
+                    ageGroup={cfg.age_group}
+                    facilities={cfg.facilities}
+                    busy={activeId === cfg.config_id}
+                    disabled={isLoading && activeId !== cfg.config_id}
+                    onSelect={() => handleSelect(cfg)}
+                  />
+                ))}
+              </div>
             </section>
           ))}
         </div>
       )}
 
-      <TodayBoard
-        lines={lines}
-        tally={tally}
-        tallyLoading={tallyLoading}
-        onPrintAgain={uuid ? handlePrintAgain : undefined}
-      />
+      {/* Today's sales: an ordinary table with a scope line, in the compact
+          ledger density — every counter's tally above, this counter's lines
+          below, so the two are never confused for one another. */}
+      <Section
+        title={t("ticket.todaySales")}
+        aside={
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
+            <span className="text-caption text-ink-soft">{t("ticket.allCounters")}</span>
+            {tallyLoading && tally.length === 0 ? (
+              <Skeleton className="h-4 w-24" />
+            ) : (
+              <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
+                <span className="text-caption text-ink-soft">{t("ticket.soldToday")}</span>
+                <span className="figure font-semibold text-ink">{soldToday}</span>
+                <span className="text-caption text-ink-soft">{t("common.total")}</span>
+                <span className="figure font-semibold text-ink">{formatMoney(totalToday)}</span>
+              </span>
+            )}
+          </div>
+        }
+      >
+        <div className="overflow-hidden rounded-lg border border-rule bg-card">
+          {lines.length === 0 ? (
+            <EmptyState
+              icon={TicketIcon}
+              title={t("ticket.noSalesYet")}
+              description={t("ticket.noSalesYetHint")}
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] text-caption">
+                <thead className="border-b border-rule bg-wash text-left text-ink-soft">
+                  <tr>
+                    <th scope="col" className="px-3 py-1.5 font-medium">{t("ticket.col.time")}</th>
+                    <th scope="col" className="px-3 py-1.5 font-medium">{t("ticket.col.customer")}</th>
+                    <th scope="col" className="hidden px-3 py-1.5 font-medium sm:table-cell">{t("ticket.col.facility")}</th>
+                    <th scope="col" className="px-3 py-1.5 text-right font-medium">{t("common.amount")}</th>
+                    <th scope="col" className="hidden px-3 py-1.5 font-medium md:table-cell">{t("ticket.col.printed")}</th>
+                    <th scope="col" className="w-px px-3 py-1.5" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-rule/60">
+                  {lines.map((line) => (
+                    <tr key={line.id} className="leading-[19px] text-ink transition-colors hover:bg-wash/60">
+                      <td className="figure whitespace-nowrap px-3 py-1">{formatTime(line.at)}</td>
+                      <td className="whitespace-nowrap px-3 py-1">
+                        <span className="font-medium">{t("common.walkIn")}</span>
+                        <span className="figure ml-2 text-ink-soft">{line.code.slice(0, 8)}</span>
+                        <span className="ml-2 text-ink-soft">· {line.seller}</span>
+                      </td>
+                      <td className="hidden whitespace-nowrap px-3 py-1 sm:table-cell">
+                        <FacilityMarks facilities={line.facilities} />
+                      </td>
+                      <td className="figure whitespace-nowrap px-3 py-1 text-right font-medium">
+                        {formatMoney(line.amount)}
+                      </td>
+                      <td className="hidden whitespace-nowrap px-3 py-1 md:table-cell">
+                        {line.printed && <Chip tone="paid">{t("ticket.col.printed")}</Chip>}
+                      </td>
+                      <td className="whitespace-nowrap px-2 py-1 text-right">
+                        {uuid && line === newest && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-caption"
+                            onClick={handlePrintAgain}
+                          >
+                            <Printer aria-hidden="true" />
+                            {t("ticket.printAgain")}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </Section>
 
       {/* Hidden print template */}
       <div className="hidden">

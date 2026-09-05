@@ -1,17 +1,17 @@
 import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import JWTManager from "../../utils/jwt";
 import { useAuthContext } from "../../context/AuthContext";
 import { useLoginMutation } from "../../generated/graphql";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
-import { MagnetDot } from "@/components/board/MagnetChip";
+import { StateDot } from "@/components/ui/Chip";
 
 // The mark is a transparent PNG whose temple glyph is dark slate, so it sits on
-// its own pale plate rather than directly on the board.
+// its own pale plate rather than directly on the card.
 const LOGO_PLATE = "#F8F5EF";
 
 function Login() {
@@ -79,13 +79,13 @@ function Login() {
   };
 
   return (
-    <div className="board-grid fixed inset-0 flex items-center justify-center overflow-y-auto px-5 py-10">
-      <div className="w-full max-w-[360px]">
+    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto bg-floor px-5 py-10">
+      <div className="w-full max-w-[380px]">
 
-        {/* The family mark on its plate, above the club's name */}
-        <div className="mb-8 flex flex-col items-center gap-3">
+        {/* The family mark on its plate, above the system's name */}
+        <div className="mb-6 flex flex-col items-center gap-3">
           <div
-            className="flex flex-shrink-0 items-center justify-center rounded-xl border border-rule"
+            className="flex flex-shrink-0 items-center justify-center rounded-lg border border-rule"
             style={{ width: 84, height: 72, background: LOGO_PLATE }}
           >
             <img
@@ -95,16 +95,16 @@ function Login() {
             />
           </div>
           <div className="text-center">
-            <p className="marker-caps text-ink">{t("login.brand")}</p>
-            <p className="text-sm font-semibold text-ink-soft">{t("login.system")}</p>
+            <p className="text-sm font-medium text-ink">{t("login.brand")}</p>
+            <p className="text-caption text-ink-soft">{t("login.system")}</p>
           </div>
         </div>
 
-        {/* Heading with the marker rule */}
+        {/* The form on one white card, the way every other surface reads */}
+        <div className="rounded-lg border border-rule bg-card p-6">
         <div>
-          <h1 className="text-heading font-black leading-tight text-ink">{t("login.signIn")}</h1>
+          <h1 className="text-xl font-semibold leading-tight text-ink">{t("login.signIn")}</h1>
           <p className="mt-1 text-sm text-ink-soft">{t("login.subtitle")}</p>
-          <div className="marker-rule mt-3" />
         </div>
 
         {/* Error */}
@@ -112,10 +112,10 @@ function Login() {
           <div
             role="alert"
             aria-live="assertive"
-            className="mt-4 flex items-start gap-2.5 rounded-lg border border-magnet-rejected/40 bg-magnet-rejected/5 px-3.5 py-3"
+            className="mt-4 flex items-start gap-2.5 rounded-md border border-void/40 bg-void-tint px-3.5 py-3"
           >
-            <MagnetDot tone="rejected" size="sm" className="mt-0.5" />
-            <p className="text-sm font-medium text-ink">{error}</p>
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-void" aria-hidden="true" />
+            <p className="text-sm text-ink">{error}</p>
           </div>
         )}
 
@@ -173,7 +173,7 @@ function Login() {
             </div>
             {capsLockOn && (
               <p id="caps-lock-hint" className="flex items-center gap-1.5 text-caption text-ink">
-                <MagnetDot tone="pending" size="xs" />
+                <StateDot tone="pending" size={8} />
                 {t("login.capsLockOn")}
               </p>
             )}
@@ -199,9 +199,11 @@ function Login() {
           </div>
         </form>
 
+        </div>
+
         {/* Footer — language picker sits with the copyright, since the app Header
             is not rendered before login. */}
-        <div className="mt-10 flex flex-col items-center gap-2">
+        <div className="mt-6 flex flex-col items-center gap-2">
           <LanguageSwitcher align="center" side="top" />
           <p className="text-center text-caption text-ink-soft">
             {t("login.copyright", { year: new Date().getFullYear() })}

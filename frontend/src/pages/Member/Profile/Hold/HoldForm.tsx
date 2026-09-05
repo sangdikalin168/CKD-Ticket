@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { DateInput } from "@/components/ui/DateInput";
 import { useCreateHoldRequestV2Mutation } from "../../../../generated/holdV2";
 import Notifications from "../../../../components/Notification";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Dialog,
     DialogContent,

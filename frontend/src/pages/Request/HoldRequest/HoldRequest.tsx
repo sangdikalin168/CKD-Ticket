@@ -8,9 +8,9 @@ import Notifications from "../../../components/Notification";
 import { HoldInvoice } from "../../../components/ComponentToPrint/HoldInvoice";
 import { useReactToPrint } from "react-to-print";
 import type { ColumnDef } from "@/types/datatable";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Dialog,
     DialogContent,
@@ -18,9 +18,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { RequestColumns, type RequestCard } from "@/components/board/RequestColumns";
-import { statusTone } from "@/components/board/MagnetChip";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { RequestColumns, type RequestCard } from "@/components/ui/RequestColumns";
+import { statusTone } from "@/components/ui/Chip";
 import { exportToExcel } from "@/utils/excelExport";
 import { showSuccessToast, showErrorToast } from "@/utils/toast";
 
@@ -270,7 +270,7 @@ const HoldRequest = () => {
 
     return (
         <>
-            <BoardHeader
+            <PageHeader
                 titleKey="requests.hold"
                 actions={
                     <>
@@ -429,7 +429,7 @@ const HoldRequest = () => {
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant="success"
+                                        variant="paid"
                                         disabled={deciding}
                                         onClick={async () => {
                                             const res = await decideRequest({
@@ -466,7 +466,7 @@ const HoldRequest = () => {
                     </DialogHeader>
                     <div className="overflow-hidden rounded-lg border border-rule">
                         <table className="min-w-full text-caption">
-                            <thead className="bg-tray text-left text-ink-soft">
+                            <thead className="bg-wash text-left text-ink-soft">
                                 <tr>
                                     <th scope="col" className="px-2 py-1.5 font-medium">Date</th>
                                     <th scope="col" className="px-2 py-1.5 font-medium">Item</th>
@@ -504,7 +504,7 @@ const HoldRequest = () => {
                     <DialogHeader>
                         <DialogTitle>វិក្កយបត្រ</DialogTitle>
                     </DialogHeader>
-                    <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+                    <div className="overflow-x-auto rounded-lg border border-rule bg-wash p-3">
                         <HoldInvoice
                             ref={HoldInvoiceRef}
                             invoice_detail={invoice_detail}

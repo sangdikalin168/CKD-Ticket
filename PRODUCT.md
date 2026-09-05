@@ -165,6 +165,13 @@ Explicitly undecided / not yet true:
 
 ## Brand Commitments
 
+- **Standing visual preference (2026-09-05): the conventional admin, played
+  straight, with Square Dashboard as the craft bar.** Offered a hand of visual
+  worlds twice — the second time after the Gym Whiteboard had been built and
+  seen — the owner chose the category standard. Future visual work executes
+  that convention at full fidelity rather than proposing a new world, and
+  matches CKD-POS, which made the same choice against Square POS. The two
+  systems are meant to read as one company's software.
 - **Names:** the repository and desktop app are "CKD-Ticket"; the PWA
   manifest is "MH-System"; every printed slip carries the club's own name,
   "មិង ហួរ ក្លឹបហាត់ប្រាណ & អាងហែលទឹក (សាខាចំការដូង)", and "សូមអរគុណ!"

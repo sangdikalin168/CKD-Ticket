@@ -3,9 +3,13 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 /**
- * The hand-built ledger table. Compact density by default (see
- * ui/tableDensity.ts): ~24 rows on a 1366x768 screen. Header on the tray,
- * hairline rows, no zebra.
+ * The one table. Compact ledger density by default (see ui/tableDensity.ts):
+ * ~24 rows on a 1366x768 screen. A quiet wash header band, hairline rows, a
+ * wash hover, tabular figures, no zebra.
+ *
+ * Headers stay sentence case: this app's page bodies are Khmer, which has no
+ * capitals, so POS's uppercase label step would letterspace Khmer glyphs apart
+ * for no gain.
  */
 const Table = React.forwardRef<
   HTMLTableElement,
@@ -25,7 +29,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("bg-tray [&_tr]:border-b [&_tr]:border-rule", className)} {...props} />
+  <thead ref={ref} className={cn("bg-wash [&_tr]:border-b [&_tr]:border-rule", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -48,7 +52,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t-2 border-ink bg-tray font-medium [&>tr]:last:border-b-0",
+      "border-t border-rule bg-wash font-medium [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -63,7 +67,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-rule/60 transition-colors hover:bg-tray/60 data-[state=selected]:bg-tray",
+      "border-b border-rule/60 transition-colors hover:bg-wash/60 data-[state=selected]:bg-wash",
       className
     )}
     {...props}

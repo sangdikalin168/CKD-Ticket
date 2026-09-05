@@ -2,8 +2,8 @@ import { useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
-import { ChevronRight, FileSpreadsheet, Search, X } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { AlertCircle, ChevronRight, FileSpreadsheet, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableHeader,
@@ -13,9 +13,9 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { BoardSection } from "@/components/board/BoardSection";
-import { MagnetDot } from "@/components/board/MagnetChip";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
+
 import { formatCount, formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +79,7 @@ function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex min-w-0 items-baseline gap-3 px-4 py-3">
       <span className="truncate text-caption text-ink-soft">{label}</span>
-      <span className="text-heading font-black leading-none text-ink">{value}</span>
+      <span className="text-xl font-semibold leading-none text-ink">{value}</span>
     </div>
   );
 }
@@ -174,7 +174,7 @@ export const CustomerTypeReport = () => {
 
   return (
     <div className="space-y-6">
-      <BoardHeader
+      <PageHeader
         titleKey="reports.memberTypes"
         subtitle="បង្ហាញប្រភេទសមាជិកដែលអតិថិជនកំពុងប្រើប្រាស់បច្ចុប្បន្ន (ផ្អែកលើការទិញចុងក្រោយ)"
         actions={
@@ -196,7 +196,7 @@ export const CustomerTypeReport = () => {
       {loading && <p className="text-sm text-ink-soft" role="status">កំពុងផ្ទុក...</p>}
       {error && (
         <p className="flex items-center gap-2 text-sm text-ink" role="alert">
-          <MagnetDot tone="rejected" size="sm" />
+          <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
           កំហុស: {error.message}
         </p>
       )}
@@ -212,7 +212,7 @@ export const CustomerTypeReport = () => {
           </section>
 
           {/* Duration groups as a marker list */}
-          <BoardSection title="សង្ខេបតាមប្រភេទ">
+          <Section title="សង្ខេបតាមប្រភេទ">
             <ul className="divide-y divide-rule rounded-lg border border-rule bg-card">
               {reportData.groups.map((group: MembershipDurationGroup) => {
                 const active = showDetails && selectedDuration === group.month_duration;
@@ -226,23 +226,23 @@ export const CustomerTypeReport = () => {
                         setShowDetails(true);
                       }}
                       className={cn(
-                        "grid w-full grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 px-4 py-2.5 text-left text-ink transition-colors hover:bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink",
-                        active && "bg-tray"
+                        "grid w-full grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 px-4 py-2.5 text-left text-ink transition-colors hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink",
+                        active && "bg-wash"
                       )}
                     >
                       <span aria-hidden="true" className={cn("marker-dot", active ? "" : "opacity-60")} style={{ ["--marker" as string]: "var(--ink)" }} />
-                      <span className="text-title font-black">{group.month_duration} ខែ</span>
+                      <span className="text-lg font-semibold">{group.month_duration} ខែ</span>
                       <span className="inline-flex items-baseline gap-2">
                         <span className="text-caption text-ink-soft">អតិថិជន</span>
-                        <span className="font-black">{formatCount(group.total_customers)}</span>
+                        <span className="font-semibold">{formatCount(group.total_customers)}</span>
                       </span>
                       <span className="inline-flex items-baseline gap-2">
                         <span className="text-caption text-ink-soft">ចំណូល</span>
-                        <span className="font-black">{formatMoney(group.total_revenue, { decimals: 2 })}</span>
+                        <span className="font-semibold">{formatMoney(group.total_revenue, { decimals: 2 })}</span>
                       </span>
                       <span className="hidden items-baseline gap-2 sm:inline-flex">
                         <span className="text-caption text-ink-soft">មធ្យម</span>
-                        <span className="font-black">
+                        <span className="font-semibold">
                           {formatMoney(group.total_customers > 0 ? group.total_revenue / group.total_customers : 0, { decimals: 2 })}
                         </span>
                       </span>
@@ -252,11 +252,11 @@ export const CustomerTypeReport = () => {
                 );
               })}
             </ul>
-          </BoardSection>
+          </Section>
 
           {/* Detailed Customer List */}
           {showDetails && selectedGroup && (
-            <BoardSection
+            <Section
               title={`លម្អិតអតិថិជន ${selectedDuration} ខែ`}
               aside={
                 <Button onClick={() => setShowDetails(false)} variant="outline" size="sm">
@@ -274,7 +274,7 @@ export const CustomerTypeReport = () => {
                         <p className="truncate font-semibold text-ink">{customer.customer_name}</p>
                         <p className="text-caption text-ink-soft">{customer.customer_code}</p>
                       </div>
-                      <span className="text-title font-black text-ink">{formatMoney(customer.price, { decimals: 2 })}</span>
+                      <span className="text-lg font-semibold text-ink">{formatMoney(customer.price, { decimals: 2 })}</span>
                     </div>
 
                     <dl className="mt-2 grid grid-cols-2 gap-2 text-caption">
@@ -304,9 +304,9 @@ export const CustomerTypeReport = () => {
 
                 {/* Mobile Summary */}
                 <div className="flex items-center justify-between rounded-lg border-2 border-ink bg-card p-3">
-                  <span className="font-black text-ink">សរុប</span>
+                  <span className="font-semibold text-ink">សរុប</span>
                   <div className="text-right">
-                    <p className="text-title font-black text-ink">{formatMoney(selectedGroup.total_revenue, { decimals: 2 })}</p>
+                    <p className="text-lg font-semibold text-ink">{formatMoney(selectedGroup.total_revenue, { decimals: 2 })}</p>
                     <p className="text-caption text-ink-soft">{selectedGroup.total_customers} អតិថិជន</p>
                   </div>
                 </div>
@@ -359,20 +359,20 @@ export const CustomerTypeReport = () => {
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                      <TableCell colSpan={5} className="text-right font-black">
+                      <TableCell colSpan={5} className="text-right font-semibold">
                         សរុប
                       </TableCell>
-                      <TableCell className="text-right font-black">
+                      <TableCell className="text-right font-semibold">
                         {formatMoney(selectedGroup.total_revenue, { decimals: 2 })}
                       </TableCell>
-                      <TableCell colSpan={2} className="font-black">
+                      <TableCell colSpan={2} className="font-semibold">
                         {selectedGroup.total_customers} អតិថិជន
                       </TableCell>
                     </TableRow>
                   </TableFooter>
                 </Table>
               </div>
-            </BoardSection>
+            </Section>
           )}
         </>
       )}

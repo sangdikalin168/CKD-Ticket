@@ -36,7 +36,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         <button
           type="button"
           aria-label={t('language.label')}
-          className={`flex h-9 items-center gap-2 rounded-md px-2 text-sm text-ink outline-none transition-colors hover:bg-tray focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-tray ${className}`}
+          className={`flex h-9 items-center gap-2 rounded-md px-2 text-sm text-ink outline-none transition-colors hover:bg-wash focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-wash ${className}`}
         >
           <LanguageFlag code={active.code} />
           <span className="hidden flex-1 truncate text-left sm:inline">{active.nativeName}</span>
@@ -70,7 +70,7 @@ const LanguageFlag: React.FC<{ code: string }> = ({ code }) => {
 const LanguageMenuItem: React.FC<{ language: LanguageOption }> = ({ language }) => (
   <DropdownMenuPrimitive.RadioItem
     value={language.code}
-    className="flex cursor-pointer select-none items-center gap-3 rounded-sm px-2 py-2 outline-none transition-colors focus:bg-tray focus:text-ink data-[state=checked]:font-medium"
+    className="flex cursor-pointer select-none items-center gap-3 rounded-sm px-2 py-2 outline-none transition-colors focus:bg-wash focus:text-ink data-[state=checked]:font-medium"
   >
     <LanguageFlag code={language.code} />
     <span className="flex flex-1 flex-col text-left">

@@ -1,5 +1,5 @@
 /**
- * Figures on the board. Money is US dollars at a cash register; every dollar
+ * Figures at the counter. Money is US dollars at a cash register; every dollar
  * figure on screen goes through formatMoney so "$3", "$12.50" and "$1,234"
  * are written the same way everywhere.
  */
@@ -32,14 +32,14 @@ export function todayIso(date: Date = new Date()): string {
   return date.toLocaleDateString("fr-CA");
 }
 
-/** HH:mm in the browser's locale, for the ledger's time column. */
+/** HH:mm in the browser's locale, for a ledger's time column. */
 export function formatTime(value: string | Date): string {
   const d = new Date(value);
   return d.toLocaleTimeString(navigator.language, { hour: "2-digit", minute: "2-digit" });
 }
 
-/** "Thursday 4 September 2026" in the active language, for the board header. */
-export function formatBoardDate(lng: string, date: Date = new Date()): string {
+/** "Thursday 4 September 2026" in the active language, for the page header. */
+export function formatLongDate(lng: string, date: Date = new Date()): string {
   const locale = lng.startsWith("km") ? "km-KH" : "en-GB";
   try {
     return date.toLocaleDateString(locale, {

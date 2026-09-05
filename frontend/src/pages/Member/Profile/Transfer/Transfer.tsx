@@ -3,10 +3,10 @@ import { Search } from "lucide-react";
 import Modal from "../../../../components/Modal/Modal";
 import Notifications from "../../../../components/Notification";
 import { useCreateTransferRequestMutation, useGetCustomerDetailLazyQuery } from "../../../../generated/graphql";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Chip } from "@/components/ui/Chip";
 
 const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);
@@ -136,8 +136,8 @@ const Transfer = ({ open, setOpen, sender_data }: any) => {
                             {/* Sender */}
                             <div className="rounded-lg border border-rule p-3">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-black text-ink">អ្នកផ្ទេរ</p>
-                                    <MagnetChip tone="rejected">−{senderRemain}ថ្ងៃ</MagnetChip>
+                                    <p className="text-sm font-semibold text-ink">អ្នកផ្ទេរ</p>
+                                    <Chip tone="void">−{senderRemain}ថ្ងៃ</Chip>
                                 </div>
                                 <p className="mt-1 truncate text-sm text-ink">{sender_data?.customer_name}</p>
                                 <dl className="mt-2 space-y-1 text-caption text-ink">
@@ -149,8 +149,8 @@ const Transfer = ({ open, setOpen, sender_data }: any) => {
                             {/* Receiver */}
                             <div className="rounded-lg border border-rule p-3">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-black text-ink">អ្នកទទួល</p>
-                                    <MagnetChip tone="done">+{senderRemain}ថ្ងៃ</MagnetChip>
+                                    <p className="text-sm font-semibold text-ink">អ្នកទទួល</p>
+                                    <Chip tone="paid">+{senderRemain}ថ្ងៃ</Chip>
                                 </div>
                                 <p className="mt-1 truncate text-sm text-ink">{receiver?.customer_name} · {receiver?.phone}</p>
                                 <dl className="mt-2 space-y-1 text-caption text-ink">

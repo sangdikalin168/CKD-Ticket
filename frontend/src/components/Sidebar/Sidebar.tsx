@@ -137,7 +137,7 @@ const MENU: MenuItem[] = [
   },
 ];
 
-/** The small magnet at the end of an index line; ink when the line is the current page. */
+/** A quiet dot on the trailing edge of a nav row; ink when the row is the current page. */
 function IndexDot({ active }: { active: boolean }) {
   return (
     <span
@@ -196,21 +196,20 @@ export default function SideBar() {
 
   return (
     <SidebarRoot collapsible="offcanvas" id="primary-sidebar" aria-label="Primary navigation">
-      <SidebarHeader className="px-4 pb-0 pt-4">
+      <SidebarHeader className="border-b border-rule px-4 pb-3 pt-4">
         <Link
           to="/"
           onClick={handleNavigate}
           className="block rounded-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
         >
-          <span className="block text-caption font-black uppercase leading-tight tracking-[0.12em]">CKD · Ticket</span>
-          <span className="block truncate text-caption text-ink-soft">{t("board.club")}</span>
+          <span className="block text-base font-semibold leading-tight">CKD Ticket</span>
+          <span className="block truncate text-caption text-ink-soft">{t("app.club")}</span>
         </Link>
-        <div className="marker-rule mt-3" />
       </SidebarHeader>
 
       <SidebarContent className="pt-1">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-2 text-caption font-black uppercase tracking-[0.12em] text-ink">
+          <SidebarGroupLabel className="px-2 text-caption font-medium tracking-wider text-ink-soft">
             {t("menu.label")}
           </SidebarGroupLabel>
           <SidebarMenu>
@@ -283,7 +282,7 @@ export default function SideBar() {
             <SidebarMenuButton
               tooltip={t("common.logout")}
               onClick={handleLogout}
-              className="text-magnet-rejected hover:bg-magnet-rejected/10 hover:text-magnet-rejected active:bg-magnet-rejected/15 active:text-magnet-rejected"
+              className="text-void-deep hover:bg-void-tint hover:text-void-deep active:bg-void-tint active:text-void-deep"
             >
               <LogOut />
               <span>{t("common.logout")}</span>

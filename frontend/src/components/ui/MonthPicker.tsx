@@ -113,7 +113,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute z-50 top-full mt-1.5 left-0 bg-popover border border-border rounded-xl shadow-xl flex overflow-hidden animate-in fade-in-0 zoom-in-95">
+        <div className="absolute z-50 top-full mt-1.5 left-0 bg-popover border border-border rounded-lg shadow-overlay flex overflow-hidden animate-in fade-in-0 zoom-in-95">
 
           {/* Left: Quick presets */}
           <div className="flex flex-col gap-0.5 p-3 border-r border-border min-w-[150px]">
@@ -129,7 +129,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
                   type="button"
                   onClick={() => handlePreset(opt.key)}
                   className={`text-left px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                    isActive
+ isActive
                       ? 'bg-primary text-primary-foreground font-medium'
                       : 'text-foreground hover:bg-accent hover:text-accent-foreground'
                   }`}
@@ -178,7 +178,7 @@ export function MonthPicker({ value, onChange, className = '', showLabel = true 
                     type="button"
                     onClick={() => handleMonthClick(idx)}
                     className={`px-2 py-2 text-sm rounded-lg transition-colors font-medium ${
-                      isSelected
+ isSelected
                         ? 'bg-primary text-primary-foreground'
                         : isCurrent
                           ? 'border border-primary text-primary hover:bg-primary/10'

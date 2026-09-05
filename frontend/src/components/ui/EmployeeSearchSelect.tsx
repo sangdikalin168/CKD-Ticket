@@ -126,7 +126,7 @@ export const EmployeeSearchSelect: React.FC<EmployeeSearchSelectProps> = ({
               type="button"
               onClick={() => handleSelect(employee)}
               className={`w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0 ${
-                selectedEmployee?.id === employee.id ? 'bg-muted' : ''
+ selectedEmployee?.id === employee.id ? 'bg-muted' : ''
               }`}
             >
               <div className="flex items-center justify-between">

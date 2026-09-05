@@ -4,7 +4,7 @@ import { LogOut, PanelLeft } from "lucide-react";
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
 import { useSidebar } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,7 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
-/** Route → the menu key written in the breadcrumb. */
+/** Route to the menu key shown in the breadcrumb. */
 const ROUTE_KEYS: Record<string, string> = {
     "/ticket": "menu.sellTicket",
     "/member": "menu.member",
@@ -61,7 +61,7 @@ export default function NavBar() {
     };
 
     return (
-        <header className="sticky left-0 top-0 z-30 flex h-12 items-center gap-2 border-b-2 border-ink bg-card px-3">
+        <header className="sticky left-0 top-0 z-30 flex h-12 items-center gap-2 border-b border-rule bg-card px-3">
             <Button
                 type="button"
                 variant="ghost"
@@ -77,13 +77,13 @@ export default function NavBar() {
                 <ol className="flex items-center gap-2 text-sm">
                     <li>
                         <Link to="/" className="font-medium text-ink-soft hover:text-ink hover:underline">
-                            {t("nav.board")}
+                            {t("nav.home")}
                         </Link>
                     </li>
                     {currentKey && (
                         <>
                             <li aria-hidden="true" className="text-ink-soft">/</li>
-                            <li className="truncate font-semibold text-ink" aria-current="page">
+                            <li className="truncate font-medium text-ink" aria-current="page">
                                 {t(currentKey)}
                             </li>
                         </>
@@ -107,7 +107,7 @@ export default function NavBar() {
                             <span className="sr-only">Open user menu</span>
                             <span
                                 aria-hidden="true"
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-rule bg-tray text-caption font-black text-ink"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-rule bg-wash text-caption font-medium text-ink"
                             >
                                 {initials(display_name)}
                             </span>
@@ -116,13 +116,13 @@ export default function NavBar() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                         <DropdownMenuLabel className="font-normal">
-                            <span className="block truncate text-sm font-semibold text-ink">{display_name}</span>
+                            <span className="block truncate text-sm font-medium text-ink">{display_name}</span>
                             <span className="block text-caption text-ink-soft">{t("nav.role")}: {role}</span>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onSelect={signOut}
-                            className="cursor-pointer text-magnet-rejected focus:bg-magnet-rejected/10 focus:text-magnet-rejected"
+                            className="cursor-pointer text-void-deep focus:bg-void-tint focus:text-void-deep"
                         >
                             <LogOut aria-hidden="true" />
                             {t("nav.signOut")}

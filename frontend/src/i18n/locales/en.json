@@ -136,7 +136,9 @@
       "tickets": "Tickets today",
       "members": "Members",
       "income": "Income today"
-    }
+    },
+    "figures": "Today's figures",
+    "reportsTitle": "Reports"
   },
   "language": {
     "label": "Language"
@@ -184,7 +186,6 @@
     "profile": "Your Profile",
     "settings": "Settings",
     "signOut": "Sign out",
-    "board": "Board",
     "role": "Role"
   },
   "ui": {
@@ -372,32 +373,6 @@
       "board": "Printers"
     }
   },
-  "board": {
-    "club": "មិង ហួរ ក្លឹបហាត់ប្រាណ & អាងហែលទឹក",
-    "branch": "(សាខាចំការដូង)",
-    "title": "Board",
-    "todayBoard": "Today's board",
-    "soldToday": "Sold today",
-    "noLinesYet": "Nothing sold at this counter yet this session — tap a tile and the first line writes itself here.",
-    "printAgain": "Print again",
-    "time": "Time",
-    "customer": "Customer",
-    "facility": "Facility",
-    "printed": "Printed",
-    "walkIn": "Walk-in",
-    "noPrices": "No prices on the board yet",
-    "noPricesHint": "An admin adds them under Price setup.",
-    "emptyColumn": "No prices yet",
-    "sellHint": "Tap a price to sell and print",
-    "today": "Today",
-    "figures": "Today's figures",
-    "quickActions": "Quick actions",
-    "reports": "Reports",
-    "note": "Note",
-    "oneEntry": "1 entry",
-    "thisCounter": "this counter, this session",
-    "allCounters": "All counters today"
-  },
   "facility": {
     "swim": "Swim",
     "gym": "Gym",
@@ -414,7 +389,25 @@
       "steam": "Steam",
       "combo": "Combo"
     },
-    "priceSetupHint": "Cashiers see these prices — one price can cover more than one facility (e.g. $3 = Swim + Gym)"
+    "priceSetupHint": "Cashiers see these prices — one price can cover more than one facility (e.g. $3 = Swim + Gym)",
+    "todaySales": "Today's sales",
+    "thisCounter": "this counter, this session",
+    "allCounters": "All counters today",
+    "soldToday": "Sold today",
+    "noSalesYet": "No sales at this counter yet",
+    "noSalesYetHint": "Choose a price above and the first line appears here.",
+    "printAgain": "Print again",
+    "noPrices": "No ticket prices yet",
+    "noPricesHint": "An admin adds them under Price setup.",
+    "emptyGroup": "No prices yet",
+    "sellHint": "Choose a price to sell and print a slip",
+    "priceList": "Ticket prices",
+    "col": {
+      "time": "Time",
+      "customer": "Customer",
+      "facility": "Facility",
+      "printed": "Printed"
+    }
   },
   "members": {
     "title": "Members",
@@ -452,5 +445,13 @@
     "title": "Page not found",
     "body": "Nothing is written at this address.",
     "home": "Back to the board"
+  },
+  "app": {
+    "club": "មិង ហួរ ក្លឹបហាត់ប្រាណ & អាងហែលទឹក",
+    "branch": "(សាខាចំការដូង)"
+  },
+  "price": {
+    "sell": "Sell",
+    "oneEntry": "1 entry"
   }
 }

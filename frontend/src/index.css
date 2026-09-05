@@ -3,97 +3,108 @@
    render Khmer text — and fell back to a system font when the line dropped.
    @fontsource ships the same Google fonts as local woff2, so vite inlines them
    into dist/ and the app renders identically offline.
-   Weights match the old URLs exactly. Only the subsets actually used are pulled:
-   Roboto covers Latin, Nokora covers Khmer (the font-family stack below asks for
-   Roboto first, so Nokora's Latin subset would never be reached). */
-@import '@fontsource/roboto/latin-300.css';
+   Only the weights the interface actually sets are pulled: 400 body, 500 labels
+   and table headers, 600 headings, 700 the one emphatic figure. Roboto covers
+   Latin, Nokora covers Khmer (the family stack asks for Roboto first, so
+   Nokora's Latin subset is never reached). */
 @import '@fontsource/roboto/latin-400.css';
 @import '@fontsource/roboto/latin-500.css';
 @import '@fontsource/roboto/latin-700.css';
-@import '@fontsource/roboto/latin-900.css';
-@import '@fontsource/nokora/khmer-100.css';
-@import '@fontsource/nokora/khmer-300.css';
 @import '@fontsource/nokora/khmer-400.css';
 @import '@fontsource/nokora/khmer-700.css';
-@import '@fontsource/nokora/khmer-900.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── The Gym Whiteboard ──────────────────────────────────────────────────────
-   One light theme. The board is white with a faint printed grid; everything
-   written on it is dry-erase ink; facilities are marker hues; record states are
-   round magnets; the amber family mark is reserved for the committing action.
-   Values are HSL triplets so Tailwind can add alpha (`bg-swim/10`). */
+/* ─── The counter: conventional admin software, played straight ───────────────
+   One light theme, shared with CKD-POS so the till and the counter read as one
+   company's software. White surfaces on a cool light-grey floor, one hairline,
+   ink text; the amber family mark on the committing action; four semantic marks
+   for record state. Neutrals are HSL triplets (shadcn's contract); the accent
+   and the four marks are RGB triplets, exactly as POS stores them, so the two
+   codebases hold the same numbers. Both forms take the `/alpha` modifier. */
 @layer base {
   :root {
-    /* Board */
-    --board: 0 0% 100%;           /* #FFFFFF */
-    --board-grid: 210 21% 95%;    /* #EEF1F4 — the printed 24px grid */
-    --tray: 210 22% 96%;          /* #F4F6F8 — marker tray: action bars, sidebar */
-    --rule: 210 15% 87%;          /* #D9DEE3 — hairline */
+    /* Surfaces */
+    --paper: 0 0% 100%;             /* #FFFFFF — every resting surface */
+    --chalk: 210 40% 98%;           /* #F8FAFC — the label on ink */
+    --wash: 210 40% 96.1%;          /* #F1F5F9 — header bands, row hover, skeletons */
+    --rule: 214.3 31.8% 91.4%;      /* #E2E8F0 — the one hairline */
+    --floor: #F5F6F8;               /* the app ground behind every white surface */
 
     /* Ink */
-    --ink: 213 13% 14%;           /* #1F2328 — dry-erase black */
+    --ink: 222.2 47.4% 11.2%;       /* #0F172A-ish — body text, primary ground */
+    --ink-deep: 222.2 84% 4.9%;     /* headings and the focus ring */
     /* Khmer has thinner strokes and stacked marks than Latin; 38% lightness
-       keeps caption-size Khmer at 6.58:1 on white. This value is a commitment. */
+       keeps caption-size Khmer at 6.58:1 on white where POS's 46.9% annotation
+       would read 4.6:1. This value is a commitment, and the one deliberate
+       divergence from POS's neutral ramp. */
     --ink-soft: 215 16% 38%;
 
-    /* Markers (facilities) */
-    --swim: 222 76% 50%;          /* #1F5AE0 */
-    --gym: 146 80% 35%;           /* #12A150 */
-    --steam: 22 89% 50%;          /* #F0620E */
-    --combo: 261 75% 57%;         /* #7A3FE4 */
+    /* Facilities. Demoted from a four-hue system to a single quiet dot beside
+       a name: they no longer stripe a tile or colour a price. lib/facility.ts
+       is the one definition of which code carries which. */
+    --swim: 222 76% 50%;            /* #1F5AE0 */
+    --gym: 146 80% 35%;             /* #12A150 */
+    --steam: 22 89% 50%;            /* #F0620E */
+    --combo: 261 75% 57%;           /* #7A3FE4 */
 
-    /* Magnets (record state) */
-    --magnet-done: 142 76% 36%;     /* #16A34A */
-    --magnet-pending: 47 92% 53%;   /* #F5C518 */
-    --magnet-rejected: 0 72% 51%;   /* #DC2626 */
-    --magnet-info: 221 83% 53%;     /* #2563EB */
-    --magnet-off: 218 11% 65%;      /* #9CA3AF */
+    /* The family mark — the committing action and a selected option, nothing
+       else. #D97B2A / #C46D22 / #FDF6EE. The label on amber is INK: white
+       measures 3.1:1 on this ground and fails, ink measures 5.8:1. */
+    --amber: 217 123 42;
+    --amber-deep: 196 109 34;
+    --amber-tint: 253 246 238;
 
-    /* The family mark — committing actions only */
-    --amber: 28 70% 51%;          /* #D97B2A */
-    --amber-deep: 28 70% 45%;     /* #C46D22 */
+    /* The four marks: the state of a record. Each carries its 50-step tint
+       (the chip ground) and its 700-step deep (the text on that tint). */
+    --paid: 5 150 105;              /* #059669 — paid, approved, active */
+    --paid-tint: 236 253 245;
+    --paid-deep: 4 120 87;
 
-    /* shadcn token names, mapped onto the board so the primitives keep working */
-    --background: var(--board);
+    --pending: 217 119 6;           /* #D97706 — waiting on a decision */
+    --pending-tint: 255 251 235;
+    --pending-deep: 180 83 9;
+
+    --void: 220 38 38;              /* #DC2626 — rejected, expired, destructive */
+    --void-tint: 254 242 242;
+    --void-deep: 185 28 28;
+
+    --notice: 37 99 235;            /* #2563EB — informational, neither good nor bad */
+    --notice-tint: 239 246 255;
+    --notice-deep: 29 78 216;
+
+    /* shadcn token names, mapped onto the palette so the primitives keep working */
+    --background: var(--paper);
     --foreground: var(--ink);
-    --card: var(--board);
+    --card: var(--paper);
     --card-foreground: var(--ink);
-    --popover: var(--board);
+    --popover: var(--paper);
     --popover-foreground: var(--ink);
     --primary: var(--ink);
-    --primary-foreground: 0 0% 100%;
-    --secondary: var(--tray);
+    --primary-foreground: var(--chalk);
+    --secondary: var(--wash);
     --secondary-foreground: var(--ink);
-    --muted: var(--tray);
+    --muted: var(--wash);
     --muted-foreground: var(--ink-soft);
-    --accent: var(--tray);
+    --accent: var(--wash);
     --accent-foreground: var(--ink);
-    --destructive: var(--magnet-rejected);
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 72.2% 50.6%;   /* the same #DC2626 the void mark carries */
+    --destructive-foreground: var(--chalk);
     --border: var(--rule);
     --input: var(--rule);
-    --ring: var(--ink);
+    --ring: var(--ink-deep);
     --radius: 0.5rem;
 
-    --warning: var(--magnet-pending);
-    --warning-foreground: var(--ink);
-    --info: var(--magnet-info);
-    --info-foreground: 0 0% 100%;
-    --success: var(--magnet-done);
-    --success-foreground: 0 0% 100%;
-
-    --sidebar-background: var(--tray);
+    --sidebar-background: var(--paper);
     --sidebar-foreground: var(--ink);
     --sidebar-primary: var(--ink);
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
+    --sidebar-primary-foreground: var(--chalk);
+    --sidebar-accent: var(--wash);
     --sidebar-accent-foreground: var(--ink);
     --sidebar-border: var(--rule);
-    --sidebar-ring: var(--ink);
+    --sidebar-ring: var(--ink-deep);
 
     color-scheme: light;
     caret-color: hsl(var(--ink));
@@ -109,16 +120,16 @@
   }
 
   body {
-    background-color: hsl(var(--board));
+    background-color: var(--floor);
     color: hsl(var(--ink));
-    /* Every figure on the board is tabular: prices, counts, dates, times. */
+    /* Every figure on the counter is tabular: prices, counts, dates, times. */
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Browser surfaces carry the board too. */
+  /* Browser surfaces belong to the palette, not the platform. */
   ::selection {
-    background: hsl(var(--magnet-pending) / 0.55);
+    background: rgb(var(--amber) / 0.25);
     color: hsl(var(--ink));
   }
   *::-webkit-scrollbar {
@@ -131,91 +142,101 @@
   *::-webkit-scrollbar-thumb {
     background: hsl(var(--rule));
     border-radius: 999px;
-    border: 2px solid hsl(var(--board));
+    border: 2px solid hsl(var(--paper));
   }
   *::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--ink-soft) / 0.6);
   }
+
+  /* One focus ring everywhere — 2px ink at 2px offset, keyboard only. */
   :focus-visible {
-    outline: 2px solid hsl(var(--ink));
+    outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
   }
+
   a {
     text-underline-offset: 3px;
   }
 
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+  }
+
+  /* The browser's own calendar glyph is the only mark on a date field — no
+     drawn icon sits beside it — so it is toned to the metadata voice rather
+     than left at the platform's default black. One calendar per field. */
+  input[type='date']::-webkit-calendar-picker-indicator,
+  input[type='time']::-webkit-calendar-picker-indicator,
+  input[type='month']::-webkit-calendar-picker-indicator,
+  input[type='datetime-local']::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.55;
+    filter: grayscale(1);
+    transition: opacity 0.15s ease;
+  }
+  input[type='date']:hover::-webkit-calendar-picker-indicator,
+  input[type='time']:hover::-webkit-calendar-picker-indicator,
+  input[type='month']:hover::-webkit-calendar-picker-indicator,
+  input[type='datetime-local']:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+  }
+
+  /* Dialog and dropdown entrance — 200ms, the only authored motion. */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
   }
 }
 
 @layer components {
-  /* The printed grid: drawn on page grounds only, never inside a table. */
-  .board-grid {
-    background-color: hsl(var(--board));
-    background-image:
-      repeating-linear-gradient(0deg, hsl(var(--board-grid)) 0 1px, transparent 1px 24px),
-      repeating-linear-gradient(90deg, hsl(var(--board-grid)) 0 1px, transparent 1px 24px);
-  }
-
-  /* 2px marker rule between sections. */
-  .marker-rule {
-    height: 2px;
-    background: hsl(var(--ink));
-  }
-
-  /* Marker caps: board captions and index labels. */
-  .marker-caps {
-    font-size: 0.75rem;
-    line-height: 1.6;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  /* Magnet: a round chip with a radial highlight and a real offset shadow. */
-  .magnet {
-    --magnet: var(--magnet-off);
+  /* A facility's quiet dot. Solid, 8px, no shadow — it names a facility beside
+     its label; it never grounds a tile or colours a price. */
+  .facility-dot {
     display: inline-block;
     flex-shrink: 0;
-    width: 22px;
-    height: 22px;
+    width: 8px;
+    height: 8px;
     border-radius: 9999px;
-    background:
-      radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 48%),
-      hsl(var(--magnet));
-    box-shadow: 0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18);
+    background: hsl(var(--facility, var(--ink-soft)));
   }
-  .magnet-sm {
-    width: 14px;
-    height: 14px;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.15);
-  }
-  .magnet-xs {
-    width: 10px;
-    height: 10px;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
-  }
-  .magnet-done { --magnet: var(--magnet-done); }
-  .magnet-pending { --magnet: var(--magnet-pending); }
-  .magnet-rejected { --magnet: var(--magnet-rejected); }
-  .magnet-info { --magnet: var(--magnet-info); }
-  .magnet-off { --magnet: var(--magnet-off); }
+}
 
-  /* Marker dot: solid ink of a facility, no shadow — it is drawn, not pinned. */
-  .marker-dot {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 10px;
-    height: 10px;
-    border-radius: 9999px;
-    background: hsl(var(--marker, var(--magnet-off)));
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
   }
-  /* Where two marker fields meet they multiply, like wet ink on a board. */
-  .marker-overlap {
-    mix-blend-mode: multiply;
+  .animate-slideUp {
+    animation: slideUp 0.2s ease-out;
+  }
+  .animate-shimmer {
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  /* Figure: any number a person compares to another number. Roboto carries
+     both scripts here (POS's JetBrains Mono is not bundled and this app adds
+     no font), so the treatment is tabular figures with a slashed zero. */
+  .figure {
+    font-variant-numeric: tabular-nums slashed-zero;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
+
+  /* Hides the scrollbar on a horizontal rail (filter chips, a wide toolbar). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -230,6 +251,6 @@
   justify-content: center;
   position: fixed;
   z-index: 999999;
-  background: hsl(var(--board) / 0.88);
+  background: hsl(var(--paper) / 0.88);
   flex-direction: column;
 }

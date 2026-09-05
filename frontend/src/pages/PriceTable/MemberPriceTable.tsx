@@ -1,9 +1,9 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
@@ -15,9 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-l
 import { Trash2, Pencil, Plus, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "react-toastify";
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { FacilityDot, FacilityMarks, useFacilityName } from "@/components/board/FacilityMark";
-import { facilitiesOfServiceType, facilityByCode, facilityOfSet } from "@/lib/facility";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { FacilityDot, FacilityMarks, useFacilityName } from "@/components/ui/FacilityMark";
+import { facilitiesOfServiceType } from "@/lib/facility";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -118,7 +118,7 @@ function Choice({ active, onClick, children, className }: any) {
       aria-pressed={active}
       className={cn(
         "inline-flex h-9 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray",
+        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-wash",
         className
       )}
     >
@@ -210,7 +210,6 @@ export const MemberPriceTable = () => {
     // it appears only where at least one row in this service type carries one.
     const showKey = rows.some((r) => !!r.key_image);
     const svcFacilities = facilitiesOfServiceType(serviceType);
-    const svcMeta = facilityOfSet(svcFacilities.map((code) => ({ code })));
     if (rows.length === 0) return (
       <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule bg-card py-12">
         <p className="text-sm text-ink-soft">មិនទាន់មានការកំណត់</p>
@@ -230,14 +229,13 @@ export const MemberPriceTable = () => {
               <TableHead>វេន</TableHead>
               <TableHead className="text-right">ចំនួនចូល</TableHead>
               <TableHead className="text-right">តម្លៃ</TableHead>
-              <TableHead>{t("board.facility")}</TableHead>
+              <TableHead>{t("ticket.col.facility")}</TableHead>
               {showKey && <TableHead className="w-16 text-center">{t("prices.key")}</TableHead>}
               <TableHead className="w-20"><span className="sr-only">{t("common.actions")}</span></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => {
-              const rowMeta = row.facilities?.length ? facilityOfSet(row.facilities) : svcMeta;
               return (
                 <TableRow key={row.id}>
                   <TableCell className="font-semibold">{row.monthQty} ខែ</TableCell>
@@ -248,10 +246,10 @@ export const MemberPriceTable = () => {
                   <TableCell className="text-ink-soft">{shiftLabel(row.shift)}</TableCell>
                   <TableCell className="text-right">{row.entryQty}×</TableCell>
                   <TableCell className="text-right">
-                    <span className={cn("text-title font-black", rowMeta.text)}>{formatMoney(row.price)}</span>
+                    <span className="figure text-lg font-semibold text-ink">{formatMoney(row.price)}</span>
                   </TableCell>
                   <TableCell>
-                    <FacilityMarks facilities={row.facilities?.length ? row.facilities : svcFacilities} size={10} />
+                    <FacilityMarks facilities={row.facilities?.length ? row.facilities : svcFacilities} />
                   </TableCell>
                   {showKey && (
                     <TableCell>
@@ -267,7 +265,7 @@ export const MemberPriceTable = () => {
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(row)} aria-label={t("common.edit")}>
                         <Pencil aria-hidden="true" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-magnet-rejected/10 hover:text-magnet-rejected" onClick={() => handleDelete(row.id)} aria-label={t("common.delete")}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-void-tint hover:text-void" onClick={() => handleDelete(row.id)} aria-label={t("common.delete")}>
                         <Trash2 aria-hidden="true" />
                       </Button>
                     </div>
@@ -282,11 +280,11 @@ export const MemberPriceTable = () => {
   };
 
   if (loading) return <LoadingPage message={t("common.loading")} />;
-  if (error) return <div className="p-4 text-magnet-rejected">Error: {error.message}</div>;
+  if (error) return <div className="p-4 text-void-deep">Error: {error.message}</div>;
 
   return (
     <div className="space-y-4">
-      <BoardHeader
+      <PageHeader
         titleKey="prices.member"
         subtitle="គ្រប់គ្រងតម្លៃសមាជិកតាមប្រភេទ / ក្រុមអាយុ / វេន"
         actions={
@@ -304,9 +302,9 @@ export const MemberPriceTable = () => {
             const marks = facilitiesOfServiceType(st.value);
             return (
               <TabsTrigger key={st.value} value={st.value}>
-                <span className="inline-flex items-center">
-                  {marks.map((code, i) => (
-                    <FacilityDot key={code} code={code} size={10} overlap={marks.length > 1} className={i > 0 ? "-ml-1" : undefined} />
+                <span className="inline-flex items-center gap-1">
+                  {marks.map((code) => (
+                    <FacilityDot key={code} code={code} />
                   ))}
                 </span>
                 {marks.length ? marks.map((code) => facilityName(code)).join(" + ") : st.label}
@@ -341,14 +339,13 @@ export const MemberPriceTable = () => {
               <legend className="text-sm font-medium text-ink">{t("prices.chooseFacilities")}</legend>
               <div className="grid grid-cols-1 gap-2">
                 {facilities.map((f: any) => {
-                  const meta = facilityByCode(f.code);
                   const checked = selectedFacilityIds.has(f.facility_id);
                   return (
                     <label
                       key={f.facility_id}
                       className={cn(
                         "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors",
-                        checked ? cn("border-ink", meta.tint) : "border-rule bg-card hover:bg-tray"
+                        checked ? "border-amber-deep bg-amber-tint" : "border-rule bg-card hover:bg-wash"
                       )}
                     >
                       <input
@@ -357,14 +354,14 @@ export const MemberPriceTable = () => {
                         checked={checked}
                         onChange={() => toggleFacility(f.facility_id)}
                       />
-                      <FacilityDot code={f.code} size={12} />
+                      <FacilityDot code={f.code} />
                       <span className="text-sm font-medium text-ink">{f.name}</span>
                     </label>
                   );
                 })}
               </div>
               {selectedFacilityIds.size === 0 && (
-                <p className="text-caption text-magnet-rejected">ជ្រើស Facility យ៉ាងហោចណាស់ 1</p>
+                <p className="text-caption text-void-deep">ជ្រើសសេវាយ៉ាងហោចណាស់មួយ</p>
               )}
             </fieldset>
 
@@ -433,13 +430,13 @@ export const MemberPriceTable = () => {
                     type="button"
                     onClick={() => set("key_image", "")}
                     aria-label={t("common.delete")}
-                    className="absolute -right-2 -top-2 rounded-full bg-magnet-rejected p-1 text-white shadow-magnet"
+                    className="absolute -right-2 -top-2 rounded-full bg-void p-1 text-chalk"
                   >
                     <X className="h-3 w-3" aria-hidden="true" />
                   </button>
                 </div>
               ) : (
-                <label className="flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule hover:bg-tray">
+                <label className="flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule hover:bg-wash">
                   <ImageIcon className="h-5 w-5 text-ink-soft" aria-hidden="true" />
                   <span className="text-caption text-ink-soft">ចុចដើម្បីដាក់រូបកូនសោ</span>
                   <input
@@ -460,7 +457,7 @@ export const MemberPriceTable = () => {
 
             {/* Live preview */}
             {form.serviceType && form.ageGroup && form.customerType && form.price > 0 && (
-              <div className="rounded-lg border border-dashed border-rule bg-tray p-3">
+              <div className="rounded-lg border border-dashed border-rule bg-wash p-3">
                 <p className="text-caption text-ink-soft">{t("common.preview")}</p>
                 <p className="text-sm font-semibold text-ink">{buildDescription(form)}</p>
               </div>

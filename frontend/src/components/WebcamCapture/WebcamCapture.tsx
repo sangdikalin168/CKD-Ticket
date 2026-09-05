@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Camera, RotateCcw } from 'lucide-react';
+import { AlertCircle, Camera, RotateCcw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/Button';
-import { MagnetDot } from '@/components/board/MagnetChip';
+import { Button } from '@/components/ui/button';
+
 
 interface WebcamCaptureProps {
   open: boolean;
@@ -113,13 +113,13 @@ export const WebcamCapture = ({ open, setOpen, onCapture }: WebcamCaptureProps) 
           <DialogTitle>ថតរូបសមាជិក</DialogTitle>
         </DialogHeader>
 
-        <div className="relative overflow-hidden rounded-lg border border-rule bg-tray">
+        <div className="relative overflow-hidden rounded-lg border border-rule bg-wash">
           {!imgSrc ? (
             <>
               {!hasPermission && error ? (
                 <div className="p-8 text-center" role="alert">
                   <p className="flex items-center justify-center gap-2 text-sm font-medium text-ink">
-                    <MagnetDot tone="rejected" size="sm" />
+                    <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
                     {error}
                   </p>
                   <p className="mt-2 text-sm text-ink-soft">
