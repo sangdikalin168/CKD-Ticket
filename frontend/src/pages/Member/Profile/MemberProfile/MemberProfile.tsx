@@ -1,5 +1,23 @@
-import { PencilSquareIcon, BackwardIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  CalendarDays,
+  Camera,
+  Clock,
+  Fingerprint,
+  GraduationCap,
+  Hash,
+  PauseCircle,
+  Pencil,
+  Phone,
+  RefreshCw,
+  ShoppingBag,
+  Ticket,
+  Upload,
+  UserRound,
+} from "lucide-react";
 import { CachedImage } from "@/components/ui/CachedImage";
 import { useGetActiveHoldRequestV2Query } from "../../../../generated/holdV2";
 import {
@@ -19,13 +37,11 @@ import { UpdateProfile } from "./UpdateProfile";
 import Notifications from "../../../../components/Notification";
 import HoldForm from "../Hold/HoldForm";
 import Transfer from "../Transfer/Transfer";
-import { BiTransfer } from "react-icons/bi";
 import WebcamCapture from "../../../../components/WebcamCapture/WebcamCapture";
 import { useMutation } from "@apollo/client";
 import { UPDATE_CUSTOMER_PHOTO } from "../../../../graphql/Customer/UpdateCustomerPhoto";
 import { Button } from "@/components/ui/Button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/Card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs-line";
 import {
   Dialog,
   DialogContent,
@@ -34,24 +50,11 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  CameraIcon,
-  ArrowUpTrayIcon,
-  PauseIcon,
-  ArrowPathRoundedSquareIcon,
-  TicketIcon,
-  AcademicCapIcon,
-  ShoppingBagIcon,
-  IdentificationIcon,
-  PhoneIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  FingerPrintIcon,
-} from "@heroicons/react/24/outline";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
+import { MagnetChip } from "@/components/board/MagnetChip";
 import { EnrollFingerprintModal } from "../EnrollFingerprint/EnrollFingerprintModal";
 
 const MemberProfile = ({ ID }: any) => {
+  const { t } = useTranslation();
   const { data, loading: loading_member_detail, refetch: refetchMemberDetail } = useGetCustomerDetailQuery({
     variables: { customerId: ID },
     fetchPolicy: "no-cache",
@@ -178,253 +181,194 @@ const MemberProfile = ({ ID }: any) => {
     ? details.image_path
     : null;
 
+  const activeHold = request_data?.GetActiveHoldRequestV2?.[0];
+
   if (loading_fruit_payment && loading_member_detail && loading_trainning_payment && loading_payment)
-    return <div>Loading...</div>;
+    return <p className="text-sm text-ink-soft">{t("common.loading")}</p>;
 
   return (
-    <>
+    <div className="space-y-4">
       <Button
         type="button"
         variant="outline"
         size="sm"
-        className="mb-3 gap-1.5"
         onClick={() => window.location.reload()}
       >
-        <BackwardIcon className="h-4 w-4" aria-hidden="true" />
+        <ArrowLeft aria-hidden="true" />
         ថយក្រោយ
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* ── Left panel ── */}
-        <Card className="lg:col-span-1 shadow-md overflow-hidden">
-          {/* Avatar header */}
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 px-4 pt-6 pb-10" />
+      {/* ── The member's strip on the board: photo, name, magnets, then the marker tray ── */}
+      <section className="rounded-xl border border-rule bg-card">
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
+          <button
+            type="button"
+            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-rule bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            onClick={() => setOpenPreview(true)}
+            aria-label="រូបភាព"
+          >
+            {photoSrc ? (
+              <CachedImage
+                className="h-full w-full object-cover transition-opacity group-hover:opacity-90"
+                src={photoSrc}
+                alt={details?.customer_name || "Profile"}
+              />
+            ) : (
+              <UserRound className="mx-auto mt-6 h-12 w-12 text-ink-soft" aria-hidden="true" />
+            )}
+          </button>
 
-          <CardContent className="px-4 pb-5 -mt-8">
-            {/* Avatar */}
-            <div className="flex flex-col items-center">
-              <div
-                className="relative group cursor-pointer ring-4 ring-white rounded-full shadow-lg"
-                onClick={() => setOpenPreview(true)}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="truncate text-heading font-black leading-tight text-ink">{details?.customer_name}</h1>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-ink-soft"
+                onClick={() => setOpenUpdate(true)}
+                aria-label="កែលេខទូរស័ព្ទ"
               >
-                {photoSrc ? (
-                  <CachedImage
-                    className="h-24 w-24 rounded-full object-cover transition-opacity group-hover:opacity-80"
-                    src={photoSrc}
-                    alt={details?.customer_name || "Profile"}
-                  />
-                ) : (
-                  <UserCircleIcon className="h-24 w-24 text-gray-300 bg-white rounded-full" />
-                )}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                  <div className="bg-black/50 rounded-full p-2">
-                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Photo action buttons */}
-              <div className="flex gap-2 mt-3">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="text-xs gap-1 px-2"
-                  onClick={() => setOpenWebcam(true)}
-                >
-                  <CameraIcon className="h-3.5 w-3.5" />
-                  ថតរូប
-                </Button>
-                <label className="inline-flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs shadow-sm hover:bg-accent cursor-pointer transition-colors">
-                  <ArrowUpTrayIcon className="h-3.5 w-3.5" />
-                  បញ្ចូល
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                </label>
-              </div>
-            </div>
-
-            {/* Member info */}
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-gray-900 truncate">{details?.customer_name}</h2>
-                <button
-                  onClick={() => setOpenUpdate(true)}
-                  className="text-gray-400 hover:text-indigo-600 transition-colors"
-                >
-                  <PencilSquareIcon className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Status badge */}
-              <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  isActive
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`} />
+                <Pencil aria-hidden="true" />
+              </Button>
+              <MagnetChip tone={isActive ? "done" : "rejected"} size="md">
                 {isActive ? "មានសុពលភាព" : "ផុតសុពលភាព"}
-              </span>
-
-              <div className="mt-3 space-y-2 text-sm text-gray-700">
-                <div className="flex items-center gap-2">
-                  <IdentificationIcon className="h-4 w-4 text-gray-400 shrink-0" />
-                  <span className="text-gray-500">ID:</span>
-                  <span className="font-medium">{ID}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <PhoneIcon className="h-4 w-4 text-gray-400 shrink-0" />
-                  <span className="text-gray-500">ទូរស័ព្ទ:</span>
-                  <span className="font-medium">{details?.phone}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CalendarDaysIcon className="h-4 w-4 text-gray-400 shrink-0" />
-                  <span className="text-gray-500">ផុតថ្ងៃ:</span>
-                  <span className={`font-medium ${isActive ? "text-green-700" : "text-red-600"}`}>
-                    {details?.end_membership_date}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ClockIcon className="h-4 w-4 text-gray-400 shrink-0" />
-                  <span className="text-gray-500">វេន:</span>
-                  <span className="font-medium">{details?.shift}</span>
-                </div>
-              </div>
+              </MagnetChip>
+              <MagnetChip tone={details?.fingerprint ? "done" : "off"} size="md">
+                {details?.fingerprint ? "មានម្រាមដៃ" : "គ្មានម្រាមដៃ"}
+              </MagnetChip>
+              {activeHold && (
+                <MagnetChip tone={activeHold.status === "APPROVED" ? "info" : "pending"} size="md">
+                  {activeHold.status === "APPROVED" ? "ច្បាប់បានឯកភាព" : "កំពុងសុំច្បាប់"}
+                </MagnetChip>
+              )}
             </div>
 
-            {/* Action buttons — 2-col grid */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-sm text-ink">
+              <div className="flex items-center gap-1.5">
+                <dt className="flex items-center gap-1 text-ink-soft"><Hash className="h-4 w-4" aria-hidden="true" />ID</dt>
+                <dd className="font-medium">{ID}</dd>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <dt className="flex items-center gap-1 text-ink-soft"><Phone className="h-4 w-4" aria-hidden="true" />ទូរស័ព្ទ</dt>
+                <dd className="font-medium">{details?.phone || "—"}</dd>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <dt className="flex items-center gap-1 text-ink-soft"><CalendarDays className="h-4 w-4" aria-hidden="true" />ផុតថ្ងៃ</dt>
+                <dd className="font-medium">{details?.end_membership_date || "—"}</dd>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <dt className="flex items-center gap-1 text-ink-soft"><Clock className="h-4 w-4" aria-hidden="true" />វេន</dt>
+                <dd className="font-medium">{details?.shift || "—"}</dd>
+              </div>
+            </dl>
+
+            <div className="mt-3 flex flex-wrap gap-2">
               <Button
                 type="button"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-xs gap-1 w-full"
-                onClick={() => setOpenFruit(true)}
+                variant="outline"
+                onClick={() => setOpenWebcam(true)}
               >
-                <ShoppingBagIcon className="h-3.5 w-3.5" />
-                ផ្សេងៗ
+                <Camera aria-hidden="true" />
+                ថតរូប
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-xs gap-1 w-full"
-                onClick={() => setOpenMember(true)}
-              >
-                <ArrowPathRoundedSquareIcon className="h-3.5 w-3.5" />
-                សមាជិក
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-xs gap-1 w-full"
-                onClick={() => setIsOpenCoupon(true)}
-              >
-                <TicketIcon className="h-3.5 w-3.5" />
-                គ៉ូប៉ុន
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-xs gap-1 w-full"
-                onClick={() => setOpenTrainning(true)}
-              >
-                <AcademicCapIcon className="h-3.5 w-3.5" />
-                ហ្វឹកហាត់
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="bg-amber-500 hover:bg-amber-600 text-xs gap-1 w-full"
-                onClick={() => HandleHold(details?.end_membership_date)}
-              >
-                <PauseIcon className="h-3.5 w-3.5" />
-                សុំច្បាប់
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="bg-violet-600 hover:bg-violet-700 text-xs gap-1 w-full"
-                onClick={() => ShowTransferForm(details?.end_membership_date)}
-              >
-                <BiTransfer className="h-3.5 w-3.5" />
-                ផ្ទេរ
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1 w-full"
-                onClick={() =>
-                  details?.fingerprint
-                    ? setOpenFingerprintConfirm(true)
-                    : setOpenFingerprint(true)
-                }
-              >
-                <FingerPrintIcon className="h-3.5 w-3.5" />
-                {details?.fingerprint ? "ប្តូរម្រាមដៃ" : "ចុះម្រាមដៃ"}
-              </Button>
+              <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-rule bg-card px-2.5 text-sm font-medium text-ink transition-colors hover:bg-tray focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                បញ្ចូលរូប
+                <input type="file" className="sr-only" accept="image/*" onChange={handleFileUpload} />
+              </label>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* ── Right panel ── */}
-        <Card className="lg:col-span-3 shadow-md">
-          <CardContent className="p-0">
-            <Tabs defaultValue="member">
-              <div className="border-b border-gray-200 px-4 pt-2">
-                <TabsList className="bg-transparent h-auto gap-1 p-0">
-                  {[
-                    { value: "member", label: "សមាជិក" },
-                    { value: "coupon", label: "គ៉ូប៉ុន" },
-                    { value: "training", label: "ហ្វឹកហាត់" },
-                    { value: "fruit", label: "តែជ្រក់" },
-                  ].map(({ value, label }) => (
-                    <TabsTrigger
-                      key={value}
-                      value={value}
-                      className="rounded-none border-b-2 border-transparent px-4 pb-2 pt-1 text-sm font-medium text-gray-600 data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 data-[state=active]:shadow-none data-[state=active]:bg-transparent"
-                    >
-                      {label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
+        {/* Marker tray: everything that can be sold to or done for this member */}
+        <div className="marker-rule mx-4" />
+        <div className="flex flex-wrap items-center gap-2 rounded-b-xl bg-tray px-4 py-3">
+          <Button type="button" size="sm" variant="outline" onClick={() => setOpenMember(true)}>
+            <RefreshCw aria-hidden="true" />
+            សមាជិក
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => setIsOpenCoupon(true)}>
+            <Ticket aria-hidden="true" />
+            គ៉ូប៉ុន
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => setOpenTrainning(true)}>
+            <GraduationCap aria-hidden="true" />
+            ហ្វឹកហាត់
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => setOpenFruit(true)}>
+            <ShoppingBag aria-hidden="true" />
+            ផ្សេងៗ
+          </Button>
+          <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-rule sm:block" />
+          <Button type="button" size="sm" variant="outline" onClick={() => HandleHold(details?.end_membership_date)}>
+            <PauseCircle aria-hidden="true" />
+            សុំច្បាប់
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => ShowTransferForm(details?.end_membership_date)}>
+            <ArrowLeftRight aria-hidden="true" />
+            ផ្ទេរ
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              details?.fingerprint
+                ? setOpenFingerprintConfirm(true)
+                : setOpenFingerprint(true)
+            }
+          >
+            <Fingerprint aria-hidden="true" />
+            {details?.fingerprint ? "ប្តូរម្រាមដៃ" : "ចុះម្រាមដៃ"}
+          </Button>
+        </div>
+      </section>
 
-              <div className="p-4">
-                <TabsContent value="member" className="m-0">
-                  {!loading_payment ? (
-                    <MemberPayment member_payment={member_payment?.GetMemberPayment} />
-                  ) : (
-                    <p className="text-sm text-gray-500">Loading...</p>
-                  )}
-                </TabsContent>
+      {/* ── The member's ledgers ── */}
+      <Tabs defaultValue="member">
+        <TabsList>
+          {[
+            { value: "member", label: "សមាជិក" },
+            { value: "coupon", label: "គ៉ូប៉ុន" },
+            { value: "training", label: "ហ្វឹកហាត់" },
+            { value: "fruit", label: "តែជ្រក់" },
+          ].map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-                <TabsContent value="coupon" className="m-0">
-                  <p className="text-sm text-gray-400 text-center py-8">គ្មានទិន្នន័យ</p>
-                </TabsContent>
+        <TabsContent value="member">
+          {!loading_payment ? (
+            <MemberPayment member_payment={member_payment?.GetMemberPayment} />
+          ) : (
+            <p className="text-sm text-ink-soft">{t("common.loading")}</p>
+          )}
+        </TabsContent>
 
-                <TabsContent value="training" className="m-0">
-                  {!loading_trainning_payment ? (
-                    <TrainningPayment trainning_payment={trainning_payment} />
-                  ) : (
-                    <p className="text-sm text-gray-500">Loading...</p>
-                  )}
-                </TabsContent>
+        <TabsContent value="coupon">
+          <p className="py-8 text-center text-sm text-ink-soft">គ្មានទិន្នន័យ</p>
+        </TabsContent>
 
-                <TabsContent value="fruit" className="m-0">
-                  {!loading_fruit_payment ? (
-                    <FruitPaymentTable fruit_payment={fruit_payment} />
-                  ) : (
-                    <p className="text-sm text-gray-500">Loading...</p>
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="training">
+          {!loading_trainning_payment ? (
+            <TrainningPayment trainning_payment={trainning_payment} />
+          ) : (
+            <p className="text-sm text-ink-soft">{t("common.loading")}</p>
+          )}
+        </TabsContent>
+
+        <TabsContent value="fruit">
+          {!loading_fruit_payment ? (
+            <FruitPaymentTable fruit_payment={fruit_payment} />
+          ) : (
+            <p className="text-sm text-ink-soft">{t("common.loading")}</p>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Modals */}
       <UpdateProfile
@@ -484,11 +428,11 @@ const MemberProfile = ({ ID }: any) => {
           <DialogHeader>
             <DialogTitle>ម្រាមដៃមានស្រាប់</DialogTitle>
             <DialogDescription>
-              អតិថិជន <span className="font-semibold text-foreground">{details?.customer_name}</span> មានស្នាមម្រាមដៃចុះឈ្មោះរួចហើយ។
+              អតិថិជន <span className="font-semibold text-ink">{details?.customer_name}</span> មានស្នាមម្រាមដៃចុះឈ្មោះរួចហើយ។
               តើអ្នកចង់លុបចោល ហើយចុះម្រាមដៃថ្មីមែនទេ?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setOpenFingerprintConfirm(false)}
@@ -525,25 +469,24 @@ const MemberProfile = ({ ID }: any) => {
       <Dialog open={open_preview} onOpenChange={setOpenPreview}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="sr-only">រូបភាព</DialogTitle>
+            <DialogTitle>{details?.customer_name}</DialogTitle>
           </DialogHeader>
-          <div className="mt-2">
+          <div>
             {photoSrc ? (
               <CachedImage
-                className="w-full h-auto rounded-lg"
+                className="h-auto w-full rounded-lg border border-rule"
                 src={photoSrc}
                 alt={details?.customer_name || "Profile Preview"}
               />
             ) : (
-              <UserCircleIcon className="w-full h-64 text-gray-200" />
+              <div className="flex h-64 items-center justify-center rounded-lg bg-tray">
+                <UserRound className="h-24 w-24 text-ink-soft" aria-hidden="true" />
+              </div>
             )}
-            <p className="mt-3 text-center text-sm font-medium text-gray-700">
-              {details?.customer_name}
-            </p>
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import React from "react";
 import Ticket from "./pages/Ticket/Ticket";
 import { Member } from "./pages/Member/Member";
 import Login from "./pages/Login/Login";
@@ -12,58 +11,57 @@ import { useSideBarContext } from "./context/SideBarContext";
 import SideBar from "./components/Sidebar/Sidebar";
 import NavBar from "./components/Navbar/Navbar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Link, Outlet, RouterProvider } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import {
+  ArrowLeftRight,
+  BarChart3,
+  ChevronRight,
+  PauseCircle,
+  Ticket as TicketIcon,
+  Users,
+} from "lucide-react";
 import IncomeReport from "./pages/Report/IncomeReport";
 import { MemberPriceTable } from "./pages/PriceTable/MemberPriceTable";
 import { CustomerReport } from "./pages/Report/CustomerReport";
 import CustomerTypeReport from "./pages/Report/CustomerTypeReport";
 import Printers from "./pages/Settings/Printers";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { BoardSection } from "@/components/board/BoardSection";
+import { ActionTile } from "@/components/board/ActionTile";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTodayFigures } from "./hooks/useTodayFigures";
+import { formatCount, formatMoney } from "./lib/money";
 
 function NoMatch() {
+  const { t } = useTranslation();
   return (
-    <>
-      <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
-        <div className="text-center">
-          <p className="text-base font-semibold text-indigo-600">404</p>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">Page not found</h1>
-          <p className="mt-6 text-base leading-7 text-gray-600">Sorry, we couldn&apos;t find the page you&apos;re looking for.</p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
-            <a href="/" className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
-              Go back home
-            </a>
-            <a href="#" className="text-sm font-semibold text-gray-900">
-              Contact support <span aria-hidden="true">&rarr;</span>
-            </a>
-          </div>
-        </div>
-      </main>
-    </>
+    <main className="board-grid grid min-h-screen place-items-center px-6 py-24">
+      <div className="w-full max-w-md rounded-xl border border-rule bg-card p-8 text-center">
+        <p className="text-price font-black leading-none text-ink">404</p>
+        <div className="marker-rule mx-auto mt-4 w-16" />
+        <h1 className="mt-4 text-heading font-black text-ink">{t("notFound.title")}</h1>
+        <p className="mt-2 text-sm text-ink-soft">{t("notFound.body")}</p>
+        <Button asChild className="mt-6">
+          <a href="/">{t("notFound.home")}</a>
+        </Button>
+      </div>
+    </main>
   )
 }
 
-function StatCard({ title, value, description, icon, linkTo, linkLabel }: {
-  title: string; value: string; description: string; icon: React.ReactNode; linkTo: string; linkLabel: string;
-}) {
+/** A figure on the ledger strip: the label written beside the number, not under it. */
+function Figure({ label, value, loading }: { label: string; value: string; loading: boolean }) {
   return (
-    <div className="bg-card border rounded-lg p-6 shadow-sm flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-muted-foreground">{title}</span>
-        <span className="text-muted-foreground">{icon}</span>
-      </div>
-      <div className="text-3xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{description}</p>
-      <a href={linkTo} className="text-xs text-primary font-medium hover:underline mt-auto">{linkLabel} →</a>
+    <div className="flex min-w-0 items-baseline gap-3 px-4 py-3">
+      <span className="truncate text-caption text-ink-soft">{label}</span>
+      {loading ? (
+        <Skeleton className="h-6 w-16" />
+      ) : (
+        <span className="text-heading font-black leading-none text-ink">{value}</span>
+      )}
     </div>
-  );
-}
-
-function QuickAction({ label, to, icon }: { label: string; to: string; icon: React.ReactNode }) {
-  return (
-    <a href={to} className="flex flex-col items-center gap-2 p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center shadow-sm">
-      <span className="text-2xl text-primary">{icon}</span>
-      <span className="text-xs font-medium text-foreground">{label}</span>
-    </a>
   );
 }
 
@@ -71,93 +69,66 @@ function Dashboard() {
   const { t } = useTranslation();
   const role = localStorage.getItem("role");
   const displayName = localStorage.getItem("display_name");
+  const figures = useTodayFigures();
+
+  const reports = [
+    { to: "/income_report", title: t("dashboard.reports.income.title"), description: t("dashboard.reports.income.description") },
+    { to: "/customer_report", title: t("dashboard.reports.customer.title"), description: t("dashboard.reports.customer.description") },
+    { to: "/customer_type_report", title: t("dashboard.reports.type.title"), description: t("dashboard.reports.type.description") },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("dashboard.welcome", { name: displayName, role })}</p>
-      </div>
+      <BoardHeader
+        titleKey="board.title"
+        subtitle={t("dashboard.welcome", { name: displayName, role })}
+      />
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard
-          title={t("dashboard.members.title")}
-          value={t("dashboard.members.value")}
-          description={t("dashboard.members.description")}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
-          linkTo="/member"
-          linkLabel={t("dashboard.members.link")}
-        />
-        <StatCard
-          title={t("dashboard.tickets.title")}
-          value={t("dashboard.tickets.value")}
-          description={t("dashboard.tickets.description")}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>}
-          linkTo="/ticket"
-          linkLabel={t("dashboard.tickets.link")}
-        />
-        <StatCard
-          title={t("dashboard.hold.title")}
-          value={t("dashboard.hold.value")}
-          description={t("dashboard.hold.description")}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-          linkTo="/hold_request"
-          linkLabel={t("dashboard.hold.link")}
-        />
-        <StatCard
-          title={t("dashboard.report.title")}
-          value={t("dashboard.report.value")}
-          description={t("dashboard.report.description")}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-          linkTo="/income_report"
-          linkLabel={t("dashboard.report.link")}
-        />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-card border rounded-lg p-6 shadow-sm">
-        <h2 className="text-base font-semibold mb-4">{t("dashboard.quickActions")}</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          <QuickAction label={t("menu.sellTicket")} to="/ticket"
-            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>} />
-          <QuickAction label={t("menu.member")} to="/member"
-            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
-          <QuickAction label={t("menu.holdRequest")} to="/hold_request"
-            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
-          <QuickAction label={t("dashboard.transfer")} to="/transfer_request"
-            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>} />
-          <QuickAction label={t("menu.incomeReport")} to="/income_report"
-            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>} />
+      {/* Today's figures: one ledger strip, figures beside their labels. */}
+      <section aria-label={t("board.figures")} className="overflow-x-auto rounded-lg border border-rule bg-card">
+        <div className="flex min-w-max divide-x divide-rule">
+          <Figure label={t("dashboard.today.tickets")} value={formatCount(figures.ticketsToday)} loading={figures.loading} />
+          <Figure label={t("dashboard.today.members")} value={formatCount(figures.members)} loading={figures.loading} />
+          <Figure label={t("dashboard.today.income")} value={formatMoney(figures.incomeToday)} loading={figures.loading} />
         </div>
-      </div>
+      </section>
 
-      {/* Reports grid — Admin only */}
+      <BoardSection title={t("board.quickActions")}>
+        <div className="flex flex-wrap gap-3">
+          <ActionTile to="/ticket" icon={<TicketIcon />} label={t("menu.sellTicket")} />
+          <ActionTile to="/member" icon={<Users />} label={t("menu.member")} />
+          <ActionTile to="/hold_request" icon={<PauseCircle />} label={t("menu.holdRequest")} />
+          <ActionTile to="/transfer_request" icon={<ArrowLeftRight />} label={t("dashboard.transfer")} />
+          {role === "Admin" && (
+            <ActionTile to="/income_report" icon={<BarChart3 />} label={t("menu.incomeReport")} />
+          )}
+        </div>
+      </BoardSection>
+
+      {/* Reports as a marker list — Admin only */}
       {role === "Admin" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a href="/income_report" className="block bg-card border rounded-lg p-5 shadow-sm hover:bg-accent transition-colors">
-            <div className="font-semibold text-sm mb-1">{t("dashboard.reports.income.title")}</div>
-            <div className="text-xs text-muted-foreground">{t("dashboard.reports.income.description")}</div>
-          </a>
-          <a href="/customer_report" className="block bg-card border rounded-lg p-5 shadow-sm hover:bg-accent transition-colors">
-            <div className="font-semibold text-sm mb-1">{t("dashboard.reports.customer.title")}</div>
-            <div className="text-xs text-muted-foreground">{t("dashboard.reports.customer.description")}</div>
-          </a>
-          <a href="/customer_type_report" className="block bg-card border rounded-lg p-5 shadow-sm hover:bg-accent transition-colors">
-            <div className="font-semibold text-sm mb-1">{t("dashboard.reports.type.title")}</div>
-            <div className="text-xs text-muted-foreground">{t("dashboard.reports.type.description")}</div>
-          </a>
-        </div>
+        <BoardSection title={t("board.reports")}>
+          <ul className="divide-y divide-rule rounded-lg border border-rule bg-card">
+            {reports.map((r) => (
+              <li key={r.to}>
+                <Link
+                  to={r.to}
+                  className="flex items-center gap-3 px-4 py-2.5 text-ink transition-colors hover:bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
+                >
+                  <span aria-hidden="true" className="marker-dot" style={{ ["--marker" as string]: "var(--ink)" }} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">{r.title}</span>
+                    <span className="block text-caption text-ink-soft">{r.description}</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-ink-soft" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </BoardSection>
       )}
 
-      {/* Info */}
-      <div className="bg-card border rounded-lg p-6 shadow-sm">
-        <h2 className="text-base font-semibold mb-2">{t("dashboard.info.title")}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t("dashboard.info.body")}
-        </p>
-      </div>
+      <p className="text-caption text-ink-soft">{t("dashboard.info.body")}</p>
     </div>
   )
 }
@@ -219,12 +190,12 @@ function Layout() {
     <SidebarProvider
       open={expanded}
       onOpenChange={setExpanded}
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-board"
     >
       <SideBar />
-      <SidebarInset className="min-w-0 bg-gray-50">
+      <SidebarInset className="board-grid min-w-0">
         <NavBar />
-        <div className="p-3">
+        <div className="p-4">
           <Outlet />
         </div>
       </SidebarInset>

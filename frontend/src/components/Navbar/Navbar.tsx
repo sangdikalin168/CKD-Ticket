@@ -1,200 +1,135 @@
-// /* eslint-disable @typescript-eslint/ban-ts-comment */
-// // @ts-nocheck
-// import { useState } from "react";
-// import { BiMenuAltRight } from "react-icons/bi";
-// import { Fragment } from "react";
-// import { Menu, Transition } from "@headlessui/react";
-// import JWTManager from "../../utils/jwt";
-// import { useAuthContext } from "../../context/AuthContext";
-
-// const user = {
-//     name: "Tom Cook",
-//     email: "tom@example.com",
-//     imageUrl:
-//         "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-// };
-
-// function classNames(...classes: string[]) {
-//     return classes.filter(Boolean).join(" ");
-// }
-
-// interface Props {
-//     setToggleSidebar: React.Dispatch<React.SetStateAction<boolean>>;
-// }
-
-// const Navbar = ({ setToggleSidebar }: Props) => {
-
-//     const { setIsAuthenticated } = useAuthContext();
-//     const userNavigation = [
-//         { name: "Your Profile", href: "#" },
-//         { name: "Settings", href: "#" },
-//         { name: "Sign out", href: "#", onclick: () => { JWTManager.deleteToken(); setIsAuthenticated(false) } },
-//     ];
-//     const [darkMode, setDarkMode] = useState(true);
-
-//     const display_name = localStorage.getItem("display_name")
-
-//     return (
-//         <div
-//             className={`h-[3rem] top-0 w-full flex justify-between items-center bg-white px-2 lg:px-4 dark:bg-black ${darkMode ? "dark" : ""
-//                 }`}
-//         >
-//             <div className="flex items-center">
-//                 <BiMenuAltRight
-//                     className="text-xl lg:text-2xl cursor-pointer text-gray-500"
-//                     onClick={() => setToggleSidebar(true)}
-//                 />
-//             </div>
-//             <div className="flex  items-center">
-//                 <div className="mr-2 text-center invisible sm:visible lg:visible">
-//                     <p className="text-white">{display_name}</p>
-//                 </div>
-//                 {/* Profile dropdown */}
-//                 <Menu as="div" className="relative ml-3">
-//                     <div>
-//                         <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-//                             <span className="sr-only">Open user menu</span>
-//                             <img
-//                                 className="h-8 w-8 rounded-full"
-//                                 src={user.imageUrl}
-//                                 alt=""
-//                             />
-//                         </Menu.Button>
-//                     </div>
-//                     <Transition
-//                         as={Fragment}
-//                         enter="transition ease-out duration-100"
-//                         enterFrom="transform opacity-0 scale-95"
-//                         enterTo="transform opacity-100 scale-100"
-//                         leave="transition ease-in duration-75"
-//                         leaveFrom="transform opacity-100 scale-100"
-//                         leaveTo="transform opacity-0 scale-95"
-//                     >
-//                         <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-//                             {userNavigation.map((item) => (
-//                                 <Menu.Item key={item.name}>
-//                                     {({ active }) => (
-//                                         <a
-//                                             href={item.href}
-//                                             className={classNames(
-//                                                 active ? "bg-gray-100" : "",
-//                                                 "block px-4 py-2 text-sm text-gray-700"
-//                                             )}
-//                                             onClick={item.onclick}
-//                                         >
-//                                             {item.name}
-//                                         </a>
-//                                     )}
-//                                 </Menu.Item>
-//                             ))}
-//                         </Menu.Items>
-//                     </Transition>
-//                 </Menu>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default Navbar;
-
 import { useTranslation } from "react-i18next";
+import { Link, useLocation } from "react-router-dom";
+import { LogOut, PanelLeft } from "lucide-react";
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
-import { IoMenu } from "react-icons/io5";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/Button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
+/** Route → the menu key written in the breadcrumb. */
+const ROUTE_KEYS: Record<string, string> = {
+    "/ticket": "menu.sellTicket",
+    "/member": "menu.member",
+    "/member_price_table": "menu.memberPrice",
+    "/coupon_price_table": "menu.couponPrice",
+    "/hold_request": "menu.holdRequest",
+    "/transfer_request": "menu.transferRequest",
+    "/income_report": "menu.incomeReport",
+    "/customer_report": "menu.customerReport",
+    "/customer_type_report": "menu.customerTypeReport",
+    "/printers": "menu.printer",
+    "/user": "menu.userList",
+    "/user_authorize": "menu.permissions",
+};
+
+/** Up to two initials from a display name; works for Khmer as well as Latin. */
+function initials(name: string | null): string {
+    if (!name) return "?";
+    return name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => Array.from(w)[0] ?? "")
+        .join("")
+        .toUpperCase();
+}
+
 export default function NavBar() {
     const { t } = useTranslation();
+    const location = useLocation();
     // toggleSidebar, not the raw desktop flag: it routes to the offcanvas panel
     // on desktop and the Sheet on mobile, which a plain setExpanded cannot do.
     const { toggleSidebar } = useSidebar();
     const { setIsAuthenticated } = useAuthContext();
     const display_name = localStorage.getItem("display_name");
+    const role = localStorage.getItem("role");
+    const currentKey = ROUTE_KEYS[location.pathname];
 
-    const user = {
-        name: "Tom Cook",
-        email: "tom@example.com",
-        imageUrl:
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+    const signOut = () => {
+        JWTManager.deleteToken();
+        setIsAuthenticated(false);
     };
 
-    const userNavigation = [
-        { name: t("nav.profile"), href: "#" },
-        { name: t("nav.settings"), href: "#" },
-        { name: t("nav.signOut"), href: "#", onclick: () => { JWTManager.deleteToken(); setIsAuthenticated(false); } },
-    ];
-
     return (
-        <div className="py-2 px-3 bg-white flex items-center shadow-md shadow-black/5 sticky top-0 left-0 z-30">
+        <header className="sticky left-0 top-0 z-30 flex h-12 items-center gap-2 border-b-2 border-ink bg-card px-3">
             <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-gray-600 sidebar-toggle"
+                className="sidebar-toggle text-ink"
                 onClick={toggleSidebar}
+                aria-label={t("ui.sidebar.toggle")}
             >
-                <IoMenu className="text-lg" />
+                <PanelLeft aria-hidden="true" />
             </Button>
 
-            <ul className="flex items-center text-sm ml-4">
-                <li className="mr-2">
-                    <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">{t("nav.dashboard")}</a>
-                </li>
-                <li className="text-gray-600 mr-2 font-medium">/</li>
-                <li className="text-gray-600 mr-2 font-medium">{t("nav.home")}</li>
-            </ul>
+            <nav aria-label="Breadcrumb" className="min-w-0">
+                <ol className="flex items-center gap-2 text-sm">
+                    <li>
+                        <Link to="/" className="font-medium text-ink-soft hover:text-ink hover:underline">
+                            {t("nav.board")}
+                        </Link>
+                    </li>
+                    {currentKey && (
+                        <>
+                            <li aria-hidden="true" className="text-ink-soft">/</li>
+                            <li className="truncate font-semibold text-ink" aria-current="page">
+                                {t(currentKey)}
+                            </li>
+                        </>
+                    )}
+                </ol>
+            </nav>
 
-            <ul className="ml-auto flex items-center gap-3">
+            <div className="ml-auto flex items-center gap-2">
                 {/* The login page has its own picker; this is the only way to change
                     language once the app shell has taken over. */}
                 <LanguageSwitcher align="end" />
 
-                <Separator orientation="vertical" className="h-6" />
-
-                <div className="text-center hidden sm:block">
-                    <p className="text-sm text-black">{display_name}</p>
-                </div>
-
-                <Separator orientation="vertical" className="h-6" />
+                <Separator orientation="vertical" className="h-6 bg-rule" />
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="flex items-center rounded-full bg-gray-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 rounded-full pr-1 text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                        >
                             <span className="sr-only">Open user menu</span>
-                            <img
-                                className="h-8 w-8 rounded-full"
-                                src={user.imageUrl}
-                                alt=""
-                            />
+                            <span
+                                aria-hidden="true"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-rule bg-tray text-caption font-black text-ink"
+                            >
+                                {initials(display_name)}
+                            </span>
+                            <span className="hidden max-w-[12rem] truncate text-sm font-medium sm:block">{display_name}</span>
                         </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                        {userNavigation.map((item) => (
-                            <DropdownMenuItem
-                                key={item.name}
-                                asChild
-                            >
-                                <a
-                                    href={item.href}
-                                    onClick={item.onclick}
-                                    className="block w-full cursor-pointer"
-                                >
-                                    {item.name}
-                                </a>
-                            </DropdownMenuItem>
-                        ))}
+                    <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuLabel className="font-normal">
+                            <span className="block truncate text-sm font-semibold text-ink">{display_name}</span>
+                            <span className="block text-caption text-ink-soft">{t("nav.role")}: {role}</span>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onSelect={signOut}
+                            className="cursor-pointer text-magnet-rejected focus:bg-magnet-rejected/10 focus:text-magnet-rejected"
+                        >
+                            <LogOut aria-hidden="true" />
+                            {t("nav.signOut")}
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </ul>
-        </div>
+            </div>
+        </header>
     );
 }

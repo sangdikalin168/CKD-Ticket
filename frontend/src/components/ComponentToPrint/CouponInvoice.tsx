@@ -1,12 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import React from "react";
 
+// The slip is paper: layout stays; the faces are named explicitly so the HTML the
+// desktop shell prints carries the same Roboto + Nokora pairing as the screen.
+const SLIP_FONT = { fontFamily: "'Roboto', 'Nokora', sans-serif" } as const;
+
+
 // https://reactjs.org/docs/refs-and-the-dom.html#refs-and-function-components
-export const CouponInvoice = React.forwardRef((props, ref) => {
+export interface CouponInvoiceProps {
+    invoice_id?: number | string | null;
+    payment_date?: string | null;
+    cashier?: string | null;
+    c_name?: string | null;
+    phone?: string | null;
+    promotion?: string | null;
+    price?: number | string | null;
+}
+
+export const CouponInvoice = React.forwardRef<HTMLDivElement, CouponInvoiceProps>((props, ref) => {
     return (
-        <div ref={ref} className="w-[405px] left-0 top-0 z-10 justify-center content-center overflow-auto border-2 border-black">
+        <div ref={ref} style={SLIP_FONT} className="w-[405px] left-0 top-0 z-10 justify-center content-center overflow-auto border-2 border-black">
             <div className="text-center pt-3">
                 <p className="text-lg font-semibold text-black">មិង ហួរក្លឹបហាត់ប្រាណ & អាងហែលទឹក</p>
                 <p className="text-lg font-semibold text-black">(សាខាចំការដូង)</p>

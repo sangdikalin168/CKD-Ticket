@@ -78,7 +78,12 @@
     "month": "Month",
     "year": "Year",
     "days": "Days",
-    "hours": "Hours"
+    "hours": "Hours",
+    "processed": "Processed",
+    "expired": "Expired",
+    "valid": "Valid",
+    "walkIn": "Walk-in",
+    "preview": "Preview"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -126,6 +131,11 @@
     "info": {
       "title": "General Information",
       "body": "CKD sports club management system · Use the menu on the left to reach each section."
+    },
+    "today": {
+      "tickets": "Tickets today",
+      "members": "Members",
+      "income": "Income today"
     }
   },
   "language": {
@@ -173,7 +183,9 @@
     "home": "Home",
     "profile": "Your Profile",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "board": "Board",
+    "role": "Role"
   },
   "ui": {
     "dataTable": {
@@ -356,7 +368,89 @@
       "testError": "Test print failed",
       "none": "No printers found on this PC",
       "connecting": "Connecting to the desktop app…",
-      "desktopOnly": "Printer settings are only available in the CKD Ticket desktop app on the counter PC."
+      "desktopOnly": "Printer settings are only available in the CKD Ticket desktop app on the counter PC.",
+      "board": "Printers"
     }
+  },
+  "board": {
+    "club": "មិង ហួរ ក្លឹបហាត់ប្រាណ & អាងហែលទឹក",
+    "branch": "(សាខាចំការដូង)",
+    "title": "Board",
+    "todayBoard": "Today's board",
+    "soldToday": "Sold today",
+    "noLinesYet": "Nothing sold at this counter yet this session — tap a tile and the first line writes itself here.",
+    "printAgain": "Print again",
+    "time": "Time",
+    "customer": "Customer",
+    "facility": "Facility",
+    "printed": "Printed",
+    "walkIn": "Walk-in",
+    "noPrices": "No prices on the board yet",
+    "noPricesHint": "An admin adds them under Price setup.",
+    "emptyColumn": "No prices yet",
+    "sellHint": "Tap a price to sell and print",
+    "today": "Today",
+    "figures": "Today's figures",
+    "quickActions": "Quick actions",
+    "reports": "Reports",
+    "note": "Note",
+    "oneEntry": "1 entry",
+    "thisCounter": "this counter, this session",
+    "allCounters": "All counters today"
+  },
+  "facility": {
+    "swim": "Swim",
+    "gym": "Gym",
+    "steam": "Steam",
+    "combo": "Combo",
+    "none": "None"
+  },
+  "ticket": {
+    "sale": "Tickets",
+    "priceSetup": "Price setup",
+    "column": {
+      "swim": "Swim",
+      "gym": "Gym",
+      "steam": "Steam",
+      "combo": "Combo"
+    },
+    "priceSetupHint": "Cashiers see these prices — one price can cover more than one facility (e.g. $3 = Swim + Gym)"
+  },
+  "members": {
+    "title": "Members",
+    "count": "{{total}} members · {{active}} valid",
+    "add": "Add member",
+    "profile": "Member"
+  },
+  "prices": {
+    "member": "Member prices",
+    "key": "Key",
+    "promotion": "Promotion",
+    "chooseFacilities": "Facility (choose one or more)"
+  },
+  "requests": {
+    "hold": "Hold requests",
+    "transfer": "Transfer requests",
+    "requested": "Requested",
+    "checked": "Checked",
+    "processed": "Processed",
+    "empty": "Nothing here",
+    "checker": "Checker",
+    "approver": "Approver",
+    "process": "Process",
+    "decide": "Decide",
+    "requestedBy": "Requested by {{name}}",
+    "from": "From {{name}}",
+    "to": "To {{name}}"
+  },
+  "reports": {
+    "income": "Income",
+    "customers": "Customers",
+    "memberTypes": "Member types"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "Nothing is written at this address.",
+    "home": "Back to the board"
   }
 }

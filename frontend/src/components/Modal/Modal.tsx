@@ -3,6 +3,8 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 
@@ -13,35 +15,48 @@ interface ModalProps {
   onConfirm: () => void
   onCancel: () => void
   children: React.ReactElement
+  title?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  /** The confirm button's variant — `commit` for a sale, `default` otherwise. */
+  confirmVariant?: "default" | "commit" | "destructive"
 }
 
+/** Confirm / cancel dialog around any content. */
 const Modal = ({
   open,
   setOpen,
   onConfirm,
   onCancel,
   children,
+  title,
+  confirmLabel = "យល់ព្រម",
+  cancelLabel = "បោះបង់",
+  confirmVariant = "default",
 }: ModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-3xl">
-        <div className="mt-3">
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader className={title ? undefined : "sr-only"}>
+          <DialogTitle>{title ?? confirmLabel}</DialogTitle>
+        </DialogHeader>
+        <div>
           {children}
         </div>
-        <DialogFooter className="flex-row-reverse gap-2 sm:gap-0">
+        <DialogFooter>
           <Button
             type="button"
-            variant="default"
-            onClick={() => { onConfirm(); }}
+            variant="outline"
+            onClick={() => { setOpen(false); onCancel(); }}
           >
-            Confirm
+            {cancelLabel}
           </Button>
           <Button
             type="button"
-            variant="destructive"
-            onClick={() => { setOpen(false); onCancel(); }}
+            variant={confirmVariant}
+            onClick={() => { onConfirm(); }}
           >
-            Cancel
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

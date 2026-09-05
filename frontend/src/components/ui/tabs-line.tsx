@@ -3,6 +3,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
 
+/** Underlined tabs: the active tab carries a 2px marker rule. */
 const Tabs = TabsPrimitive.Root
 
 const TabsList = React.forwardRef<
@@ -12,7 +13,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex w-full items-center justify-start border-b border-border bg-transparent gap-0",
+      "inline-flex w-full items-center justify-start gap-0 overflow-x-auto overflow-y-hidden border-b border-rule bg-transparent",
       className
     )}
     {...props}
@@ -27,13 +28,14 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 pb-3 pt-2 text-sm font-medium",
-      "border-b-2 border-transparent -mb-px",
-      "text-muted-foreground transition-colors",
-      "hover:text-foreground",
-      "focus-visible:outline-none",
+      "inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap px-3 text-sm font-medium",
+      "-mb-px border-b-2 border-transparent",
+      "text-ink-soft transition-colors",
+      "hover:text-ink",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
       "disabled:pointer-events-none disabled:opacity-50",
-      "data-[state=active]:border-primary data-[state=active]:text-foreground",
+      "data-[state=active]:border-ink data-[state=active]:font-bold data-[state=active]:text-ink",
+      "[&_svg]:size-4 [&_svg]:shrink-0",
       className
     )}
     {...props}

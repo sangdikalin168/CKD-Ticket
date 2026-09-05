@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from './Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
@@ -20,27 +21,6 @@ const getPageNumbers = (current: number, total: number): (number | '…')[] => {
   return out;
 };
 
-const ChevronLeft = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
-const ChevronRight = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-const ChevronsLeft = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-  </svg>
-);
-const ChevronsRight = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-  </svg>
-);
-
 export interface PaginationProps {
   pageInfo: PageInfo;
   onPageChange: (page: number) => void;
@@ -55,8 +35,8 @@ export interface PaginationProps {
 
 /**
  * Page navigation for any paged view. DataTable renders it as its footer;
- * views with a hand-built table (the monthly attendance matrix) use it directly
- * so there is one pager implementation rather than one per page.
+ * views with a hand-built table use it directly so there is one pager
+ * implementation rather than one per page.
  */
 export function Pagination({
   pageInfo,
@@ -96,28 +76,28 @@ export function Pagination({
     <div className={cn(tokens.pagination, className)}>
       {/* Mobile — stacked, always arrows: numbered buttons don't fit. */}
       <div className="md:hidden space-y-3">
-        <div className="text-xs text-muted-foreground text-center">
+        <div className="text-xs text-ink-soft text-center">
           {t('ui.dataTable.showingRange', { from, to, total })}
         </div>
         {onPageSizeChange && (
           <div className="flex items-center justify-center gap-2">
-            <label className="text-xs text-muted-foreground">{t('ui.dataTable.perPage')}</label>
+            <label className="text-xs text-ink-soft">{t('ui.dataTable.perPage')}</label>
             {pageSizeSelect}
           </div>
         )}
         <div className="flex items-center justify-between gap-2">
           <Button variant="outline" size="sm" className="flex-1"
             onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}>
-            <ChevronLeft />
-            <span className="ml-1">{t('ui.dataTable.prev')}</span>
+            <ChevronLeft aria-hidden="true" />
+            <span>{t('ui.dataTable.prev')}</span>
           </Button>
-          <div className="px-3 py-1.5 text-xs text-muted-foreground whitespace-nowrap">
+          <div className="px-3 py-1.5 text-xs text-ink-soft whitespace-nowrap">
             {page} / {pages}
           </div>
           <Button variant="outline" size="sm" className="flex-1"
             onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}>
-            <span className="mr-1">{t('common.next')}</span>
-            <ChevronRight />
+            <span>{t('common.next')}</span>
+            <ChevronRight aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -125,12 +105,12 @@ export function Pagination({
       {/* Desktop */}
       <div className="hidden md:flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0">
-          <div className={cn('text-muted-foreground whitespace-nowrap', tokens.paginationText)}>
+          <div className={cn('text-ink-soft whitespace-nowrap', tokens.paginationText)}>
             {t('ui.dataTable.showingResults', { from, to, total })}
           </div>
           {onPageSizeChange && (
             <div className="flex items-center gap-2 flex-shrink-0">
-              <label className={cn('text-muted-foreground whitespace-nowrap', tokens.paginationText)}>
+              <label className={cn('text-ink-soft whitespace-nowrap', tokens.paginationText)}>
                 {t('ui.dataTable.itemsPerPage')}
               </label>
               {pageSizeSelect}
@@ -142,49 +122,49 @@ export function Pagination({
           <div className="flex items-center gap-1">
             <button type="button" onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}
               aria-label={t('ui.dataTable.previousPage')}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              <ChevronLeft />
+              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-soft hover:bg-tray hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <ChevronLeft className="size-4" aria-hidden="true" />
             </button>
             {getPageNumbers(page, pages).map((p, idx) => p === '…' ? (
-              <span key={`gap-${idx}`} className="inline-flex items-center justify-center w-9 h-9 text-sm text-muted-foreground">…</span>
+              <span key={`gap-${idx}`} className="inline-flex items-center justify-center w-9 h-9 text-sm text-ink-soft">…</span>
             ) : (
               <button key={p} type="button" onClick={() => onPageChange(p)}
                 aria-current={page === p ? 'page' : undefined}
                 className={cn(
                   'inline-flex items-center justify-center min-w-[36px] h-9 px-2 rounded-md text-sm font-medium transition-colors',
-                  page === p ? 'bg-primary text-primary-foreground shadow-sm' : 'text-foreground hover:bg-accent'
+                  page === p ? 'bg-ink text-white' : 'text-ink hover:bg-tray'
                 )}>
                 {p}
               </button>
             ))}
             <button type="button" onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}
               aria-label={t('ui.dataTable.nextPage')}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              <ChevronRight />
+              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-soft hover:bg-tray hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <ChevronRight className="size-4" aria-hidden="true" />
             </button>
           </div>
         ) : (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.firstPage')}
               onClick={() => onPageChange(1)} disabled={!pageInfo.has_previous}>
-              <ChevronsLeft />
+              <ChevronsLeft aria-hidden="true" />
             </Button>
             <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.previousPage')}
               onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}>
-              <ChevronLeft />
+              <ChevronLeft aria-hidden="true" />
             </Button>
             <div className="flex items-center gap-2 px-4">
-              <span className={cn('text-muted-foreground', tokens.paginationText)}>
+              <span className={cn('text-ink-soft', tokens.paginationText)}>
                 {t('ui.dataTable.pageOf', { current: page, total: pages })}
               </span>
             </div>
             <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.nextPage')}
               onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}>
-              <ChevronRight />
+              <ChevronRight aria-hidden="true" />
             </Button>
             <Button variant="outline" size="sm" className={tokens.control} title={t('ui.dataTable.lastPage')}
               onClick={() => onPageChange(pages)} disabled={!pageInfo.has_next}>
-              <ChevronsRight />
+              <ChevronsRight aria-hidden="true" />
             </Button>
           </div>
         )}

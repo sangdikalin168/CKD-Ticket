@@ -1,11 +1,12 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "../../Component/DataTable";
-import { PrinterIcon } from "@heroicons/react/20/solid";
+import { Printer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { useMemberPaymentDetailLazyQuery } from "../../../../generated/graphql";
 import { useReactToPrint } from "react-to-print";
 import { Button } from "@/components/ui/Button";
+import { formatMoney } from "@/lib/money";
 
 type MemberPayment = {
   payment_id: number;
@@ -32,7 +33,7 @@ export const MemberPayment = (props: any) => {
   const columns = [
     columnHelper.accessor((row) => row.payment_id, {
       id: "ID",
-      cell: (info) => info.getValue(),
+      cell: (info) => <span className="text-ink-soft">{info.getValue()}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
@@ -50,7 +51,7 @@ export const MemberPayment = (props: any) => {
     }),
     columnHelper.accessor((row) => row.price, {
       id: "តម្លៃ",
-      cell: (info) => info.getValue(),
+      cell: (info) => <span className="font-medium">{formatMoney(info.getValue())}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
@@ -69,25 +70,17 @@ export const MemberPayment = (props: any) => {
     columnHelper.accessor((row) => row.payment_id, {
       id: "Action",
       cell: (info) => (
-        <div className="flex">
-          {
-            <>
-              <span className="hidden sm:block">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => PaymentDetail(info.row.original.payment_id)}
-                >
-                  <PrinterIcon
-                    className="h-4 w-4 text-gray-500"
-                    aria-hidden="true"
-                  />
-                </Button>
-              </span>
-            </>
-          }
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-7 w-7"
+          title="បោះពុម្ពវិក្កយបត្រ"
+          aria-label="បោះពុម្ពវិក្កយបត្រ"
+          onClick={() => PaymentDetail(info.row.original.payment_id)}
+        >
+          <Printer aria-hidden="true" />
+        </Button>
       ),
       header: () => <span>Action</span>,
       footer: (info) => info.column.id,

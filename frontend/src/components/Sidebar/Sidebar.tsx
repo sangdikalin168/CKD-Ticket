@@ -1,36 +1,39 @@
 /**
- * Primary navigation, carried over from NAN-HR's sidebar.
+ * Primary navigation: the board's index.
  *
- * Structure, styling and behaviour follow NAN-HR: the shadcn sidebar
- * primitives in ui/sidebar.tsx, collapsible groups that auto-expand onto the
- * active route, and a footer holding the sign-out action.
+ * Mechanics are the shadcn sidebar primitives in ui/sidebar.tsx (offcanvas
+ * panel on desktop, a Sheet on mobile, the `b` shortcut, collapsible groups
+ * that auto-expand onto the active route) with the sign-out action in the
+ * footer.
  *
- * Two things are deliberately NOT carried over, because CKD-Ticket does not
- * have them:
- *   - NAN-HR gates items with <Can permission={...}> / usePermission(). Here
- *     access is the coarse role string in localStorage ("Admin" / "Sale"),
- *     which is what the previous sidebar used, so the same items stay visible
- *     to the same people.
- *   - Labels come from i18next (menu.* keys) so they follow the language
- *     switcher, same as NAN-HR.
+ * Access is the coarse role string in localStorage ("Admin" / "Sale"), which
+ * is what the previous sidebar used, so the same items stay visible to the
+ * same people. Labels come from i18next (menu.* keys).
  */
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { HiOutlinePrinter, HiOutlineTicket, HiOutlineUserCircle } from "react-icons/hi";
-import { FaUserCog } from "react-icons/fa";
-import { MdOutlineDashboard } from "react-icons/md";
-import { BsChevronDown } from "react-icons/bs";
-import { IoLogOutOutline } from "react-icons/io5";
-import { RiMoneyDollarCircleLine, RiFileList3Line } from "react-icons/ri";
+import {
+  BarChart3,
+  ChevronDown,
+  CircleDollarSign,
+  ClipboardList,
+  LogOut,
+  Printer,
+  Ticket,
+  UserCog,
+  Users,
+} from "lucide-react";
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
+import { cn } from "@/lib/utils";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -69,28 +72,26 @@ interface MenuItem {
   subItems?: SubMenuItem[];
 }
 
-const ICON = "h-5 w-5";
-
 const MENU: MenuItem[] = [
   {
     key: "ticket",
     nameKey: "menu.sellTicket",
     path: "/ticket",
     access: ["Sale", "Admin"],
-    icon: <HiOutlineTicket className={ICON} />,
+    icon: <Ticket />,
   },
   {
     key: "member",
     nameKey: "menu.member",
     path: "/member",
     access: ["Sale", "Admin"],
-    icon: <HiOutlineUserCircle className={ICON} />,
+    icon: <Users />,
   },
   {
     key: "price",
     nameKey: "menu.priceTable",
     access: ["Admin", "Sale"],
-    icon: <RiMoneyDollarCircleLine className={ICON} />,
+    icon: <CircleDollarSign />,
     subItems: [
       { nameKey: "menu.memberPrice", path: "/member_price_table" },
       { nameKey: "menu.couponPrice", path: "/coupon_price_table" },
@@ -100,7 +101,7 @@ const MENU: MenuItem[] = [
     key: "request",
     nameKey: "menu.request",
     access: ["Admin", "Sale"],
-    icon: <RiFileList3Line className={ICON} />,
+    icon: <ClipboardList />,
     subItems: [
       { nameKey: "menu.holdRequest", path: "/hold_request" },
       { nameKey: "menu.transferRequest", path: "/transfer_request" },
@@ -110,7 +111,7 @@ const MENU: MenuItem[] = [
     key: "report",
     nameKey: "menu.report",
     access: ["Admin"],
-    icon: <MdOutlineDashboard className={ICON} />,
+    icon: <BarChart3 />,
     subItems: [
       { nameKey: "menu.incomeReport", path: "/income_report" },
       { nameKey: "menu.customerReport", path: "/customer_report" },
@@ -122,19 +123,32 @@ const MENU: MenuItem[] = [
     nameKey: "menu.printer",
     path: "/printers",
     access: ["Sale", "Admin"],
-    icon: <HiOutlinePrinter className={ICON} />,
+    icon: <Printer />,
   },
   {
     key: "user",
     nameKey: "menu.user",
     access: ["Admin"],
-    icon: <FaUserCog className={ICON} />,
+    icon: <UserCog />,
     subItems: [
       { nameKey: "menu.userList", path: "/user" },
       { nameKey: "menu.permissions", path: "/user_authorize" },
     ],
   },
 ];
+
+/** The small magnet at the end of an index line; ink when the line is the current page. */
+function IndexDot({ active }: { active: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "ml-auto h-2 w-2 shrink-0 rounded-full transition-colors",
+        active ? "bg-ink" : "bg-rule"
+      )}
+    />
+  );
+}
 
 export default function SideBar() {
   const { t } = useTranslation();
@@ -182,9 +196,23 @@ export default function SideBar() {
 
   return (
     <SidebarRoot collapsible="offcanvas" id="primary-sidebar" aria-label="Primary navigation">
-      <SidebarContent className="pt-2">
+      <SidebarHeader className="px-4 pb-0 pt-4">
+        <Link
+          to="/"
+          onClick={handleNavigate}
+          className="block rounded-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+        >
+          <span className="block text-caption font-black uppercase leading-tight tracking-[0.12em]">CKD · Ticket</span>
+          <span className="block truncate text-caption text-ink-soft">{t("board.club")}</span>
+        </Link>
+        <div className="marker-rule mt-3" />
+      </SidebarHeader>
+
+      <SidebarContent className="pt-1">
         <SidebarGroup>
-          <SidebarGroupLabel className="tracking-[0.18em]">{t("menu.label")}</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-2 text-caption font-black uppercase tracking-[0.12em] text-ink">
+            {t("menu.label")}
+          </SidebarGroupLabel>
           <SidebarMenu>
             {visibleByRole.map((item) => {
               const isActiveParent =
@@ -206,25 +234,26 @@ export default function SideBar() {
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton isActive={isActiveParent} tooltip={t(item.nameKey)}>
-                          <span className="flex-shrink-0">{item.icon}</span>
+                          {item.icon}
                           <span className="flex-1 truncate">{t(item.nameKey)}</span>
-                          <BsChevronDown className="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                          <ChevronDown className="ml-auto size-4 text-ink-soft transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent className="overflow-hidden">
                         <SidebarMenuSub>
-                          {item.subItems.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.path}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={location.pathname === subItem.path}
-                              >
-                                <Link to={subItem.path} onClick={handleNavigate}>
-                                  <span className="flex-1 truncate">{t(subItem.nameKey)}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {item.subItems.map((subItem) => {
+                            const active = location.pathname === subItem.path;
+                            return (
+                              <SidebarMenuSubItem key={subItem.path}>
+                                <SidebarMenuSubButton asChild isActive={active}>
+                                  <Link to={subItem.path} onClick={handleNavigate}>
+                                    <span className="flex-1 truncate">{t(subItem.nameKey)}</span>
+                                    <IndexDot active={active} />
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </SidebarMenuItem>
@@ -236,8 +265,9 @@ export default function SideBar() {
                 <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton asChild isActive={isActiveParent} tooltip={t(item.nameKey)}>
                     <Link to={item.path!} onClick={handleNavigate}>
-                      <span className="flex-shrink-0">{item.icon}</span>
+                      {item.icon}
                       <span className="flex-1 truncate">{t(item.nameKey)}</span>
+                      <IndexDot active={isActiveParent} />
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -247,15 +277,15 @@ export default function SideBar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-rule">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip={t("common.logout")}
               onClick={handleLogout}
-              className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-900/20"
+              className="text-magnet-rejected hover:bg-magnet-rejected/10 hover:text-magnet-rejected active:bg-magnet-rejected/15 active:text-magnet-rejected"
             >
-              <IoLogOutOutline className={ICON} />
+              <LogOut />
               <span>{t("common.logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

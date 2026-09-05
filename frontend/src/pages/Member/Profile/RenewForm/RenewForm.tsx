@@ -1,17 +1,26 @@
-// @ts-nocheck
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { gql, useQuery } from "@apollo/client";
 import { useCreateCustomerPaymentMutation } from "../../../../generated/graphql";
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
+import { ArrowLeft } from "lucide-react";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { DateInput } from "@/components/ui/DateInput";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import { FacilityMarks } from "@/components/board/FacilityMark";
+import { facilityOfSet } from "@/lib/facility";
+import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
+
+/** The desktop shell's print bridge; absent in a plain browser. */
+const printBridge = () =>
+  (window as unknown as { electronAPI?: { printComponent1?: (url: string, cb: (r: unknown) => void) => void; printComponent?: (url: string, cb: (r: unknown) => void) => void } })
+    .electronAPI;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -34,15 +43,6 @@ const datetime_format = (date_time: Date) =>
 const ageLabel  = (a: string) => a === "Kid" ? "តូច" : "ធំ";
 const shiftLabel = (s: string) => s === "Morning" ? "ព្រឹក" : "Full";
 
-// ─── Facility colour palette ──────────────────────────────────────────────────
-
-const FACILITY_COLORS: Record<string, { badge: string; dot: string }> = {
-  SWIM:  { badge: "bg-blue-100 text-blue-700",   dot: "bg-blue-400" },
-  GYM:   { badge: "bg-green-100 text-green-700",  dot: "bg-green-400" },
-  STEAM: { badge: "bg-orange-100 text-orange-700", dot: "bg-orange-400" },
-};
-const fColor = (code: string) => FACILITY_COLORS[code] ?? { badge: "bg-gray-100 text-gray-700", dot: "bg-gray-400" };
-
 // ─── GraphQL ──────────────────────────────────────────────────────────────────
 
 const GET_ALL_PRICES = gql`
@@ -54,9 +54,25 @@ const GET_ALL_PRICES = gql`
   }
 `;
 
+/** A filter written on the board: outline at rest, ink when chosen. */
+const Choice = ({ active, onClick, children }: any) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={active}
+    className={cn(
+      "inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray"
+    )}
+  >
+    {children}
+  </button>
+);
+
 // ─── RenewForm ────────────────────────────────────────────────────────────────
 
 export const RenewForm = (props: any) => {
+  const { t } = useTranslation();
   const { data: price_table, loading } = useQuery(GET_ALL_PRICES, { fetchPolicy: "no-cache" });
 
   const [selectedPrice, setSelectedPrice] = useState<any | null>(null);
@@ -74,26 +90,14 @@ export const RenewForm = (props: any) => {
     p.shift === shift &&
     (monthQty === null || p.monthQty === monthQty)
   );
-
-  const FilterChip = ({ active, onClick, children }: any) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-sm font-medium border transition-colors
-        ${active
-          ? "bg-primary text-primary-foreground border-primary"
-          : "bg-background border-muted text-muted-foreground hover:border-primary/50"
-        }`}
-    >
-      {children}
-    </button>
-  );
+  // Same rule as the price table: no key photos in this set, no Key column.
+  const showKey = filtered.some((p) => !!p.key_image);
 
   return (
     <Dialog open={props.open_member} onOpenChange={props.setOpenMember}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>តារាងតម្លៃសមាជិក</DialogTitle>
+          <DialogTitle>{selectedPrice ? "បន្តសមាជិកភាព" : "តារាងតម្លៃសមាជិក"}</DialogTitle>
         </DialogHeader>
 
         {selectedPrice ? (
@@ -102,7 +106,7 @@ export const RenewForm = (props: any) => {
             price={selectedPrice}
             old_end={props.details?.end_membership_date}
             customer_id={props.details?.customer_id}
-            user_id={parseInt(localStorage.getItem("user_id"))}
+            user_id={parseInt(localStorage.getItem("user_id") ?? "0")}
             customer_name={props.details?.customer_name}
             phone={props.details?.phone}
             refetchMemberDetail={props.refetchMemberDetail}
@@ -115,111 +119,95 @@ export const RenewForm = (props: any) => {
           <div className="space-y-4">
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-4">
-              {/* Age */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground font-medium">វ័យ:</span>
-                <FilterChip active={age === "Adult"} onClick={() => setAge("Adult")}>ធំ</FilterChip>
-                <FilterChip active={age === "Kid"}   onClick={() => setAge("Kid")}>តូច</FilterChip>
+                <span className="text-caption text-ink-soft">វ័យ</span>
+                <Choice active={age === "Adult"} onClick={() => setAge("Adult")}>ធំ</Choice>
+                <Choice active={age === "Kid"}   onClick={() => setAge("Kid")}>តូច</Choice>
               </div>
 
-              <Separator orientation="vertical" className="h-6" />
-
-              {/* Shift */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground font-medium">វេន:</span>
-                <FilterChip active={shift === "Full"}    onClick={() => setShift("Full")}>Full</FilterChip>
-                <FilterChip active={shift === "Morning"} onClick={() => setShift("Morning")}>ព្រឹក</FilterChip>
+                <span className="text-caption text-ink-soft">វេន</span>
+                <Choice active={shift === "Full"}    onClick={() => setShift("Full")}>Full</Choice>
+                <Choice active={shift === "Morning"} onClick={() => setShift("Morning")}>ព្រឹក</Choice>
               </div>
 
-              <Separator orientation="vertical" className="h-6" />
-
-              {/* Month qty — dynamic from DB */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground font-medium">ខែ:</span>
-                <FilterChip active={monthQty === null} onClick={() => setMonthQty(null)}>ទាំងអស់</FilterChip>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-caption text-ink-soft">ខែ</span>
+                <Choice active={monthQty === null} onClick={() => setMonthQty(null)}>ទាំងអស់</Choice>
                 {monthOptions.map((m) => (
-                  <FilterChip key={m} active={monthQty === m} onClick={() => setMonthQty(m)}>
+                  <Choice key={m} active={monthQty === m} onClick={() => setMonthQty(m)}>
                     {m}ខែ
-                  </FilterChip>
+                  </Choice>
                 ))}
               </div>
             </div>
 
-            <Separator />
+            <div className="marker-rule" />
 
             {/* Price list */}
             {loading ? (
-              <div className="space-y-2">
-                {[1,2,3,4].map(i => <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />)}
+              <div className="space-y-2" role="status" aria-live="polite">
+                {[1,2,3,4].map(i => <Skeleton key={i} className="h-12 rounded-lg" />)}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="py-10 text-center text-sm text-muted-foreground">
+              <div className="py-10 text-center text-sm text-ink-soft">
                 គ្មានតម្លៃត្រូវនឹងការជ្រើស
               </div>
             ) : (
-              <div className="rounded-lg border overflow-hidden">
-                {/* Header */}
-                <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 py-2 bg-muted/50 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span className="w-10">Key</span>
-                  <span>Promotion</span>
-                  <span className="text-center">Facility</span>
-                  <span className="text-right w-16">ខែ</span>
-                  <span className="text-right w-16">តម្លៃ</span>
+              <div className="overflow-hidden rounded-lg border border-rule">
+                <div className={cn("grid items-center gap-4 bg-tray px-4 py-1.5 text-caption text-ink-soft", showKey ? "grid-cols-[2.5rem_1fr_auto_4rem_5rem]" : "grid-cols-[1fr_auto_4rem_5rem]")}>
+                  {showKey && <span>{t("prices.key")}</span>}
+                  <span>{t("prices.promotion")}</span>
+                  <span className="text-center">{t("board.facility")}</span>
+                  <span className="text-right">ខែ</span>
+                  <span className="text-right">តម្លៃ</span>
                 </div>
-                <Separator />
-                {filtered.map((p, i) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPrice(p)}
-                    className={`w-full grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 py-3 text-left
-                      hover:bg-primary/5 hover:border-l-2 hover:border-l-primary transition-all cursor-pointer
-                      ${i !== 0 ? "border-t" : ""}`}
-                  >
-                    {/* Key image */}
-                    <div className="w-10">
-                      {p.key_image
-                        ? <img src={p.key_image} alt="key" className="h-8 w-8 rounded object-cover border" />
-                        : <div className="h-8 w-8 rounded bg-muted" />
-                      }
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <p className="text-sm font-medium leading-tight">{p.description || "—"}</p>
-                      <p className="text-xs text-muted-foreground">{ageLabel(p.ageGroup)} · {shiftLabel(p.shift)}</p>
-                    </div>
-
-                    {/* Facility badges */}
-                    <div className="flex flex-wrap gap-1 justify-center max-w-[120px]">
-                      {p.facilities?.map((f: any) => (
-                        <span key={f.facility_id} className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${fColor(f.code).badge}`}>
-                          {f.name}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Month */}
-                    <span className="text-sm font-semibold text-right w-16">{p.monthQty}ខែ</span>
-
-                    {/* Price */}
-                    <span className="text-lg font-black text-primary text-right w-16">${p.price}</span>
-                  </button>
-                ))}
+                <ul className="divide-y divide-rule">
+                  {filtered.map((p) => {
+                    const meta = facilityOfSet(p.facilities);
+                    return (
+                      <li key={p.id}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPrice(p)}
+                          className={cn("grid w-full items-center gap-4 bg-card px-4 py-2.5 text-left transition-colors hover:bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink", showKey ? "grid-cols-[2.5rem_1fr_auto_4rem_5rem]" : "grid-cols-[1fr_auto_4rem_5rem]")}
+                        >
+                          {showKey && (
+                            <span>
+                              {p.key_image
+                                ? <img src={p.key_image} alt={t("prices.key")} className="h-8 w-8 rounded border border-rule object-cover" />
+                                : <span className="block h-8 w-8 rounded bg-tray" />
+                              }
+                            </span>
+                          )}
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-medium text-ink">{p.description || "—"}</span>
+                            <span className="block text-caption text-ink-soft">{ageLabel(p.ageGroup)} · {shiftLabel(p.shift)}</span>
+                          </span>
+                          <span className="justify-self-center">
+                            <FacilityMarks facilities={p.facilities} names={false} size={12} />
+                          </span>
+                          <span className="text-right text-sm font-semibold text-ink">{p.monthQty}ខែ</span>
+                          <span className={cn("text-right text-title font-black", meta.text)}>{formatMoney(p.price)}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                props.setOpenMember(false);
+                setSelectedPrice(null);
+              }}>
+                បោះបង់
+              </Button>
+            </DialogFooter>
           </div>
         )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => {
-            props.setOpenMember(false);
-            setSelectedPrice(null);
-          }}>
-            បោះបង់
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -229,6 +217,7 @@ export const RenewForm = (props: any) => {
 
 const ConfirmModal = (props: any) => {
   const { price: selectedPrice, old_end } = props;
+  const meta = facilityOfSet(selectedPrice.facilities);
 
   const getRenewalDate = (effectiveDate: Date, month_qty: number) => {
     const today = new Date();
@@ -254,16 +243,16 @@ const ConfirmModal = (props: any) => {
 
   const handlePrint1 = async (target: HTMLIFrameElement) => {
     return new Promise(() => {
-      const data = target.contentWindow.document.documentElement.outerHTML;
+      const data = target.contentWindow!.document.documentElement.outerHTML;
       const blob = new Blob([data], { type: "text/html; charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      window.electronAPI.printComponent(url, (response: any) => { console.log("Main:", response); });
+      printBridge()?.printComponent?.(url, (response) => { console.log("Main:", response); });
     });
   };
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    print: async (printIframe) => { await handlePrint1(printIframe); },
+    print: async (printIframe: HTMLIFrameElement) => { await handlePrint1(printIframe); },
   });
 
   useEffect(() => {
@@ -309,48 +298,47 @@ const ConfirmModal = (props: any) => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Hidden print button */}
       <button className="hidden" ref={buttonRef} type="button" onClick={handlePrint} />
 
-      {/* Selected price summary card */}
-      <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 flex items-center gap-4">
+      {/* The chosen price, pinned like a tile */}
+      <div className="relative flex items-center gap-4 overflow-hidden rounded-xl border border-rule bg-card p-4">
+        <span aria-hidden="true" className={cn("absolute inset-x-0 top-0 h-[3px]", meta.bg)} />
         {selectedPrice.key_image && (
-          <img src={selectedPrice.key_image} alt="key" className="h-14 w-14 rounded-lg object-cover border" />
+          <img src={selectedPrice.key_image} alt="key" className="h-14 w-14 rounded-lg border border-rule object-cover" />
         )}
-        <div className="flex-1">
-          <div className="text-2xl font-black text-primary">${selectedPrice.price}</div>
-          <div className="text-sm text-muted-foreground">
-            {selectedPrice.monthQty}ខែ · {shiftLabel(selectedPrice.shift)} · {ageLabel(selectedPrice.ageGroup)}
+        <div className="min-w-0 flex-1">
+          <div className={cn("text-price font-black leading-none", meta.text)}>{formatMoney(selectedPrice.price)}</div>
+          <div className="mt-1 text-sm text-ink">
+            {selectedPrice.description}
           </div>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {selectedPrice.facilities?.map((f: any) => (
-              <span key={f.facility_id} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${fColor(f.code).badge}`}>
-                {f.name}
-              </span>
-            ))}
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 text-caption text-ink-soft">
+            <span>{selectedPrice.monthQty}ខែ · {shiftLabel(selectedPrice.shift)} · {ageLabel(selectedPrice.ageGroup)}</span>
+            <FacilityMarks facilities={selectedPrice.facilities} size={10} textClassName="text-ink-soft" />
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={props.onBack} className="text-muted-foreground">
-          ← ផ្លាស់ប្តូរ
+        <Button variant="ghost" size="sm" onClick={props.onBack}>
+          <ArrowLeft aria-hidden="true" />
+          ផ្លាស់ប្តូរ
         </Button>
       </div>
 
       {/* Dates */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-lg border p-3">
-          <p className="text-xs text-muted-foreground mb-1">សុពលភាពចាស់</p>
-          <p className="text-lg font-semibold">{old_end}</p>
+      <dl className="grid grid-cols-2 gap-3">
+        <div className="rounded-lg border border-rule p-3">
+          <dt className="text-caption text-ink-soft">សុពលភាពចាស់</dt>
+          <dd className="text-title font-black text-ink">{old_end || "—"}</dd>
         </div>
-        <div className="rounded-lg border p-3">
-          <p className="text-xs text-muted-foreground mb-1">សុពលភាពថ្មី</p>
-          <p className="text-lg font-semibold text-primary">{date_format(renewalDate)}</p>
+        <div className="rounded-lg border border-rule p-3">
+          <dt className="text-caption text-ink-soft">សុពលភាពថ្មី</dt>
+          <dd className={cn("text-title font-black", meta.text)}>{date_format(renewalDate)}</dd>
         </div>
-      </div>
+      </dl>
 
       {/* Start date picker */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-muted-foreground">ថ្ងៃចាប់ផ្តើម:</span>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm font-medium text-ink">ថ្ងៃចាប់ផ្តើម</span>
         <div className="w-44">
           <DateInput
             name="start_date"
@@ -360,17 +348,16 @@ const ConfirmModal = (props: any) => {
             }}
           />
         </div>
-        <span className="text-sm text-muted-foreground">→</span>
-        <span className="text-sm font-semibold">{date_format(renewalDate)}</span>
+        <span className="text-sm text-ink-soft">→</span>
+        <span className="text-sm font-semibold text-ink">{date_format(renewalDate)}</span>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3 justify-end">
-        <Button variant="outline" onClick={props.onBack}>← ត្រឡប់</Button>
-        <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white">
-          យល់ព្រម
+      <DialogFooter>
+        <Button variant="outline" onClick={props.onBack}>ត្រឡប់</Button>
+        <Button variant="commit" onClick={handleSubmit}>
+          យល់ព្រម · បោះពុម្ព
         </Button>
-      </div>
+      </DialogFooter>
 
       {/* Hidden print template */}
       <div className="hidden">

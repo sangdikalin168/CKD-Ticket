@@ -9,10 +9,12 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, FlaskConical, Printer, RefreshCw } from "lucide-react";
+import { FlaskConical, Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { MagnetChip } from "@/components/board/MagnetChip";
 
 interface PrinterList {
   ok: boolean;
@@ -121,63 +123,57 @@ export default function Printers() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            <Printer className="h-6 w-6" />
-            {t("settings.printers.title")}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t("settings.printers.subtitle")}</p>
-        </div>
-        {api && (
-          <Button variant="outline" onClick={() => void load()} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            {t("settings.printers.refresh")}
-          </Button>
-        )}
-      </div>
+    <div className="mx-auto max-w-3xl space-y-4">
+      <BoardHeader
+        titleKey="settings.printers.title"
+        subtitle={t("settings.printers.subtitle")}
+        actions={
+          api ? (
+            <Button variant="outline" onClick={() => void load()} disabled={loading}>
+              <RefreshCw className={loading ? "animate-spin" : undefined} aria-hidden="true" />
+              {t("settings.printers.refresh")}
+            </Button>
+          ) : undefined
+        }
+      />
 
       {!api && waiting && (
-        <div className="flex items-center gap-2 rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-          <RefreshCw className="h-4 w-4 animate-spin" />
+        <div className="flex items-center gap-2 rounded-lg border border-dashed border-rule bg-card p-6 text-sm text-ink-soft" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           {t("settings.printers.connecting")}
         </div>
       )}
 
       {!api && !waiting && (
-        <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-rule bg-card p-6 text-sm text-ink-soft">
           {t("settings.printers.desktopOnly")}
         </div>
       )}
 
       {api && list?.ok && (
-        <div className="overflow-hidden rounded-lg border">
+        <ul className="divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card">
           {(list.printers ?? []).length === 0 && (
-            <p className="p-6 text-sm text-muted-foreground">{t("settings.printers.none")}</p>
+            <li className="p-6 text-sm text-ink-soft">{t("settings.printers.none")}</li>
           )}
           {(list.printers ?? []).map((name) => {
             const isSelected = list.configured === name;
             const isDefault = list.default === name;
             return (
-              <div key={name} className="flex items-center justify-between gap-4 border-b px-4 py-3 last:border-b-0">
+              <li key={name} className="flex items-center justify-between gap-4 px-4 py-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 font-medium">
-                    <span className="truncate">{name}</span>
-                    {isSelected && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        {t("settings.printers.selected")}
-                      </span>
-                    )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate font-semibold text-ink">{name}</span>
+                    <MagnetChip tone={isSelected ? "done" : "off"}>
+                      {isSelected ? t("settings.printers.selected") : isDefault ? t("settings.printers.default") : "—"}
+                    </MagnetChip>
                   </div>
-                  {isDefault && (
-                    <div className="text-xs text-muted-foreground">{t("settings.printers.default")}</div>
+                  {isSelected && isDefault && (
+                    <div className="text-caption text-ink-soft">{t("settings.printers.default")}</div>
                   )}
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => void testPrint(name)}>
-                    <FlaskConical className="mr-2 h-4 w-4" />
+                    <FlaskConical aria-hidden="true" />
                     {t("settings.printers.testPrint")}
                   </Button>
                   {!isSelected && (
@@ -186,10 +182,10 @@ export default function Printers() {
                     </Button>
                   )}
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

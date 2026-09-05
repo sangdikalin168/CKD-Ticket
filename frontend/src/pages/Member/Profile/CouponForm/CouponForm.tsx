@@ -1,16 +1,24 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useCreateCouponPaymentMutation,
   useGetCouponCardLazyQuery,
 } from "../../../../generated/graphql";
 import { useReactToPrint } from "react-to-print";
-import { Dialog, Transition } from "@headlessui/react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { Search } from "lucide-react";
 import { CouponInvoice } from "../../../../components/ComponentToPrint/CouponInvoice";
 import { TypeOptions, toast } from "react-toastify";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { MagnetChip } from "@/components/board/MagnetChip";
+import { formatMoney } from "@/lib/money";
 
 const notify = (
   message: string,
@@ -27,11 +35,9 @@ const notify = (
 };
 
 export const CouponPayment = (props: any) => {
-  const cancelButtonRef = useRef(null);
-  //const buttonRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const componentRef = useRef<HTMLDivElement>(null);
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement>(null);
 
   const [findCouponCard, { data, loading, refetch }] =
     useGetCouponCardLazyQuery({ fetchPolicy: "no-cache" });
@@ -42,7 +48,7 @@ export const CouponPayment = (props: any) => {
         couponCode: code,
       },
     });
-    inputEl.current.select();
+    inputEl.current?.select();
   };
 
   const [coupon_code, setCouponCode] = useState("");
@@ -53,15 +59,15 @@ export const CouponPayment = (props: any) => {
 
   const CreateCouponPayment = async () => {
     setBtnSellStatus(true);
-    
+
     // Hide Or Disable Sell Button To advoice duplicate data
     const result = await createCouponPayment({
       variables: {
         userId: props.user_id,
         customerId: props.customer_id,
-        cardName: data?.GetCouponCard[0].card_name,
-        price: data?.GetCouponCard[0].price,
-        quantity: data?.GetCouponCard[0].quantity,
+        cardName: data?.GetCouponCard[0].card_name ?? "",
+        price: data?.GetCouponCard[0].price ?? 0,
+        quantity: data?.GetCouponCard[0].quantity ?? 0,
         couponCode: coupon_code,
       },
     });
@@ -78,13 +84,12 @@ export const CouponPayment = (props: any) => {
   const handlePrint1 = async (target: HTMLIFrameElement) => {
     return new Promise(() => {
       console.log("forwarding print request to the main process...");
-      const data = target.contentWindow.document.documentElement.outerHTML;
+      const data = target.contentWindow!.document.documentElement.outerHTML;
       const blob = new Blob([data], { type: "text/html; charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      window.electronAPI.printComponent(url, (response: any) => {
+      (window as any).electronAPI.printComponent(url, (response: any) => {
         console.log("Main: ", response);
       });
-      // console.log('Main: ', data);
     });
   };
   const handlePrint = useReactToPrint({
@@ -108,6 +113,8 @@ export const CouponPayment = (props: any) => {
     }
   }, [payment_id]);
 
+  const card = data?.GetCouponCard?.[0];
+
   return (
     <>
       <button
@@ -118,142 +125,88 @@ export const CouponPayment = (props: any) => {
       >
         Print
       </button>
-      <Transition.Root show={props.open_coupon} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-10"
-          initialFocus={cancelButtonRef}
-          onClose={props.setIsOpenCoupon}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+
+      <Dialog open={props.open_coupon} onOpenChange={props.setIsOpenCoupon}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>លក់គូប៉ុន</DialogTitle>
+          </DialogHeader>
+
+          <form
+            className="space-y-1.5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              FindCoupon(coupon_code);
+            }}
           >
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enterTo="opacity-100 translate-y-0 sm:scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              >
-                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
-                  <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                    <div className="">
-                      <div className="mt-3 text-center">
-                        <div className="mt-2">
-                          <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium leading-6 text-gray-900">
-                              សូមបញ្ចុលលេខកូដគូប៉ុន
-                            </label>
-                            <div className="mt-2">
-                              <input
-                                type="text"
-                                required
-                                ref={inputEl}
-                                onChange={(e) => setCouponCode(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                              />
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            className="mt-2 flex rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                            onClick={() => FindCoupon(coupon_code)}
-                          >
-                            {" "}
-                            <MagnifyingGlassIcon className="h-5 w-5" />
-                            ស្វែងរក
-                          </button>
-
-                          <div>
-                            {!loading && data ? (
-                              <>
-                                {data.GetCouponCard.length > 0 ? (
-                                  <>
-                                    <p className="text-sm font-semibold leading-6 text-gray-900">
-                                      Card Name:{" "}
-                                      {data?.GetCouponCard[0].card_name}
-                                    </p>
-                                    <p className="text-sm font-semibold leading-6 text-gray-900">
-                                      តម្លៃ: {data?.GetCouponCard[0].price}$
-                                    </p>
-                                    <button
-                                      disabled={btn_sell_status}
-                                      type="button"
-                                      className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                                      onClick={() => CreateCouponPayment()}
-                                    >
-                                      លក់
-                                    </button>
-                                  </>
-                                ) : (
-                                  <div>Coupon Not Found!!!</div>
-                                )}
-                              </>
-                            ) : (
-                              <div>Loading...</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <button
-                      type="button"
-                      className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                      onClick={() => {
-                        props.setIsOpenCoupon(false);
-                      }}
-                    >
-                      បោះបង់
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
+            <Label htmlFor="coupon-code">សូមបញ្ចុលលេខកូដគូប៉ុន</Label>
+            <div className="flex gap-2">
+              <Input
+                id="coupon-code"
+                type="text"
+                required
+                autoFocus
+                ref={inputEl}
+                onChange={(e) => setCouponCode(e.target.value)}
+              />
+              <Button type="submit" variant="outline" disabled={loading}>
+                <Search aria-hidden="true" />
+                ស្វែងរក
+              </Button>
             </div>
-          </div>
-        </Dialog>
-      </Transition.Root>
+          </form>
+
+          {loading ? (
+            <p className="text-sm text-ink-soft">Loading...</p>
+          ) : data ? (
+            card ? (
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-rule bg-tray p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink">{card.card_name}</p>
+                  <p className="text-price font-black leading-none text-ink">{formatMoney(card.price)}</p>
+                </div>
+                <Button
+                  disabled={btn_sell_status}
+                  type="button"
+                  variant="commit"
+                  size="lg"
+                  onClick={() => CreateCouponPayment()}
+                >
+                  លក់
+                </Button>
+              </div>
+            ) : (
+              <MagnetChip tone="rejected" size="md">Coupon Not Found</MagnetChip>
+            )
+          ) : null}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                props.setIsOpenCoupon(false);
+              }}
+            >
+              បោះបង់
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="hidden">
-        <div>
-          {!loading && data ? (
-            <>
-              {data.GetCouponCard.length > 0 ? (
-                <>
-                  <CouponInvoice
-                    ref={componentRef}
-                    invoice_id={payment_id}
-                    payment_date={date_time_format(new Date())}
-                    cashier={localStorage.getItem("display_name")}
-                    c_name={props.customer_name}
-                    phone={props.phone}
-                    promotion={data?.GetCouponCard[0].card_name || "null"}
-                    price={data?.GetCouponCard[0].price || "null"}
-                  />
-                </>
-              ) : (
-                <div>Coupon Not Found!!!</div>
-              )}
-            </>
-          ) : (
-            <div>Loading...</div>
-          )}
-        </div>
+        {card ? (
+          <CouponInvoice
+            ref={componentRef}
+            invoice_id={payment_id}
+            payment_date={date_time_format(new Date())}
+            cashier={localStorage.getItem("display_name")}
+            c_name={props.customer_name}
+            phone={props.phone}
+            promotion={card.card_name || "null"}
+            price={card.price || "null"}
+          />
+        ) : null}
       </div>
     </>
   );

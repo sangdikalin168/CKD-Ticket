@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
     useUpdateCustomerMutation,
 } from "../../../../generated/graphql";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 
 
 const notify = (
@@ -32,7 +33,6 @@ const notify = (
 
 export const UpdateProfile = (props) => {
 
-    const cancelButtonRef = useRef(null);
     const [phone, setPhone] = useState("");
 
     const [updateCustomer] = useUpdateCustomerMutation();
@@ -58,38 +58,36 @@ export const UpdateProfile = (props) => {
     };
     return (
         <Dialog open={props.open} onOpenChange={props.setOpen}>
-            <DialogContent className="sm:max-w-3xl">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-center">
-                        សូមពិនិត្យលេខទូរស័ព្ទ
-                    </DialogTitle>
+                    <DialogTitle>កែលេខទូរស័ព្ទ</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} id="update_form">
-                    <div className="mt-2">
-                        <Input
-                            type="text"
-                            required
-                            onChange={(e) => setPhone(e.target.value)}
-                        />
-                    </div>
+                <form onSubmit={handleSubmit} id="update_form" className="space-y-1.5">
+                    <Label htmlFor="update-phone">លេខទូរស័ព្ទថ្មី</Label>
+                    <Input
+                        id="update-phone"
+                        type="text"
+                        inputMode="tel"
+                        required
+                        autoFocus
+                        onChange={(e) => setPhone(e.target.value)}
+                    />
                 </form>
-                <DialogFooter className="sm:flex-row-reverse gap-2">
-                    <Button
-                        type="submit"
-                        form="update_form"
-                        className="bg-green-500 hover:bg-red-500"
-                    >
-                        យល់ព្រម
-                    </Button>
+                <DialogFooter>
                     <Button
                         type="button"
-                        variant="destructive"
-                        ref={cancelButtonRef}
+                        variant="outline"
                         onClick={() => {
                             props.setOpen(false);
                         }}
                     >
                         បោះបង់
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="update_form"
+                    >
+                        យល់ព្រម
                     </Button>
                 </DialogFooter>
             </DialogContent>

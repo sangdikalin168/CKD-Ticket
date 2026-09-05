@@ -1,10 +1,11 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExclamationCircleIcon as AlertCircle, TableCellsIcon as FileSpreadsheet } from '@heroicons/react/24/outline';
+import { AlertCircle, Copy, FileSpreadsheet, Plus, Printer } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { cn } from '../../lib/utils';
 import { Button } from './Button';
 import { Input } from './Input';
+import { Skeleton } from './skeleton';
 import { ColumnDef, DataTableAction, DataTableProps } from '../../types/datatable';
 import { copyToClipboard, printTable } from '../../utils/dataTableUtils';
 import { exportToExcel } from '../../utils/excelExport';
@@ -30,15 +31,12 @@ const textAlignment = (align?: ColumnDef<any>['align']) =>
 /** Colour for a row action, in both the desktop table and the mobile cards. */
 const rowActionTone = (variant: DataTableAction['variant']) => {
   if (variant === 'destructive') {
-    return { desktop: 'text-destructive hover:text-destructive/70', mobile: 'text-destructive hover:bg-destructive/10' };
+    return { desktop: 'text-magnet-rejected hover:text-magnet-rejected/70', mobile: 'text-magnet-rejected hover:bg-magnet-rejected/10' };
   }
   if (variant === 'success') {
-    return {
-      desktop: 'text-green-600 hover:text-green-500 dark:text-green-500 dark:hover:text-green-400',
-      mobile: 'text-green-600 hover:bg-green-600/10 dark:text-green-500',
-    };
+    return { desktop: 'text-magnet-done hover:text-magnet-done/70', mobile: 'text-magnet-done hover:bg-magnet-done/10' };
   }
-  return { desktop: 'text-primary hover:text-primary/70', mobile: 'text-primary hover:bg-primary/10' };
+  return { desktop: 'text-ink hover:text-ink/60', mobile: 'text-ink hover:bg-tray' };
 };
 
 function renderCellValue<T extends Record<string, any>>(column: ColumnDef<T>, row: T): ReactNode {
@@ -57,14 +55,14 @@ function SortIndicator({ direction, subtle }: { direction: SortDirection | null;
       )}
     >
       <svg
-        className={cn('-mb-1 h-3 w-3', direction === 'asc' ? 'text-foreground' : 'text-muted-foreground/30')}
+        className={cn('-mb-1 h-3 w-3', direction === 'asc' ? 'text-ink' : 'text-ink-soft/30')}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
         <path d="M7 14l5-5 5 5z" />
       </svg>
       <svg
-        className={cn('-mt-1 h-3 w-3', direction === 'desc' ? 'text-foreground' : 'text-muted-foreground/30')}
+        className={cn('-mt-1 h-3 w-3', direction === 'desc' ? 'text-ink' : 'text-ink-soft/30')}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -74,28 +72,35 @@ function SortIndicator({ direction, subtle }: { direction: SortDirection | null;
   );
 }
 
-function TableStatus({ state, message }: { state: TableState; message: string }) {
+function TableStatus({ state, message, columns }: { state: TableState; message: string; columns: number }) {
   if (state === 'loading') {
+    // Skeleton rows keep the table's shape while the figures arrive.
     return (
-      <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-        <span className="ml-3 text-sm text-muted-foreground">{message}</span>
+      <div className="px-3 py-2" role="status" aria-live="polite">
+        <span className="sr-only">{message}</span>
+        {Array.from({ length: 6 }).map((_, r) => (
+          <div key={r} className="flex items-center gap-3 py-1.5">
+            {Array.from({ length: Math.min(Math.max(columns, 2), 6) }).map((__, c) => (
+              <Skeleton key={c} className={cn('h-3.5', c === 0 ? 'w-8' : 'flex-1')} />
+            ))}
+          </div>
+        ))}
       </div>
     );
   }
 
   if (state === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-destructive" role="alert">
+      <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-magnet-rejected" role="alert">
         <AlertCircle className="h-8 w-8" aria-hidden="true" />
-        <p className="text-center text-sm">{message}</p>
+        <p className="text-center text-sm text-ink">{message}</p>
       </div>
     );
   }
 
   return (
     <div className="flex items-center justify-center py-12">
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <p className="text-sm text-ink-soft">{message}</p>
     </div>
   );
 }
@@ -160,7 +165,7 @@ export function DataTable<T extends Record<string, any>>({
   const density = densityToggle ? storedDensity : defaultDensity;
   const tokens = TABLE_DENSITY[density];
   const showZebra = striped && tokens.zebra;
-  const stickyHead = maxBodyHeight ? 'sticky top-0 z-10 bg-muted' : '';
+  const stickyHead = maxBodyHeight ? 'sticky top-0 z-10 bg-tray' : '';
 
   const handleSort = (columnKey: string) => {
     let nextKey: string | null = columnKey;
@@ -236,7 +241,7 @@ export function DataTable<T extends Record<string, any>>({
 
   const tableStatusNode = tableState === 'empty' && emptyState
     ? <div className="flex items-center justify-center py-12">{emptyState}</div>
-    : tableState && <TableStatus state={tableState} message={tableStateMessage} />;
+    : tableState && <TableStatus state={tableState} message={tableStateMessage} columns={visibleColumns.length + 1} />;
 
   // Sync debounced value with parent component
   useEffect(() => {
@@ -333,17 +338,17 @@ export function DataTable<T extends Record<string, any>>({
     exportable || printable || actions.length > 0 || !!onAdd;
 
   return (
-    <div className={`bg-card rounded-lg shadow-sm border border-border ${className}`}>
+    <div className={`bg-card rounded-lg border border-rule ${className}`}>
       {/* Toolbar */}
       {hasToolbar && (
-      <div className={cn('border-b border-border', tokens.toolbar)}>
+      <div className={cn('border-b border-rule', tokens.toolbar)}>
         {/* All toolbar items in one row */}
         <div className="flex items-end gap-3 flex-wrap">
           {/* Search */}
           {searchable && (
             <div className={`min-w-[180px] ${customFilters ? 'w-[250px]' : 'flex-1 max-w-sm'}`}>
               <Input
-                type="text"
+                type="search"
                 placeholder={resolvedSearchPlaceholder}
                 value={localSearchValue}
                 onChange={(e) => setLocalSearchValue(e.target.value)}
@@ -386,22 +391,10 @@ export function DataTable<T extends Record<string, any>>({
               <Button
                 onClick={onAdd}
                 size="sm"
-                className={cn('bg-primary hover:bg-primary/90 whitespace-nowrap text-xs md:text-sm', tokens.control)}
+                className={cn('whitespace-nowrap', tokens.control)}
               >
-                <svg
-                  className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                <span className="text-xs md:text-sm">{resolvedAddButtonText}</span>
+                <Plus aria-hidden="true" />
+                <span>{resolvedAddButtonText}</span>
               </Button>
             )}
 
@@ -412,10 +405,10 @@ export function DataTable<T extends Record<string, any>>({
                 variant={action.variant || 'outline'}
                 onClick={action.onClick}
                 size="sm"
-                className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
+                className={cn('whitespace-nowrap', tokens.control)}
               >
-                {action.icon && <span className="mr-1.5">{action.icon}</span>}
-                <span className="text-xs md:text-sm">{action.label}</span>
+                {action.icon}
+                <span>{action.label}</span>
               </Button>
             ))}
 
@@ -427,32 +420,20 @@ export function DataTable<T extends Record<string, any>>({
                   onClick={handleExport}
                   size="sm"
                   title={t('ui.dataTable.exportToExcel')}
-                  className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
+                  className={cn('whitespace-nowrap', tokens.control)}
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
-                  <span className="text-xs md:text-sm">{t('common.export')}</span>
+                  <FileSpreadsheet aria-hidden="true" />
+                  <span>{t('common.export')}</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleCopy}
                   size="sm"
                   title={t('ui.dataTable.copyToClipboard')}
-                  className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
+                  className={cn('whitespace-nowrap', tokens.control)}
                 >
-                  <svg
-                    className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="text-xs md:text-sm">{t('ui.dataTable.copy')}</span>
+                  <Copy aria-hidden="true" />
+                  <span>{t('ui.dataTable.copy')}</span>
                 </Button>
               </>
             )}
@@ -464,22 +445,10 @@ export function DataTable<T extends Record<string, any>>({
                 onClick={handlePrint}
                 size="sm"
                 title={t('ui.dataTable.printTable')}
-                className={cn('whitespace-nowrap text-xs md:text-sm', tokens.control)}
+                className={cn('whitespace-nowrap', tokens.control)}
               >
-                <svg
-                  className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                  />
-                </svg>
-                <span className="text-xs md:text-sm">{t('common.print')}</span>
+                <Printer aria-hidden="true" />
+                <span>{t('common.print')}</span>
               </Button>
             )}
           </div>
@@ -492,39 +461,39 @@ export function DataTable<T extends Record<string, any>>({
         {tableState ? (
           tableStatusNode
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-rule">
             {sortedData.map((row, rowIndex) => (
               <div
                 key={rowIndex}
                 onClick={onRowClick && (() => onRowClick(row))}
                 className={cn(
-                  'transition-colors hover:bg-muted/20',
+                  'transition-colors hover:bg-tray/60',
                   tokens.mobileCard,
                   onRowClick && 'cursor-pointer',
                   rowClassName?.(row)
                 )}
               >
                 <div className={cn('flex justify-between', tokens.mobileRow)}>
-                  <span className={cn('font-medium text-muted-foreground', tokens.mobileLabel)}>
+                  <span className={cn('font-medium text-ink-soft', tokens.mobileLabel)}>
                     {t('ui.dataTable.no')}
                   </span>
-                  <span className={cn('ml-2 text-right text-foreground', tokens.mobileValue)}>
+                  <span className={cn('ml-2 text-right text-ink', tokens.mobileValue)}>
                     {rowNumberOffset + rowIndex + 1}
                   </span>
                 </div>
                 {visibleColumns.map((column, colIndex) => (
                   <div key={colIndex} className={cn('flex justify-between', tokens.mobileRow)}>
-                    <span className={cn('font-medium text-muted-foreground', tokens.mobileLabel)}>
+                    <span className={cn('font-medium text-ink-soft', tokens.mobileLabel)}>
                       {column.header}
                     </span>
-                    <span className={cn('ml-2 text-right text-foreground', tokens.mobileValue)}>
+                    <span className={cn('ml-2 text-right text-ink', tokens.mobileValue)}>
                       {renderCellValue(column, row)}
                     </span>
                   </div>
                 ))}
                 {rowActions && (
                   <div
-                    className="flex gap-2 mt-2 pt-2 border-t border-border"
+                    className="flex gap-2 mt-2 pt-2 border-t border-rule"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {rowActions(row).map((action, actionIndex) => (
@@ -560,12 +529,12 @@ export function DataTable<T extends Record<string, any>>({
           tableStatusNode
         ) : (
           <table className={cn('min-w-full divide-y', tokens.divider)}>
-            <thead className="bg-muted/50">
+            <thead className="bg-tray">
               <tr className={tokens.rowGrid}>
                 <th
                   scope="col"
                   className={cn(
-                    'text-left font-medium text-muted-foreground',
+                    'text-left font-medium text-ink-soft',
                     tokens.headCell,
                     tokens.rowNumberCell,
                     stickyHead
@@ -590,7 +559,7 @@ export function DataTable<T extends Record<string, any>>({
                               : 'none'
                       }
                       className={cn(
-                        'text-left font-medium text-muted-foreground',
+                        'text-left font-medium text-ink-soft',
                         tokens.headCell,
                         stickyHead,
                         column.className
@@ -601,7 +570,7 @@ export function DataTable<T extends Record<string, any>>({
                           type="button"
                           onClick={() => handleSort(column.key)}
                           className={cn(
-                            'group/sort flex w-full items-center gap-1 rounded-sm transition-colors hover:text-foreground',
+                            'group/sort flex w-full items-center gap-1 rounded-sm transition-colors hover:text-ink',
                             'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                             rowAlignment(column.align)
                           )}
@@ -620,7 +589,7 @@ export function DataTable<T extends Record<string, any>>({
                 {rowActions && (
                   <th
                     scope="col"
-                    className={cn('text-left font-medium text-muted-foreground', tokens.headCell, stickyHead)}
+                    className={cn('text-left font-medium text-ink-soft', tokens.headCell, stickyHead)}
                   >
                     {t('common.actions')}
                   </th>
@@ -634,20 +603,20 @@ export function DataTable<T extends Record<string, any>>({
                   onClick={onRowClick && (() => onRowClick(row))}
                   className={cn(
                     tokens.rowGrid,
-                    showZebra && rowIndex % 2 === 0 && 'bg-muted/20',
+                    showZebra && rowIndex % 2 === 0 && 'bg-tray/40',
                     hoverable && cn('transition-colors', tokens.rowHover),
                     onRowClick && 'cursor-pointer',
                     rowClassName?.(row)
                   )}
                 >
-                  <td className={cn('whitespace-nowrap text-muted-foreground', tokens.bodyCell, tokens.rowNumberCell)}>
+                  <td className={cn('whitespace-nowrap text-ink-soft', tokens.bodyCell, tokens.rowNumberCell)}>
                     {rowNumberOffset + rowIndex + 1}
                   </td>
                   {visibleColumns.map((column, colIndex) => (
                     <td
                       key={colIndex}
                       className={cn(
-                        'whitespace-nowrap text-foreground',
+                        'whitespace-nowrap text-ink',
                         tokens.bodyCell,
                         textAlignment(column.align),
                         column.className
@@ -695,7 +664,7 @@ export function DataTable<T extends Record<string, any>>({
           onPageSizeChange={onPageSizeChange}
           pageSizeOptions={pageSizeOptions}
           density={density}
-          className="border-t border-border"
+          className="border-t border-rule"
         />
       )}
     </div>

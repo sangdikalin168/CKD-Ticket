@@ -34,12 +34,12 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       checked={checked}
       disabled={disabled}
       onChange={(e) => onChange(e.target.checked)}
-      className="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+      className="mt-0.5 h-4 w-4 rounded border-rule text-ink focus:ring-2 focus:ring-ring focus:ring-offset-2"
     />
     <span className="min-w-0">
-      <span className="block text-sm text-foreground">{label}</span>
+      <span className="block text-sm text-ink">{label}</span>
       {description && (
-        <span className="block text-xs text-muted-foreground mt-0.5">{description}</span>
+        <span className="block text-xs text-ink-soft mt-0.5">{description}</span>
       )}
     </span>
   </label>

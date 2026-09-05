@@ -3,29 +3,40 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
-// NOTE: no `gap-2` / `[&_svg]:size-4` in the base yet — consumers still
-// hand-write `mr-2` and icon sizes; adding both must happen in one sweep.
+/**
+ * Buttons on the board. `default` is ink; `commit` is the amber family mark
+ * and belongs only to the committing action (Sell, Print, Approve-and-process,
+ * Sign in); the state variants map onto the magnet colours.
+ *
+ * 36px default, 32px small, 44px large — a little taller than the old 32px so
+ * the desktop shell is comfortable to tap.
+ */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        warning: 'bg-warning text-warning-foreground hover:bg-warning/90',
-        info: 'bg-info text-info-foreground hover:bg-info/90',
-        success: 'bg-success text-success-foreground hover:bg-success/90',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'underline-offset-4 hover:underline text-primary',
+        default: 'bg-ink text-white hover:bg-ink/90',
+        // Amber ground with ink lettering (5.1:1); hover underlines in the deep
+        // amber like a second marker stroke, active fills with it.
+        commit:
+          'bg-amber text-ink font-semibold hover:shadow-[inset_0_-3px_0_hsl(var(--amber-deep))] active:bg-amber-deep',
+        commitOutline:
+          'border border-amber-deep bg-amber/10 text-ink hover:bg-amber/25 active:bg-amber/40',
+        destructive: 'bg-magnet-rejected text-white hover:bg-magnet-rejected/90',
+        warning: 'bg-magnet-pending text-ink hover:bg-magnet-pending/85',
+        info: 'bg-magnet-info text-white hover:bg-magnet-info/90',
+        success: 'bg-magnet-done text-white hover:bg-magnet-done/90',
+        outline: 'border border-rule bg-card text-ink hover:bg-tray',
+        secondary: 'bg-tray text-ink hover:bg-rule/70',
+        ghost: 'text-ink hover:bg-tray',
+        link: 'text-ink underline-offset-4 hover:underline',
       },
-      // Compact scale for 1366x768 laptops, matching the table density.
       size: {
-        default: 'h-8 py-1 px-3',
-        sm: 'h-7 px-2.5 rounded-md',
-        lg: 'h-9 px-6 rounded-md',
-        icon: 'size-8',
+        default: 'h-9 px-3 py-1',
+        sm: 'h-8 px-2.5 text-sm',
+        lg: 'h-11 px-6 text-base',
+        icon: 'size-9',
       },
     },
     defaultVariants: {

@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Search } from "lucide-react";
 import Modal from "../../../../components/Modal/Modal";
 import Notifications from "../../../../components/Notification";
 import { useCreateTransferRequestMutation, useGetCustomerDetailLazyQuery } from "../../../../generated/graphql";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { MagnetChip } from "@/components/board/MagnetChip";
 
 const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);
@@ -94,50 +96,74 @@ const Transfer = ({ open, setOpen, sender_data }: any) => {
         }
     }
 
+    const senderRemain = sender_data ? countDaysBetweenDates(new Date(), new Date(sender_data.end_membership_date)) : 0;
+
     return (
-        <Modal open={open} setOpen={setOpen} onConfirm={SendRequest} onCancel={() => { setShowCustomer(false); setCustomerID(0) }}>
+        <Modal
+            open={open}
+            setOpen={setOpen}
+            title="ផ្ទេរសុពលភាព"
+            confirmLabel="ដាក់ការស្នើរសុំ"
+            onConfirm={SendRequest}
+            onCancel={() => { setShowCustomer(false); setCustomerID(0) }}
+        >
             {
                 show_customer !== true ? (
-                    <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-6">
-                        <div className="col-span-6 space-y-2">
-                            <Label>Customer ID</Label>
-                            <Input
-                                type="number"
-                                value={customer_id}
-                                onChange={(e) => setCustomerID(e.target.value)}
-                            />
+                    <form
+                        className="space-y-3"
+                        onSubmit={(e) => { e.preventDefault(); FindCustomer(customer_id); }}
+                    >
+                        <div className="space-y-1.5">
+                            <Label htmlFor="transfer-receiver">Customer ID (អ្នកទទួល)</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="transfer-receiver"
+                                    type="number"
+                                    autoFocus
+                                    value={customer_id}
+                                    onChange={(e) => setCustomerID(e.target.value)}
+                                />
+                                <Button type="submit" variant="outline">
+                                    <Search aria-hidden="true" />
+                                    ស្វែងរក
+                                </Button>
+                            </div>
                         </div>
-                        <Button
-                            type="button"
-                            className="col-span-6 w-full"
-                            onClick={() => FindCustomer(customer_id)}
-                        >
-                            Search
-                        </Button>
-                    </div>
+                    </form>
                 ) : (
-                    <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-6">
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {/* Sender */}
+                            <div className="rounded-lg border border-rule p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-sm font-black text-ink">អ្នកផ្ទេរ</p>
+                                    <MagnetChip tone="rejected">−{senderRemain}ថ្ងៃ</MagnetChip>
+                                </div>
+                                <p className="mt-1 truncate text-sm text-ink">{sender_data?.customer_name}</p>
+                                <dl className="mt-2 space-y-1 text-caption text-ink">
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពចាស់</dt><dd>{sender_data.end_membership_date} ({senderRemain}ថ្ងៃ)</dd></div>
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពថ្មី</dt><dd className="font-semibold">{calculateNewEndDate(sender_data.end_membership_date, -senderRemain)}</dd></div>
+                                </dl>
+                            </div>
 
-                        {/* Sender */}
-                        <div className="col-span-6 text-red-500">
-                            <p className="font-bold">អ្នកផ្ទេរ</p>
-                            <p>សុពលភាពចាស់ : {sender_data.end_membership_date} ({countDaysBetweenDates(new Date(), new Date(sender_data.end_membership_date))}ថ្ងៃ)</p>
-                            <p>សុពលភាពថ្មី : {calculateNewEndDate(sender_data.end_membership_date, -countDaysBetweenDates(new Date(), new Date(sender_data.end_membership_date)))} ({-countDaysBetweenDates(new Date(), new Date(sender_data.end_membership_date))}ថ្ងៃ)</p>
+                            {/* Receiver */}
+                            <div className="rounded-lg border border-rule p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-sm font-black text-ink">អ្នកទទួល</p>
+                                    <MagnetChip tone="done">+{senderRemain}ថ្ងៃ</MagnetChip>
+                                </div>
+                                <p className="mt-1 truncate text-sm text-ink">{receiver?.customer_name} · {receiver?.phone}</p>
+                                <dl className="mt-2 space-y-1 text-caption text-ink">
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពចាស់</dt><dd>{receiver?.end_membership_date} ({countDaysBetweenDates(new Date(), new Date(receiver?.end_membership_date))}ថ្ងៃ)</dd></div>
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពថ្មី</dt><dd className="font-semibold">{ReceiverNewEnd()}</dd></div>
+                                </dl>
+                            </div>
                         </div>
 
-                        <p className="col-span-6 text-red-500">------------------------------------------------------------------------------</p>
-                        {/* Receiver */}
-                        <div className="col-span-6 text-blue-500">
-                            <p className="font-bold">អ្នកទទួល</p>
-                            <p>ឈ្មោះ : {receiver?.customer_name}</p>
-                            <p>លេខទូរស័ព្ទ : {receiver?.phone}</p>
-                            <p>សុពលភាពចាស់ : {receiver?.end_membership_date} ({countDaysBetweenDates(new Date(), new Date(receiver?.end_membership_date))}ថ្ងៃ)</p>
-                            <p>សុពលភាពថ្មី : {ReceiverNewEnd()} ({countDaysBetweenDates(new Date(), new Date(sender_data.end_membership_date))}ថ្ងៃ)</p>
-                        </div>
-
-                        <div className="col-span-6 space-y-2">
-                            <Label>មូលហេតុនៃការផ្ទេរ</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="transfer-reason">មូលហេតុនៃការផ្ទេរ</Label>
                             <Input
+                                id="transfer-reason"
                                 type="text"
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}

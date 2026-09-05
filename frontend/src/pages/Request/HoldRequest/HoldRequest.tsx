@@ -1,12 +1,12 @@
 import LoadingPage from "../../../components/LoadingPage/LoadingPage"
 import { useGetCustomerDetailLazyQuery, useGetMemberPaymentLazyQuery } from "../../../generated/graphql";
 import { useDecideHoldRequestV2Mutation, useHoldRequestsV2Query, useProcessHoldV2Mutation } from "../../../generated/holdV2";
-import { CheckCircleIcon, PrinterIcon, XCircleIcon } from "@heroicons/react/20/solid";
+import { FileSpreadsheet, Printer } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Notifications from "../../../components/Notification";
 import { HoldInvoice } from "../../../components/ComponentToPrint/HoldInvoice";
 import { useReactToPrint } from "react-to-print";
-import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/types/datatable";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,8 +18,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/Card";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { RequestColumns, type RequestCard } from "@/components/board/RequestColumns";
+import { statusTone } from "@/components/board/MagnetChip";
+import { exportToExcel } from "@/utils/excelExport";
+import { showSuccessToast, showErrorToast } from "@/utils/toast";
 
 
 type HoldRequestType = {
@@ -58,22 +61,20 @@ const date_format = (date_time: string) => {
 };
 
 
-const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
-    PENDING:   { text: "មិនទាន់ពិនិត្យ", cls: "bg-yellow-500/10 text-yellow-600" },
-    APPROVED:  { text: "ឯកភាព",        cls: "bg-emerald-500/10 text-emerald-600" },
-    REJECTED:  { text: "បដិសេធ",        cls: "bg-rose-500/10 text-red-500" },
-    PROCESSED: { text: "ដំណើរការរួច",   cls: "bg-sky-500/10 text-sky-600" },
-    CANCELLED: { text: "បានលុប",        cls: "bg-gray-500/10 text-gray-500" },
+const STATUS_LABEL: Record<string, string> = {
+    PENDING:   "មិនទាន់ពិនិត្យ",
+    APPROVED:  "ឯកភាព",
+    REJECTED:  "បដិសេធ",
+    PROCESSED: "ដំណើរការរួច",
+    CANCELLED: "បានលុប",
 };
 
-const StatusBadge = ({ status }: { status: string }) => {
-    const meta = STATUS_LABEL[status];
-    // Unknown values are shown verbatim rather than silently bucketed —
-    // v1's catch-all rendered every unrecognised status as "pending".
-    return <Badge variant="outline" className={meta?.cls ?? ""}>{meta?.text ?? status}</Badge>;
-};
+/** Which column of the board a request sits in. */
+const columnOf = (status: string) =>
+    status === "PENDING" ? "requested" : status === "PROCESSED" ? "processed" : "checked";
 
 const HoldRequest = () => {
+    const { t } = useTranslation();
 
     const { data, loading, refetch } = useHoldRequestsV2Query({ fetchPolicy: "no-cache" })
 
@@ -85,9 +86,9 @@ const HoldRequest = () => {
 
     const [getCustomer, { data: member }] = useGetCustomerDetailLazyQuery({ fetchPolicy: "no-cache" });
     const [getCustomerPayment, { data: payment }] = useGetMemberPaymentLazyQuery({ fetchPolicy: "no-cache" });
+    void getCustomer; void member; void getCustomerPayment;
 
     const [open, setOpen] = useState(false)
-    const cancelButtonRef = useRef(null)
     const [open_print, setOpenPrint] = useState(false)
     const [description, setDescription] = useState("")
     const [request_info, setRequestInfo] = useState({
@@ -144,10 +145,10 @@ const HoldRequest = () => {
     const handlePrint1 = async (target: HTMLIFrameElement) => {
         return new Promise(() => {
             console.log("forwarding print request to the main process...");
-            const data = target.contentWindow.document.documentElement.outerHTML;
+            const data = target.contentWindow!.document.documentElement.outerHTML;
             const blob = new Blob([data], { type: "text/html; charset=utf-8" });
             const url = URL.createObjectURL(blob);
-            window.electronAPI.printComponent1(url, (response: any) => {
+            (window as any).electronAPI.printComponent1(url, (response: any) => {
                 console.log("Main: ", response);
             });
         });
@@ -157,17 +158,13 @@ const HoldRequest = () => {
         // This function will be called after the component re-renders
         if (invoice_detail.invoice_id > 0) {
             Notifications("ជោគជ័យ", "success")
-            buttonRef.current.click();
+            buttonRef.current?.click();
             setOpenPrint(false);
             refetch()
         }
     }, [invoice_detail]);
 
-    // Table state — the new DataTable only reports search/page changes;
-    // the parent filters and slices the rows itself.
     const [search, setSearch] = useState("")
-    const [page, setPage] = useState(1)
-    const [pageSize, setPageSize] = useState(20)
 
     const requests = useMemo(
         () => (data?.HoldRequestsV2 ?? []) as HoldRequestType[],
@@ -177,253 +174,134 @@ const HoldRequest = () => {
     // The old table's global search covered the column values (customer name + reason).
     const filtered = useMemo(() => {
         const term = search.trim().toLowerCase();
-        if (!term) return requests;
-        return requests.filter((row) =>
-            row.customer_name.toLowerCase().includes(term)
-            || row.reason.toLowerCase().includes(term)
-        );
+        const list = term
+            ? requests.filter((row) =>
+                row.customer_name.toLowerCase().includes(term)
+                || row.reason.toLowerCase().includes(term)
+                || (row.phone ?? "").toLowerCase().includes(term))
+            : requests;
+        // Newest first within each column.
+        return [...list].sort((a, b) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime());
     }, [requests, search]);
 
-    const totalItems = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-    const pagedRequests = filtered.slice((page - 1) * pageSize, page * pageSize);
-
-    const columns: ColumnDef<HoldRequestType>[] = [
-        {
-            key: "customer_name",
-            header: "អតិថិជន",
-            sortable: true,
-            render: (row) => <div className="flex items-center"
-                onClick={() => {
-                    setRequestInfo({
-                        request_id: row.request_id,
-                        customer_id: row.customer_id,
-                        customer_name: row.customer_name,
-                        phone: row.phone,
-                        end_membership_date: row.old_end ?? "",
-                        reason: row.reason,
-                        from_date: row.from_date,
-                        to_date: row.to_date,
-                        status: row.status
-                    })
-                    setOpenApprove(true)
-                }}
-            >
-                <a href="#" className="text-gray-600 text-sm font-medium hover:text-blue-500 truncate">{row.customer_name}</a>
-            </div>,
-        },
-        {
-            key: "reason",
-            header: "មូលហេតុ",
-            sortable: true,
-        },
-        {
-            key: "status",
-            header: "ស្ថានភាព",
-            sortable: true,
-            render: (row) => <StatusBadge status={row.status} />,
-        },
-        {
-            key: "process",
-            header: "Process",
-            sortable: false,
-            // Only an APPROVED request can be processed — same condition the
-            // server enforces, so the button never offers an action that fails.
-            render: (row) => row.status === "APPROVED" ? (
-                <button
-                    type="button"
-                    title="ដំណើរការ"
-                    className="inline-block p-1 rounded bg-emerald-500/10"
-                    onClick={() => {
-                        setOpenPrint(true)
-                        setRequestInfo({ ...request_info, customer_id: row.customer_id, request_id: row.request_id })
-                        setInvoiceDetail({
-                            invoice_id: 0,
-                            payment_date: datetime_format(new Date()),
-                            cashier: localStorage.getItem("display_name") ?? "",
-                            customer_name: row.customer_name,
-                            phone: row.phone,
-                            start_date: date_format(row.from_date),
-                            end_date: date_format(row.to_date),
-                            old_end: date_format(row.old_end ?? ""),
-                            new_end: "",   // filled from the server's answer
-                        })
-                    }}
-                >
-                    <PrinterIcon className="h-4 w-4 text-gray-500" aria-hidden="true" />
-                </button>
-            ) : row.status === "PROCESSED" ? (
-                <span className="inline-block p-1 rounded bg-emerald-500/10">
-                    <CheckCircleIcon className="h-4 w-4 text-emerald-500" aria-hidden="true" />
-                </span>
-            ) : (
-                <span className="inline-block p-1 rounded bg-rose-500/10">
-                    <XCircleIcon className="h-4 w-4 text-red-500" aria-hidden="true" />
-                </span>
-            ),
-        },
+    // What the Excel export writes — the same fields the old table carried.
+    const exportColumns: ColumnDef<HoldRequestType>[] = [
+        { key: "customer_name", header: "អតិថិជន" },
+        { key: "phone", header: "ទូរស័ព្ទ" },
+        { key: "reason", header: "មូលហេតុ" },
+        { key: "from_date", header: "ចាប់ពីថ្ងៃ", accessor: (r) => date_format(r.from_date) },
+        { key: "to_date", header: "ដល់ថ្ងៃទី", accessor: (r) => date_format(r.to_date) },
+        { key: "status", header: "ស្ថានភាព", accessor: (r) => STATUS_LABEL[r.status] ?? r.status },
+        { key: "requested_by_name", header: "អ្នកស្នើ", accessor: (r) => r.requested_by_name ?? "" },
+        { key: "requested_at", header: "ថ្ងៃស្នើ", accessor: (r) => datetime_format(r.requested_at) },
+        { key: "decided_by_name", header: "អ្នកសម្រេច", accessor: (r) => r.decided_by_name ?? "" },
+        { key: "processed_by_name", header: "អ្នកដំណើរការ", accessor: (r) => r.processed_by_name ?? "" },
     ];
+
+    const handleExport = () => {
+        try {
+            if (filtered.length === 0) { showErrorToast(t("ui.dataTable.noExportData")); return; }
+            exportToExcel(filtered, exportColumns, "hold_requests.xlsx");
+            showSuccessToast(t("ui.dataTable.exportSuccess", { count: filtered.length }));
+        } catch (err) {
+            showErrorToast(t("ui.dataTable.exportFailed"));
+            console.error("Export error:", err);
+        }
+    };
+
+    const openDecision = (row: HoldRequestType) => {
+        setRequestInfo({
+            request_id: row.request_id,
+            customer_id: row.customer_id,
+            customer_name: row.customer_name,
+            phone: row.phone,
+            end_membership_date: row.old_end ?? "",
+            reason: row.reason,
+            from_date: row.from_date,
+            to_date: row.to_date,
+            status: row.status
+        })
+        setDescription("")
+        setOpenApprove(true)
+    };
+
+    const openProcess = (row: HoldRequestType) => {
+        setOpenPrint(true)
+        setRequestInfo({ ...request_info, customer_id: row.customer_id, request_id: row.request_id })
+        setInvoiceDetail({
+            invoice_id: 0,
+            payment_date: datetime_format(new Date()),
+            cashier: localStorage.getItem("display_name") ?? "",
+            customer_name: row.customer_name,
+            phone: row.phone,
+            start_date: date_format(row.from_date),
+            end_date: date_format(row.to_date),
+            old_end: date_format(row.old_end ?? ""),
+            new_end: "",   // filled from the server's answer
+        })
+    };
+
+    const cards: RequestCard[] = filtered.map((row) => ({
+        id: row.request_id,
+        column: columnOf(row.status),
+        title: row.customer_name,
+        subtitle: row.phone,
+        lines: [
+            `${date_format(row.from_date)} → ${date_format(row.to_date)}`,
+            row.reason,
+            row.requested_by_name ? t("requests.requestedBy", { name: row.requested_by_name }) : datetime_format(row.requested_at),
+        ],
+        tone: statusTone(row.status),
+        toneLabel: STATUS_LABEL[row.status] ?? row.status,
+        onClick: () => openDecision(row),
+        // Only an APPROVED request can be processed — same condition the
+        // server enforces, so the button never offers an action that fails.
+        actions: row.status === "PENDING" ? (
+            <Button size="sm" variant="outline" onClick={() => openDecision(row)}>
+                {t("requests.decide")}
+            </Button>
+        ) : row.status === "APPROVED" ? (
+            <Button size="sm" variant="commit" onClick={() => openProcess(row)}>
+                <Printer aria-hidden="true" />
+                {t("requests.process")}
+            </Button>
+        ) : undefined,
+    }));
 
     return (
         <>
-            {!loading ? (
-                <div className="grid grid-cols-1 gap-6 mb-6">
-                    <Card>
-                        <CardContent className="p-2">
-                        {/* <div className="flex items-center mb-4">
-                            <button type="button" className=" bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 rounded-tl-md rounded-bl-md hover:text-gray-900 active">Pending</button>
-                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 hover:text-gray-900">Approved</button>
-                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 hover:text-gray-900">Rejected</button>
-                            <button type="button" className="bg-gray-50 text-sm font-medium text-gray-600 py-2 px-4 rounded-tr-md rounded-br-md hover:text-gray-900">All</button>
-                        </div> */}
-
-
-                        <DataTable<HoldRequestType>
-                            data={pagedRequests}
-                            columns={columns}
-                            pageInfo={{
-                                current_page: page,
-                                page_size: pageSize,
-                                total_items: totalItems,
-                                total_pages: totalPages,
-                                has_next: page < totalPages,
-                                has_previous: page > 1,
-                            }}
-                            currentPage={page}
-                            pageSize={pageSize}
-                            onPageChange={setPage}
-                            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
-                            pageSizeOptions={[10, 20, 30, 50]}
-                            searchValue={search}
-                            onSearchChange={(term) => { setSearch(term); setPage(1); }}
-                            columnToggle
-                            exportFileName="hold_requests.csv"
-                            printTitle="សំណើសុំច្បាប់"
+            <BoardHeader
+                titleKey="requests.hold"
+                actions={
+                    <>
+                        <Input
+                            type="search"
+                            placeholder={t("common.searchPlaceholder")}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-56"
+                            aria-label={t("common.search")}
                         />
-                        </CardContent>
+                        <Button variant="outline" onClick={handleExport} title={t("ui.dataTable.exportToExcel")}>
+                            <FileSpreadsheet aria-hidden="true" />
+                            {t("common.export")}
+                        </Button>
+                    </>
+                }
+            />
 
-                        {/* <div className="overflow-x-auto">
-                            <table className="w-full min-w-[540px]">
-                                <thead>
-                                    <tr className="w-full">
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-left rounded-tl-md rounded-bl-md">ឈ្មោះអតិថិជន</th>
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-left">មូលហេតុ</th>
-
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-center">ស្ថានភាព</th>
-                                        <th className="text-[12px] uppercase tracking-wide font-medium text-gray-600 py-2 px-4 bg-gray-200 text-center rounded-tr-md rounded-br-md">សកម្មភាព</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        data?.HoldRequests.map((request) => {
-                                            return (
-                                                <tr key={request.request_id}>
-                                                    <td className="py-2 px-2 border-b border-b-gray-50 w-10">
-                                                        <div className="flex items-center"
-                                                            onClick={() => {
-                                                                CheckApproverRole()
-                                                                setRequestInfo({
-                                                                    request_id: request.request_id,
-                                                                    customer_id: request.customer_id,
-                                                                    customer_name: request.customer_name,
-                                                                    phone: request.phone,
-                                                                    end_membership_date: request.old_end,
-                                                                    reason: request.reason,
-                                                                    from_date: request.from_date,
-                                                                    to_date: request.to_date,
-                                                                    new_end: request.new_end,
-                                                                    checker_status: request.checker_status
-                                                                })
-                                                            }}
-                                                        >
-                                                            <a href="#" className="text-gray-600 text-sm font-medium hover:text-blue-500 ml-2 truncate">{request.customer_name}</a>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-2 px-4 border-b border-b-gray-50 text-left w-10">
-                                                        <span className="text-[13px] font-medium text-black">{request.reason}</span>
-                                                    </td>
-
-                                                    <td className="py-2 px-4 border-b border-b-gray-50 text-center w-10" >
-                                                        {
-                                                            request.checker_status === "Approved" ?
-                                                                <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none">
-                                                                    Approved
-                                                                </span>
-                                                                :
-                                                                <>
-                                                                    {
-                                                                        request.checker_status === "Rejected" ?
-                                                                            <span className="inline-block p-1 rounded bg-rose-500/10 text-red-500 font-medium text-[12px] leading-none">
-                                                                                Rejected
-                                                                            </span>
-                                                                            :
-                                                                            <span className="inline-block p-1 rounded bg-emerald-500/10 text-yellow-500 font-medium text-[12px] leading-none">
-                                                                                មានទាន់ពិនិត្យ
-                                                                            </span>
-                                                                    }
-
-                                                                </>
-
-                                                        }
-                                                    </td>
-                                                    <td className="py-2 px-4 border-b border-b-gray-50 text-center w-4">
-                                                        {
-                                                            request.checker_status === "Approved" ?
-                                                                <>
-                                                                    {
-                                                                        request.process === "Pending" ?
-                                                                            <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none" onClick={() => {
-                                                                                setOpenPrint(true)
-                                                                                setInvoiceDetail({
-                                                                                    invoice_id: 0,
-                                                                                    payment_date: datetime_format(new Date()),
-                                                                                    cashier: localStorage.getItem("display_name"),
-                                                                                    customer_name: request.customer_name,
-                                                                                    phone: request.phone,
-                                                                                    start_date: date_format(request.from_date),
-                                                                                    end_date: date_format(request.to_date),
-                                                                                    old_end: date_format(request.old_end),
-                                                                                    new_end: date_format(request.new_end)
-                                                                                })
-                                                                            }}
-                                                                            >
-                                                                                <PrinterIcon
-                                                                                    className="h-4 w-4 text-gray-500"
-                                                                                    aria-hidden="true"
-                                                                                />
-                                                                            </span>
-                                                                            :
-                                                                            <span className="inline-block p-1 rounded bg-emerald-500/10 text-emerald-500 font-medium text-[12px] leading-none">
-                                                                                <CheckCircleIcon
-                                                                                    className="h-4 w-4 text-emerald-500"
-                                                                                    aria-hidden="true"
-                                                                                />
-                                                                            </span>
-
-                                                                    }
-
-                                                                </>
-                                                                :
-                                                                <span className="inline-block p-1 rounded bg-emerald-500/10 text-yellow-500 font-medium text-[12px] leading-none">
-                                                                    <XCircleIcon
-                                                                        className="h-4 w-4 text-red-500"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                </span>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
-                                    }
-                                </tbody>
-                            </table>
-                        </div> */}
-                    </Card>
-
-                </div>
+            {!loading ? (
+                <RequestColumns
+                    columns={[
+                        { key: "requested", label: t("requests.requested") },
+                        { key: "checked", label: t("requests.checked") },
+                        { key: "processed", label: t("requests.processed") },
+                    ]}
+                    cards={cards}
+                    emptyLabel={t("requests.empty")}
+                />
             ) : (
-                <LoadingPage message={"Loading"} />
+                <LoadingPage message={t("common.loading")} />
             )}
 
             <Button
@@ -437,130 +315,94 @@ const HoldRequest = () => {
 
             {/*Approve Or Reject */}
             <Dialog open={open_approve} onOpenChange={setOpenApprove}>
-                <DialogContent className="sm:max-w-[350px] w-[350px]">
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>សំណើសុំច្បាប់</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <div className="w-full space-y-1">
+                        <div className="w-full space-y-1.5">
                             <Label>ឈ្មោះអតិថិជន</Label>
                             <Input
                                 type="text"
                                 readOnly
-                                disabled
                                 value={request_info.customer_name}
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-x-4">
-                            <div className="col-span-1 space-y-1">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
                                 <Label>លេខទូរស័ព្ទ</Label>
                                 <Input
                                     type="text"
                                     readOnly
-                                    disabled
                                     value={request_info.phone}
                                 />
                             </div>
 
-                            <div className="col-span-1 space-y-1">
+                            <div className="space-y-1.5">
                                 <Label>ថ្ងៃផុតសពលភាពចាស់</Label>
                                 <Input
                                     type="text"
                                     readOnly
-                                    disabled
                                     value={date_format(request_info.end_membership_date)}
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full space-y-1">
-                            <Label>មូលហេតុនៃការសុំច្បាប់</Label>
-                            <Input
-                                type="text"
-                                readOnly
-                                disabled
-                                value={request_info.reason}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-x-4">
-                            <div className="col-span-1 space-y-1">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
                                 <Label>ចាប់ពីថ្ងៃ</Label>
                                 <Input
                                     type="text"
                                     readOnly
-                                    disabled
                                     value={date_format(request_info.from_date)}
                                 />
                             </div>
 
-                            <div className="col-span-1 space-y-1">
+                            <div className="space-y-1.5">
                                 <Label>ដល់ថ្ងៃទី</Label>
                                 <Input
                                     type="text"
                                     readOnly
-                                    disabled
                                     value={date_format(request_info.to_date)}
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full space-y-1">
+                        <div className="w-full space-y-1.5">
                             <Label>មូលហេតុ</Label>
-                            <Input type="text" readOnly disabled value={request_info.reason} />
+                            <Input type="text" readOnly value={request_info.reason} />
                         </div>
 
-                        <div className="w-full space-y-1">
-                            <Label>មិតិយោបល់</Label>
-                            <Input
-                                autoFocus
-                                type="text"
-                                required
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
+                        {request_info.status === "PENDING" && (
+                            <div className="w-full space-y-1.5">
+                                <Label htmlFor="hold-note">មិតិយោបល់</Label>
+                                <Input
+                                    id="hold-note"
+                                    autoFocus
+                                    type="text"
+                                    required
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
+                            </div>
+                        )}
                     </div>
-                    <DialogFooter className="flex-row-reverse gap-2">
+                    <DialogFooter>
                         {
                             request_info.status !== "PENDING" ?
                                 <Button
                                     type="button"
-                                    variant="default"
+                                    variant="outline"
                                     onClick={async () => {
                                         //TODO: Update To Checked
                                         setOpenApprove(false);
                                     }}
                                 >
-                                    Close
+                                    {t("common.close")}
                                 </Button>
                                 :
                                 <>
-                                    <Button
-                                        type="button"
-                                        className="bg-green-600 hover:bg-green-700"
-                                        disabled={deciding}
-                                        onClick={async () => {
-                                            const res = await decideRequest({
-                                                variables: {
-                                                    requestId: request_info.request_id,
-                                                    approve: true,
-                                                    note: description,
-                                                }
-                                            })
-                                            const out = res.data?.DecideHoldRequestV2;
-                                            if (out?.success) {
-                                                Notifications(out.message ?? "Approved", "success")
-                                                setOpenApprove(false);
-                                                refetch();
-                                                return;
-                                            }
-                                            // Server explains: no permission, own request, already decided.
-                                            Notifications(out?.message ?? "Failed", "error")
-                                        }}
-                                    >
-                                        Approve
-                                    </Button>
                                     <Button
                                         type="button"
                                         variant="destructive"
@@ -585,6 +427,31 @@ const HoldRequest = () => {
                                     >
                                         Reject
                                     </Button>
+                                    <Button
+                                        type="button"
+                                        variant="success"
+                                        disabled={deciding}
+                                        onClick={async () => {
+                                            const res = await decideRequest({
+                                                variables: {
+                                                    requestId: request_info.request_id,
+                                                    approve: true,
+                                                    note: description,
+                                                }
+                                            })
+                                            const out = res.data?.DecideHoldRequestV2;
+                                            if (out?.success) {
+                                                Notifications(out.message ?? "Approved", "success")
+                                                setOpenApprove(false);
+                                                refetch();
+                                                return;
+                                            }
+                                            // Server explains: no permission, own request, already decided.
+                                            Notifications(out?.message ?? "Failed", "error")
+                                        }}
+                                    >
+                                        Approve
+                                    </Button>
                                 </>
                         }
                     </DialogFooter>
@@ -597,21 +464,21 @@ const HoldRequest = () => {
                     <DialogHeader>
                         <DialogTitle>ពត៌មានអតិថិជន</DialogTitle>
                     </DialogHeader>
-                    <div className="mt-2">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead>
+                    <div className="overflow-hidden rounded-lg border border-rule">
+                        <table className="min-w-full text-caption">
+                            <thead className="bg-tray text-left text-ink-soft">
                                 <tr>
-                                    <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                    <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                    <th scope="col" className="px-2 py-1.5 font-medium">Date</th>
+                                    <th scope="col" className="px-2 py-1.5 font-medium">Item</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-rule/60">
                                 {
                                     payment?.GetMemberPayment.map((payment, index) => {
                                         return (
-                                            <tr key={index} className="odd:bg-white even:bg-gray-100 text-left">
-                                                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-800">{date_format(payment.payment_date)}</td>
-                                                <td>{payment.promotion}</td>
+                                            <tr key={index} className="text-left text-ink">
+                                                <td className="whitespace-nowrap px-2 py-[3px]">{date_format(payment.payment_date)}</td>
+                                                <td className="px-2 py-[3px]">{payment.promotion}</td>
                                             </tr>
                                         )
                                     })
@@ -622,10 +489,10 @@ const HoldRequest = () => {
                     <DialogFooter>
                         <Button
                             type="button"
-                            variant="destructive"
+                            variant="outline"
                             onClick={() => setOpen(false)}
                         >
-                            Close
+                            {t("common.close")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -637,28 +504,28 @@ const HoldRequest = () => {
                     <DialogHeader>
                         <DialogTitle>វិក្កយបត្រ</DialogTitle>
                     </DialogHeader>
-                    <div className="mt-2">
+                    <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
                         <HoldInvoice
                             ref={HoldInvoiceRef}
                             invoice_detail={invoice_detail}
-                        >
-                        </HoldInvoice>
+                        />
                     </div>
-                    <DialogFooter className="flex-row-reverse gap-2">
+                    <DialogFooter>
                         <Button
                             type="button"
-                            className="bg-green-600 hover:bg-green-700"
-                            disabled={processing}
-                            onClick={() => ProcessHold()}
-                        >
-                            យល់ព្រម
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="destructive"
+                            variant="outline"
                             onClick={() => setOpenPrint(false)}
                         >
                             ចាកចេញ
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="commit"
+                            disabled={processing}
+                            onClick={() => ProcessHold()}
+                        >
+                            <Printer aria-hidden="true" />
+                            យល់ព្រម · បោះពុម្ព
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -21,102 +21,128 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── The Gym Whiteboard ──────────────────────────────────────────────────────
+   One light theme. The board is white with a faint printed grid; everything
+   written on it is dry-erase ink; facilities are marker hues; record states are
+   round magnets; the amber family mark is reserved for the committing action.
+   Values are HSL triplets so Tailwind can add alpha (`bg-swim/10`). */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    /* Darkened from 46.9%. Khmer has thinner strokes and stacked marks than
-       Latin, so the old value read as washed out at caption sizes — and on a
-       muted row it was 4.34:1, under the 4.5:1 floor. Now 6.58:1 on white,
-       6.01:1 on a muted row. */
-    --muted-foreground: 215.4 16.3% 38%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Board */
+    --board: 0 0% 100%;           /* #FFFFFF */
+    --board-grid: 210 21% 95%;    /* #EEF1F4 — the printed 24px grid */
+    --tray: 210 22% 96%;          /* #F4F6F8 — marker tray: action bars, sidebar */
+    --rule: 210 15% 87%;          /* #D9DEE3 — hairline */
+
+    /* Ink */
+    --ink: 213 13% 14%;           /* #1F2328 — dry-erase black */
+    /* Khmer has thinner strokes and stacked marks than Latin; 38% lightness
+       keeps caption-size Khmer at 6.58:1 on white. This value is a commitment. */
+    --ink-soft: 215 16% 38%;
+
+    /* Markers (facilities) */
+    --swim: 222 76% 50%;          /* #1F5AE0 */
+    --gym: 146 80% 35%;           /* #12A150 */
+    --steam: 22 89% 50%;          /* #F0620E */
+    --combo: 261 75% 57%;         /* #7A3FE4 */
+
+    /* Magnets (record state) */
+    --magnet-done: 142 76% 36%;     /* #16A34A */
+    --magnet-pending: 47 92% 53%;   /* #F5C518 */
+    --magnet-rejected: 0 72% 51%;   /* #DC2626 */
+    --magnet-info: 221 83% 53%;     /* #2563EB */
+    --magnet-off: 218 11% 65%;      /* #9CA3AF */
+
+    /* The family mark — committing actions only */
+    --amber: 28 70% 51%;          /* #D97B2A */
+    --amber-deep: 28 70% 45%;     /* #C46D22 */
+
+    /* shadcn token names, mapped onto the board so the primitives keep working */
+    --background: var(--board);
+    --foreground: var(--ink);
+    --card: var(--board);
+    --card-foreground: var(--ink);
+    --popover: var(--board);
+    --popover-foreground: var(--ink);
+    --primary: var(--ink);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--tray);
+    --secondary-foreground: var(--ink);
+    --muted: var(--tray);
+    --muted-foreground: var(--ink-soft);
+    --accent: var(--tray);
+    --accent-foreground: var(--ink);
+    --destructive: var(--magnet-rejected);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--rule);
+    --input: var(--rule);
+    --ring: var(--ink);
     --radius: 0.5rem;
 
-    /* Added with the NAN-HR ui/ layer (values carried over unchanged so the
-       components keep the palette they were designed against). */
-    --warning: 41 96% 40%;
-    --warning-foreground: 210 40% 98%;
-    --info: 217 83% 53%;
-    --info-foreground: 210 40% 98%;
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 222.2 47.4% 11.2%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --warning: var(--magnet-pending);
+    --warning-foreground: var(--ink);
+    --info: var(--magnet-info);
+    --info-foreground: 0 0% 100%;
+    --success: var(--magnet-done);
+    --success-foreground: 0 0% 100%;
+
+    --sidebar-background: var(--tray);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--ink);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--rule);
+    --sidebar-ring: var(--ink);
+
+    color-scheme: light;
+    caret-color: hsl(var(--ink));
+    scrollbar-color: hsl(var(--rule)) transparent;
+    scrollbar-width: thin;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --warning: 41 92% 33%;
-    --warning-foreground: 210 40% 98%;
-    --info: 224 76% 48%;
-    --info-foreground: 210 40% 98%;
-    --success: 142 71% 29%;
-    --success-foreground: 210 40% 98%;
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 210 40% 98%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  * {
+    font-family: 'Roboto', 'Nokora', sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
-}
 
+  body {
+    background-color: hsl(var(--board));
+    color: hsl(var(--ink));
+    /* Every figure on the board is tabular: prices, counts, dates, times. */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
 
-* {
-  font-family: 'Roboto', 'Nokora', sans-serif;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-.dark {
-  @apply bg-gray-800 text-zinc-50;
-}
-
-@layer base {
+  /* Browser surfaces carry the board too. */
+  ::selection {
+    background: hsl(var(--magnet-pending) / 0.55);
+    color: hsl(var(--ink));
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--rule));
+    border-radius: 999px;
+    border: 2px solid hsl(var(--board));
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--ink-soft) / 0.6);
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ink));
+    outline-offset: 2px;
+  }
+  a {
+    text-underline-offset: 3px;
+  }
 
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
@@ -125,33 +151,75 @@
   }
 }
 
-.loader {
-  border-top-color: #3498db;
-  -webkit-animation: spinner 1.5s linear infinite;
-  animation: spinner 1.5s linear infinite;
+@layer components {
+  /* The printed grid: drawn on page grounds only, never inside a table. */
+  .board-grid {
+    background-color: hsl(var(--board));
+    background-image:
+      repeating-linear-gradient(0deg, hsl(var(--board-grid)) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, hsl(var(--board-grid)) 0 1px, transparent 1px 24px);
+  }
+
+  /* 2px marker rule between sections. */
+  .marker-rule {
+    height: 2px;
+    background: hsl(var(--ink));
+  }
+
+  /* Marker caps: board captions and index labels. */
+  .marker-caps {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Magnet: a round chip with a radial highlight and a real offset shadow. */
+  .magnet {
+    --magnet: var(--magnet-off);
+    display: inline-block;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 48%),
+      hsl(var(--magnet));
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18);
+  }
+  .magnet-sm {
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.15);
+  }
+  .magnet-xs {
+    width: 10px;
+    height: 10px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  }
+  .magnet-done { --magnet: var(--magnet-done); }
+  .magnet-pending { --magnet: var(--magnet-pending); }
+  .magnet-rejected { --magnet: var(--magnet-rejected); }
+  .magnet-info { --magnet: var(--magnet-info); }
+  .magnet-off { --magnet: var(--magnet-off); }
+
+  /* Marker dot: solid ink of a facility, no shadow — it is drawn, not pinned. */
+  .marker-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background: hsl(var(--marker, var(--magnet-off)));
+  }
+  /* Where two marker fields meet they multiply, like wet ink on a board. */
+  .marker-overlap {
+    mix-blend-mode: multiply;
+  }
 }
 
-@-webkit-keyframes spinner {
-  0% {
-    -webkit-transform: rotate(0deg);
-  }
-
-  100% {
-    -webkit-transform: rotate(360deg);
-  }
-}
-
-@keyframes spinner {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-
+/* The busy scrim used by LoadingPage and a few legacy callers. */
 .overlay-content {
   display: flex;
   width: 100%;
@@ -162,6 +230,6 @@
   justify-content: center;
   position: fixed;
   z-index: 999999;
-  background: rgba(0, 0, 0, 0.7);
+  background: hsl(var(--board) / 0.88);
   flex-direction: column;
 }

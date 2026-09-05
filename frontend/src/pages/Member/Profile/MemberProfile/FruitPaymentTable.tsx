@@ -1,7 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "../../Component/DataTable";
-import { PencilIcon } from "@heroicons/react/20/solid";
-import { Button } from "@/components/ui/Button";
+import { formatMoney } from "@/lib/money";
 
 type MemberPayment = {
     payment_id: number;
@@ -17,12 +16,13 @@ const datetime_format = (date_time: string) => {
     return date.toLocaleDateString("fr-CA") + " " + date.toLocaleTimeString();
 };
 
+/** The member's fruit / extras ledger. Read-only: these payments have no edit flow. */
 export const FruitPaymentTable = (props: any) => {
     const columnHelper = createColumnHelper<MemberPayment>();
     const columns = [
         columnHelper.accessor((row) => row.payment_id, {
             id: "ID",
-            cell: (info) => info.getValue(),
+            cell: (info) => <span className="text-ink-soft">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
@@ -40,7 +40,7 @@ export const FruitPaymentTable = (props: any) => {
         }),
         columnHelper.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => info.getValue(),
+            cell: (info) => <span className="font-medium">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
@@ -56,38 +56,10 @@ export const FruitPaymentTable = (props: any) => {
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
-        columnHelper.accessor((row) => row.payment_id, {
-            id: "Action",
-            cell: (info) => (
-                <div className="flex">
-                    {
-                        <>
-                            <span className="hidden sm:block">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                //onClick={() => setOpenMember(true)}
-                                >
-                                    <PencilIcon
-                                        className="h-4 w-4 text-gray-500"
-                                        aria-hidden="true"
-                                    />
-                                </Button>
-                            </span>
-                        </>
-                    }
-                </div>
-            ),
-            header: () => <span>Action</span>,
-            footer: (info) => info.column.id,
-        }),
     ];
 
     return (
-        <>
-            <DataTable columns={columns} data={props.fruit_payment.GetFruitPayment} />
-        </>
+        <DataTable columns={columns} data={props.fruit_payment?.GetFruitPayment ?? []} />
     );
 };
 

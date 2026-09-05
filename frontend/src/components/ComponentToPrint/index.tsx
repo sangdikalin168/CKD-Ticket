@@ -2,10 +2,24 @@
 import React from "react";
 import QRCode from "react-qr-code";
 
+// The slip is paper: layout stays; the faces are named explicitly so the HTML the
+// desktop shell prints carries the same Roboto + Nokora pairing as the screen.
+const SLIP_FONT = { fontFamily: "'Roboto', 'Nokora', sans-serif" } as const;
+
+
 // https://reactjs.org/docs/refs-and-the-dom.html#refs-and-function-components
-export const ComponentToPrint = React.forwardRef((props, ref) => {
+export interface TicketSlipProps {
+    /** Ticket code, printed under the QR and encoded in it. */
+    uuid: string;
+    date: string;
+    /** Cashier's display name. */
+    name: string;
+    price: number | string;
+}
+
+export const ComponentToPrint = React.forwardRef<HTMLDivElement, TicketSlipProps>((props, ref) => {
     return (
-        <div ref={ref}>
+        <div ref={ref} style={SLIP_FONT}>
             <div className="w-[405px] left-0 top-0 z-10 justify-center content-center overflow-auto border-2 border-black">
                 <div className="m-2">
                     <div className="text-center">

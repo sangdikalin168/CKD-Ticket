@@ -1,7 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
 import { useOverlay } from './OverlayStack';
 import { StatusProgressBar } from './StatusProgressBar';
+import { MagnetDot } from '../board/MagnetChip';
 
 interface LoadingOverlayProps {
   isLoading: boolean;
@@ -27,51 +29,30 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center"
       style={{ zIndex }}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-2xl flex flex-col items-center max-w-md mx-4 w-full">
+      <div className="bg-card border border-rule rounded-xl p-8 shadow-overlay flex flex-col items-center max-w-md mx-4 w-full">
         {/* A determinate percentage is more informative than a spinner, so the
             spinner only appears when there is no progress figure to show. */}
         {progress === undefined && (
-          <div className="p-2 md:p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-            <svg
-              className="h-12 w-12 md:h-16 md:w-16 text-yellow-600 animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          </div>
+          <Loader2 className="h-10 w-10 text-ink animate-spin" aria-hidden="true" />
         )}
 
         {/* Messages */}
-        <p className={`text-lg font-semibold text-foreground text-center ${progress === undefined ? 'mt-6' : ''}`}>
+        <p className={`text-title font-black text-ink text-center ${progress === undefined ? 'mt-5' : ''}`}>
           {resolvedMessage}
         </p>
         {resolvedSubMessage && (
-          <p className="text-sm text-muted-foreground mt-2 text-center">{resolvedSubMessage}</p>
+          <p className="text-sm text-ink-soft mt-2 text-center">{resolvedSubMessage}</p>
         )}
 
         {/* Overall progress */}
         {progress !== undefined && (
           <div className="w-full mt-5">
-            <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-tray rounded-full h-2.5 overflow-hidden">
               <div
-                className="relative bg-primary h-2.5 rounded-full overflow-hidden transition-all duration-500 ease-out"
+                className="relative bg-ink h-2.5 rounded-full overflow-hidden transition-all duration-500 ease-out"
                 style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
               >
                 {progress < 100 && (
@@ -79,7 +60,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                 )}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1.5 text-center tabular-nums">
+            <p className="text-xs text-ink-soft mt-1.5 text-center tabular-nums">
               {Math.round(progress)}%
             </p>
           </div>
@@ -90,29 +71,21 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         {steps && steps.length > 0 && (
           <div className="w-full mt-5 space-y-2.5 max-h-[50vh] overflow-y-auto">
             {steps.map((step, i) => (
-              <div
-                key={i}
-                className="space-y-1 animate-step-in motion-reduce:animate-none"
-                style={{ animationDelay: `${Math.min(i * 45, 400)}ms` }}
-              >
+              <div key={i} className="space-y-1">
                 <div className="flex items-center gap-2 text-sm">
-                  {step.status === 'done' && (
-                    <span className="text-emerald-500 flex-shrink-0">&#10003;</span>
-                  )}
-                  {step.status === 'error' && (
-                    <span className="text-rose-500 flex-shrink-0">&#10007;</span>
-                  )}
-                  {step.status === 'pending' && (
-                    <span className="text-muted-foreground/40 flex-shrink-0">&#9675;</span>
-                  )}
-                  {step.status === 'active' && (
-                    <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
-                  )}
+                  <MagnetDot
+                    size="sm"
+                    tone={
+                      step.status === 'done' ? 'done'
+                        : step.status === 'error' ? 'rejected'
+                          : step.status === 'active' ? 'info'
+                            : 'off'
+                    }
+                  />
                   <span className={`truncate ${
-                    step.status === 'done' ? 'text-emerald-600 dark:text-emerald-400' :
-                      step.status === 'active' ? 'text-foreground font-medium' :
-                        step.status === 'error' ? 'text-rose-500' :
-                          'text-muted-foreground'
+                    step.status === 'active' ? 'text-ink font-medium' :
+                      step.status === 'pending' ? 'text-ink-soft' :
+                        'text-ink'
                   }`}>
                     {step.label}
                   </span>

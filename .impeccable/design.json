@@ -1,43 +1,13 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-04T13:23:42Z",
+  "generatedAt": "2026-09-05T01:41:05Z",
   "title": "Design System: CKD Ticket",
   "extensions": {
     "colorMeta": {
-      "ink": {
-        "role": "primary",
-        "displayName": "Register Ink",
-        "canonical": "hsl(222.2 47.4% 11.2%)",
-        "tonalRamp": [
-          "hsl(222.2 47.4% 15%)",
-          "hsl(222.2 47.4% 25%)",
-          "hsl(222.2 47.4% 35%)",
-          "hsl(222.2 47.4% 45%)",
-          "hsl(222.2 47.4% 55%)",
-          "hsl(222.2 47.4% 65%)",
-          "hsl(222.2 47.4% 75%)",
-          "hsl(222.2 47.4% 95%)"
-        ]
-      },
-      "ink-deep": {
-        "role": "primary",
-        "displayName": "Deep Ink",
-        "canonical": "hsl(222.2 84% 4.9%)",
-        "tonalRamp": [
-          "hsl(222.2 84% 15%)",
-          "hsl(222.2 84% 25%)",
-          "hsl(222.2 84% 35%)",
-          "hsl(222.2 84% 45%)",
-          "hsl(222.2 84% 55%)",
-          "hsl(222.2 84% 65%)",
-          "hsl(222.2 84% 75%)",
-          "hsl(222.2 84% 95%)"
-        ]
-      },
-      "paper": {
+      "board": {
         "role": "neutral",
-        "displayName": "Paper",
-        "canonical": "hsl(0 0% 100%)",
+        "displayName": "Board",
+        "canonical": "#FFFFFF",
         "tonalRamp": [
           "hsl(0 0% 15%)",
           "hsl(0 0% 25%)",
@@ -49,234 +19,144 @@
           "hsl(0 0% 95%)"
         ]
       },
-      "chalk": {
+      "board-grid": {
         "role": "neutral",
-        "displayName": "Chalk",
-        "canonical": "hsl(210 40% 98%)",
+        "displayName": "Board Grid",
+        "canonical": "#EEF1F4",
         "tonalRamp": [
-          "hsl(210 40% 15%)",
-          "hsl(210 40% 25%)",
-          "hsl(210 40% 35%)",
-          "hsl(210 40% 45%)",
-          "hsl(210 40% 55%)",
-          "hsl(210 40% 65%)",
-          "hsl(210 40% 75%)",
-          "hsl(210 40% 95%)"
+          "hsl(210 21.4% 15%)",
+          "hsl(210 21.4% 25%)",
+          "hsl(210 21.4% 35%)",
+          "hsl(210 21.4% 45%)",
+          "hsl(210 21.4% 55%)",
+          "hsl(210 21.4% 65%)",
+          "hsl(210 21.4% 75%)",
+          "hsl(210 21.4% 95%)"
+        ]
+      },
+      "tray": {
+        "role": "neutral",
+        "displayName": "Tray",
+        "canonical": "#F4F6F8",
+        "tonalRamp": [
+          "hsl(210 22.2% 15%)",
+          "hsl(210 22.2% 25%)",
+          "hsl(210 22.2% 35%)",
+          "hsl(210 22.2% 45%)",
+          "hsl(210 22.2% 55%)",
+          "hsl(210 22.2% 65%)",
+          "hsl(210 22.2% 75%)",
+          "hsl(210 22.2% 95%)"
         ]
       },
       "rule": {
         "role": "neutral",
         "displayName": "Rule",
-        "canonical": "hsl(214.3 31.8% 91.4%)",
+        "canonical": "#D9DEE3",
         "tonalRamp": [
-          "hsl(214.3 31.8% 15%)",
-          "hsl(214.3 31.8% 25%)",
-          "hsl(214.3 31.8% 35%)",
-          "hsl(214.3 31.8% 45%)",
-          "hsl(214.3 31.8% 55%)",
-          "hsl(214.3 31.8% 65%)",
-          "hsl(214.3 31.8% 75%)",
-          "hsl(214.3 31.8% 95%)"
+          "hsl(210 15.2% 15%)",
+          "hsl(210 15.2% 25%)",
+          "hsl(210 15.2% 35%)",
+          "hsl(210 15.2% 45%)",
+          "hsl(210 15.2% 55%)",
+          "hsl(210 15.2% 65%)",
+          "hsl(210 15.2% 75%)",
+          "hsl(210 15.2% 95%)"
         ]
       },
-      "wash": {
-        "role": "secondary",
-        "displayName": "Wash",
-        "canonical": "hsl(210 40% 96.1%)",
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink",
+        "canonical": "#1F2328",
         "tonalRamp": [
-          "hsl(210 40% 15%)",
-          "hsl(210 40% 25%)",
-          "hsl(210 40% 35%)",
-          "hsl(210 40% 45%)",
-          "hsl(210 40% 55%)",
-          "hsl(210 40% 65%)",
-          "hsl(210 40% 75%)",
-          "hsl(210 40% 95%)"
+          "hsl(213.3 12.7% 15%)",
+          "hsl(213.3 12.7% 25%)",
+          "hsl(213.3 12.7% 35%)",
+          "hsl(213.3 12.7% 45%)",
+          "hsl(213.3 12.7% 55%)",
+          "hsl(213.3 12.7% 65%)",
+          "hsl(213.3 12.7% 75%)",
+          "hsl(213.3 12.7% 95%)"
         ]
       },
-      "annotation": {
-        "role": "secondary",
-        "displayName": "Annotation Grey",
-        "canonical": "hsl(215.4 16.3% 38%)",
+      "ink-soft": {
+        "role": "primary",
+        "displayName": "Soft Ink",
+        "canonical": "hsl(215 16% 38%)",
         "tonalRamp": [
-          "hsl(215.4 16.3% 15%)",
-          "hsl(215.4 16.3% 25%)",
-          "hsl(215.4 16.3% 35%)",
-          "hsl(215.4 16.3% 45%)",
-          "hsl(215.4 16.3% 55%)",
-          "hsl(215.4 16.3% 65%)",
-          "hsl(215.4 16.3% 75%)",
-          "hsl(215.4 16.3% 95%)"
-        ]
-      },
-      "floor": {
-        "role": "neutral",
-        "displayName": "Floor",
-        "canonical": "#F9FAFB",
-        "tonalRamp": [
-          "hsl(210 20% 15%)",
-          "hsl(210 20% 25%)",
-          "hsl(210 20% 35%)",
-          "hsl(210 20% 45%)",
-          "hsl(210 20% 55%)",
-          "hsl(210 20% 65%)",
-          "hsl(210 20% 75%)",
-          "hsl(210 20% 95%)"
-        ]
-      },
-      "margin": {
-        "role": "neutral",
-        "displayName": "Margin",
-        "canonical": "hsl(0 0% 98%)",
-        "tonalRamp": [
-          "hsl(0 0% 15%)",
-          "hsl(0 0% 25%)",
-          "hsl(0 0% 35%)",
-          "hsl(0 0% 45%)",
-          "hsl(0 0% 55%)",
-          "hsl(0 0% 65%)",
-          "hsl(0 0% 75%)",
-          "hsl(0 0% 95%)"
-        ]
-      },
-      "margin-ink": {
-        "role": "neutral",
-        "displayName": "Margin Ink",
-        "canonical": "hsl(240 5.3% 26.1%)",
-        "tonalRamp": [
-          "hsl(240 5.3% 15%)",
-          "hsl(240 5.3% 25%)",
-          "hsl(240 5.3% 35%)",
-          "hsl(240 5.3% 45%)",
-          "hsl(240 5.3% 55%)",
-          "hsl(240 5.3% 65%)",
-          "hsl(240 5.3% 75%)",
-          "hsl(240 5.3% 95%)"
-        ]
-      },
-      "margin-wash": {
-        "role": "neutral",
-        "displayName": "Margin Wash",
-        "canonical": "hsl(240 4.8% 95.9%)",
-        "tonalRamp": [
-          "hsl(240 4.8% 15%)",
-          "hsl(240 4.8% 25%)",
-          "hsl(240 4.8% 35%)",
-          "hsl(240 4.8% 45%)",
-          "hsl(240 4.8% 55%)",
-          "hsl(240 4.8% 65%)",
-          "hsl(240 4.8% 75%)",
-          "hsl(240 4.8% 95%)"
-        ]
-      },
-      "success": {
-        "role": "secondary",
-        "displayName": "Success",
-        "canonical": "hsl(142 76% 36%)",
-        "tonalRamp": [
-          "hsl(142 76% 15%)",
-          "hsl(142 76% 25%)",
-          "hsl(142 76% 35%)",
-          "hsl(142 76% 45%)",
-          "hsl(142 76% 55%)",
-          "hsl(142 76% 65%)",
-          "hsl(142 76% 75%)",
-          "hsl(142 76% 95%)"
-        ]
-      },
-      "warning": {
-        "role": "secondary",
-        "displayName": "Warning",
-        "canonical": "hsl(41 96% 40%)",
-        "tonalRamp": [
-          "hsl(41 96% 15%)",
-          "hsl(41 96% 25%)",
-          "hsl(41 96% 35%)",
-          "hsl(41 96% 45%)",
-          "hsl(41 96% 55%)",
-          "hsl(41 96% 65%)",
-          "hsl(41 96% 75%)",
-          "hsl(41 96% 95%)"
-        ]
-      },
-      "info": {
-        "role": "secondary",
-        "displayName": "Info",
-        "canonical": "hsl(217 83% 53%)",
-        "tonalRamp": [
-          "hsl(217 83% 15%)",
-          "hsl(217 83% 25%)",
-          "hsl(217 83% 35%)",
-          "hsl(217 83% 45%)",
-          "hsl(217 83% 55%)",
-          "hsl(217 83% 65%)",
-          "hsl(217 83% 75%)",
-          "hsl(217 83% 95%)"
-        ]
-      },
-      "stop": {
-        "role": "secondary",
-        "displayName": "Stop",
-        "canonical": "hsl(0 84.2% 60.2%)",
-        "tonalRamp": [
-          "hsl(0 84.2% 15%)",
-          "hsl(0 84.2% 25%)",
-          "hsl(0 84.2% 35%)",
-          "hsl(0 84.2% 45%)",
-          "hsl(0 84.2% 55%)",
-          "hsl(0 84.2% 65%)",
-          "hsl(0 84.2% 75%)",
-          "hsl(0 84.2% 95%)"
+          "hsl(215 16% 15%)",
+          "hsl(215 16% 25%)",
+          "hsl(215 16% 35%)",
+          "hsl(215 16% 45%)",
+          "hsl(215 16% 55%)",
+          "hsl(215 16% 65%)",
+          "hsl(215 16% 75%)",
+          "hsl(215 16% 95%)"
         ]
       },
       "swim": {
         "role": "tertiary",
         "displayName": "Swim Blue",
-        "canonical": "#2563EB",
+        "canonical": "#1F5AE0",
         "tonalRamp": [
-          "hsl(221.2 83.2% 15%)",
-          "hsl(221.2 83.2% 25%)",
-          "hsl(221.2 83.2% 35%)",
-          "hsl(221.2 83.2% 45%)",
-          "hsl(221.2 83.2% 55%)",
-          "hsl(221.2 83.2% 65%)",
-          "hsl(221.2 83.2% 75%)",
-          "hsl(221.2 83.2% 95%)"
-        ]
-      },
-      "swim-tint": {
-        "role": "tertiary",
-        "displayName": "Swim Tint",
-        "canonical": "#DBEAFE",
-        "tonalRamp": [
-          "hsl(214.3 94.6% 15%)",
-          "hsl(214.3 94.6% 25%)",
-          "hsl(214.3 94.6% 35%)",
-          "hsl(214.3 94.6% 45%)",
-          "hsl(214.3 94.6% 55%)",
-          "hsl(214.3 94.6% 65%)",
-          "hsl(214.3 94.6% 75%)",
-          "hsl(214.3 94.6% 95%)"
-        ]
-      },
-      "swim-ink": {
-        "role": "tertiary",
-        "displayName": "Swim Ink",
-        "canonical": "#1D4ED8",
-        "tonalRamp": [
-          "hsl(224.3 76.3% 15%)",
-          "hsl(224.3 76.3% 25%)",
-          "hsl(224.3 76.3% 35%)",
-          "hsl(224.3 76.3% 45%)",
-          "hsl(224.3 76.3% 55%)",
-          "hsl(224.3 76.3% 65%)",
-          "hsl(224.3 76.3% 75%)",
-          "hsl(224.3 76.3% 95%)"
+          "hsl(221.7 75.7% 15%)",
+          "hsl(221.7 75.7% 25%)",
+          "hsl(221.7 75.7% 35%)",
+          "hsl(221.7 75.7% 45%)",
+          "hsl(221.7 75.7% 55%)",
+          "hsl(221.7 75.7% 65%)",
+          "hsl(221.7 75.7% 75%)",
+          "hsl(221.7 75.7% 95%)"
         ]
       },
       "gym": {
         "role": "tertiary",
         "displayName": "Gym Green",
+        "canonical": "#12A150",
+        "tonalRamp": [
+          "hsl(146 79.9% 15%)",
+          "hsl(146 79.9% 25%)",
+          "hsl(146 79.9% 35%)",
+          "hsl(146 79.9% 45%)",
+          "hsl(146 79.9% 55%)",
+          "hsl(146 79.9% 65%)",
+          "hsl(146 79.9% 75%)",
+          "hsl(146 79.9% 95%)"
+        ]
+      },
+      "steam": {
+        "role": "tertiary",
+        "displayName": "Steam Orange",
+        "canonical": "#F0620E",
+        "tonalRamp": [
+          "hsl(22.3 89% 15%)",
+          "hsl(22.3 89% 25%)",
+          "hsl(22.3 89% 35%)",
+          "hsl(22.3 89% 45%)",
+          "hsl(22.3 89% 55%)",
+          "hsl(22.3 89% 65%)",
+          "hsl(22.3 89% 75%)",
+          "hsl(22.3 89% 95%)"
+        ]
+      },
+      "combo": {
+        "role": "tertiary",
+        "displayName": "Combo Purple",
+        "canonical": "#7A3FE4",
+        "tonalRamp": [
+          "hsl(261.5 75.3% 15%)",
+          "hsl(261.5 75.3% 25%)",
+          "hsl(261.5 75.3% 35%)",
+          "hsl(261.5 75.3% 45%)",
+          "hsl(261.5 75.3% 55%)",
+          "hsl(261.5 75.3% 65%)",
+          "hsl(261.5 75.3% 75%)",
+          "hsl(261.5 75.3% 95%)"
+        ]
+      },
+      "magnet-done": {
+        "role": "secondary",
+        "displayName": "Done",
         "canonical": "#16A34A",
         "tonalRamp": [
           "hsl(142.1 76.2% 15%)",
@@ -289,124 +169,64 @@
           "hsl(142.1 76.2% 95%)"
         ]
       },
-      "gym-tint": {
-        "role": "tertiary",
-        "displayName": "Gym Tint",
-        "canonical": "#DCFCE7",
+      "magnet-pending": {
+        "role": "secondary",
+        "displayName": "Pending",
+        "canonical": "#F5C518",
         "tonalRamp": [
-          "hsl(140.6 84.2% 15%)",
-          "hsl(140.6 84.2% 25%)",
-          "hsl(140.6 84.2% 35%)",
-          "hsl(140.6 84.2% 45%)",
-          "hsl(140.6 84.2% 55%)",
-          "hsl(140.6 84.2% 65%)",
-          "hsl(140.6 84.2% 75%)",
-          "hsl(140.6 84.2% 95%)"
+          "hsl(47 91.7% 15%)",
+          "hsl(47 91.7% 25%)",
+          "hsl(47 91.7% 35%)",
+          "hsl(47 91.7% 45%)",
+          "hsl(47 91.7% 55%)",
+          "hsl(47 91.7% 65%)",
+          "hsl(47 91.7% 75%)",
+          "hsl(47 91.7% 95%)"
         ]
       },
-      "gym-ink": {
-        "role": "tertiary",
-        "displayName": "Gym Ink",
-        "canonical": "#15803D",
+      "magnet-rejected": {
+        "role": "secondary",
+        "displayName": "Rejected",
+        "canonical": "#DC2626",
         "tonalRamp": [
-          "hsl(142.4 71.8% 15%)",
-          "hsl(142.4 71.8% 25%)",
-          "hsl(142.4 71.8% 35%)",
-          "hsl(142.4 71.8% 45%)",
-          "hsl(142.4 71.8% 55%)",
-          "hsl(142.4 71.8% 65%)",
-          "hsl(142.4 71.8% 75%)",
-          "hsl(142.4 71.8% 95%)"
+          "hsl(0 72.2% 15%)",
+          "hsl(0 72.2% 25%)",
+          "hsl(0 72.2% 35%)",
+          "hsl(0 72.2% 45%)",
+          "hsl(0 72.2% 55%)",
+          "hsl(0 72.2% 65%)",
+          "hsl(0 72.2% 75%)",
+          "hsl(0 72.2% 95%)"
         ]
       },
-      "steam": {
-        "role": "tertiary",
-        "displayName": "Steam Orange",
-        "canonical": "#EA580C",
+      "magnet-info": {
+        "role": "secondary",
+        "displayName": "Info",
+        "canonical": "#2563EB",
         "tonalRamp": [
-          "hsl(20.5 90.2% 15%)",
-          "hsl(20.5 90.2% 25%)",
-          "hsl(20.5 90.2% 35%)",
-          "hsl(20.5 90.2% 45%)",
-          "hsl(20.5 90.2% 55%)",
-          "hsl(20.5 90.2% 65%)",
-          "hsl(20.5 90.2% 75%)",
-          "hsl(20.5 90.2% 95%)"
+          "hsl(221.2 83.2% 15%)",
+          "hsl(221.2 83.2% 25%)",
+          "hsl(221.2 83.2% 35%)",
+          "hsl(221.2 83.2% 45%)",
+          "hsl(221.2 83.2% 55%)",
+          "hsl(221.2 83.2% 65%)",
+          "hsl(221.2 83.2% 75%)",
+          "hsl(221.2 83.2% 95%)"
         ]
       },
-      "steam-tint": {
-        "role": "tertiary",
-        "displayName": "Steam Tint",
-        "canonical": "#FFEDD5",
+      "magnet-off": {
+        "role": "secondary",
+        "displayName": "Off",
+        "canonical": "#9CA3AF",
         "tonalRamp": [
-          "hsl(34.3 100% 15%)",
-          "hsl(34.3 100% 25%)",
-          "hsl(34.3 100% 35%)",
-          "hsl(34.3 100% 45%)",
-          "hsl(34.3 100% 55%)",
-          "hsl(34.3 100% 65%)",
-          "hsl(34.3 100% 75%)",
-          "hsl(34.3 100% 95%)"
-        ]
-      },
-      "steam-ink": {
-        "role": "tertiary",
-        "displayName": "Steam Ink",
-        "canonical": "#C2410C",
-        "tonalRamp": [
-          "hsl(17.5 88.3% 15%)",
-          "hsl(17.5 88.3% 25%)",
-          "hsl(17.5 88.3% 35%)",
-          "hsl(17.5 88.3% 45%)",
-          "hsl(17.5 88.3% 55%)",
-          "hsl(17.5 88.3% 65%)",
-          "hsl(17.5 88.3% 75%)",
-          "hsl(17.5 88.3% 95%)"
-        ]
-      },
-      "combo": {
-        "role": "tertiary",
-        "displayName": "Combo Purple",
-        "canonical": "#9333EA",
-        "tonalRamp": [
-          "hsl(271.5 81.3% 15%)",
-          "hsl(271.5 81.3% 25%)",
-          "hsl(271.5 81.3% 35%)",
-          "hsl(271.5 81.3% 45%)",
-          "hsl(271.5 81.3% 55%)",
-          "hsl(271.5 81.3% 65%)",
-          "hsl(271.5 81.3% 75%)",
-          "hsl(271.5 81.3% 95%)"
-        ]
-      },
-      "combo-tint": {
-        "role": "tertiary",
-        "displayName": "Combo Tint",
-        "canonical": "#F3E8FF",
-        "tonalRamp": [
-          "hsl(268.7 100% 15%)",
-          "hsl(268.7 100% 25%)",
-          "hsl(268.7 100% 35%)",
-          "hsl(268.7 100% 45%)",
-          "hsl(268.7 100% 55%)",
-          "hsl(268.7 100% 65%)",
-          "hsl(268.7 100% 75%)",
-          "hsl(268.7 100% 95%)"
-        ]
-      },
-      "combo-ink": {
-        "role": "tertiary",
-        "displayName": "Combo Ink",
-        "canonical": "#7E22CE",
-        "tonalRamp": [
-          "hsl(272.1 71.7% 15%)",
-          "hsl(272.1 71.7% 25%)",
-          "hsl(272.1 71.7% 35%)",
-          "hsl(272.1 71.7% 45%)",
-          "hsl(272.1 71.7% 55%)",
-          "hsl(272.1 71.7% 65%)",
-          "hsl(272.1 71.7% 75%)",
-          "hsl(272.1 71.7% 95%)"
+          "hsl(217.9 10.6% 15%)",
+          "hsl(217.9 10.6% 25%)",
+          "hsl(217.9 10.6% 35%)",
+          "hsl(217.9 10.6% 45%)",
+          "hsl(217.9 10.6% 55%)",
+          "hsl(217.9 10.6% 65%)",
+          "hsl(217.9 10.6% 75%)",
+          "hsl(217.9 10.6% 95%)"
         ]
       },
       "amber": {
@@ -441,13 +261,17 @@
       }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "The price on a ticket tile — the one place the black weight belongs."
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "A board section's title, in marker weight."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Card headings, dialog titles, the club's name at the head of a slip."
+        "purpose": "Card and dialog headings, and the club's name on a printed slip."
+      },
+      "price": {
+        "displayName": "Price",
+        "purpose": "The figure on a price tile, in its facility's marker hue — the one place black weight leaves a heading."
       },
       "body": {
         "displayName": "Body",
@@ -459,35 +283,36 @@
       },
       "caption": {
         "displayName": "Caption",
-        "purpose": "The text-caption step: compact column headers, chip labels, eyebrows. 1.6 line height for stacked Khmer consonants."
-      },
-      "figure": {
-        "displayName": "Figure",
-        "purpose": "Money, counts, dates in a column, ticket codes — tabular, right-aligned."
+        "purpose": "Compact column headers, chip labels and eyebrows, at 1.6 line height so Khmer subscripts clear the line beneath."
       }
     },
     "shadows": [
       {
+        "name": "Magnet",
+        "value": "0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18)",
+        "purpose": "The state disc at 22/14/10px. The only object in the system allowed to look physical, because a magnet on a board is."
+      },
+      {
         "name": "Header",
         "value": "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)",
-        "purpose": "The sticky navbar only — it genuinely floats over scrolling content (Tailwind shadow-md shadow-black/5)."
+        "purpose": "The sticky navbar only — it genuinely floats over scrolling content."
       },
       {
         "name": "Overlay",
         "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-        "purpose": "Dialogs over the bg-black/80 scrim, dropdowns, the language menu (Tailwind shadow-lg)."
-      },
-      {
-        "name": "Card (drift)",
-        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        "purpose": "shadow-sm on twenty-five resting cards and table shells. Drift under The Flat-At-Rest Rule."
+        "purpose": "Dialogs over a scrim, dropdowns, the language menu."
       }
     ],
     "motion": [
       {
+        "name": "register-line-in",
+        "value": "200ms ease-out",
+        "purpose": "A sale writing itself onto today's board — the system's one authored moment."
+      },
+      {
         "name": "dialog-in / dialog-out",
-        "value": "fade + zoom 95% + slide from top 48%, 200ms (Radix data-state)",
-        "purpose": "Dialogs, dropdowns, the mobile sidebar sheet."
+        "value": "fade + zoom 95% + slide, 200ms (Radix data-state)",
+        "purpose": "Dialogs, dropdowns and the mobile sidebar sheet."
       },
       {
         "name": "accordion-down / accordion-up",
@@ -495,19 +320,14 @@
         "purpose": "Disclosure."
       },
       {
-        "name": "spin / pulse",
-        "value": "spin 1s linear infinite; pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "name": "spin / shimmer",
+        "value": "spin 1s linear infinite; shimmer sweep",
         "purpose": "Loading only."
-      },
-      {
-        "name": "nan-slide-up",
-        "value": "0.55s cubic-bezier(0.16, 1, 0.3, 1), staggered 50ms",
-        "purpose": "The sign-in surface only."
       },
       {
         "name": "transition-colors",
         "value": "color, background-color, border-color 150ms cubic-bezier(0.4, 0, 0.2, 1)",
-        "purpose": "The default for every state change."
+        "purpose": "The default for every state change; controls change colour, they do not move."
       }
     ],
     "breakpoints": [
@@ -532,10 +352,6 @@
         "value": "1536px"
       },
       {
-        "name": "container-max",
-        "value": "1400px"
-      },
-      {
         "name": "reference",
         "value": "1366×768 laptop"
       }
@@ -543,223 +359,191 @@
   },
   "components": [
     {
-      "name": "Primary Button (compact)",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "The 32px compact scale for a 1366×768 laptop: Register Ink ground, Chalk text.",
-      "html": "<button class=\"ds-btn-primary\" type=\"button\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg>Save</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; height: 32px; padding: 4px 12px; border-radius: 6px; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25; cursor: pointer; transition: background-color 0.15s, color 0.15s; border: none; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); } .ds-btn-primary:hover { background: hsl(var(--primary) / 0.9); } .ds-btn-primary:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; pointer-events: none; }"
-    },
-    {
-      "name": "Semantic Buttons",
-      "kind": "button",
-      "refersTo": "button-success",
-      "description": "Approve, hold, inform, reject — an action carries the colour of the state it produces.",
-      "html": "<button class=\"ds-btn ds-btn--success\" type=\"button\">Approve</button> <button class=\"ds-btn ds-btn--warning\" type=\"button\">Hold</button> <button class=\"ds-btn ds-btn--info\" type=\"button\">Details</button> <button class=\"ds-btn ds-btn--stop\" type=\"button\">Reject</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; height: 32px; padding: 4px 12px; border-radius: 6px; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25; cursor: pointer; transition: background-color 0.15s, color 0.15s; border: none; color: hsl(var(--primary-foreground)); margin-right: 6px; } .ds-btn--success { background: hsl(var(--success)); } .ds-btn--warning { background: hsl(var(--warning)); } .ds-btn--info { background: hsl(var(--info)); } .ds-btn--stop { background: hsl(var(--destructive)); } .ds-btn:hover { filter: brightness(0.92); } .ds-btn:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }"
-    },
-    {
-      "name": "Text Input (compact)",
-      "kind": "input",
-      "refersTo": "input-default",
-      "description": "32px tall, Paper ground, 1px Rule stroke; the ring is the whole focus signal.",
-      "html": "<label class=\"ds-label\" for=\"member-search\">Member</label><input class=\"ds-input\" id=\"member-search\" type=\"text\" placeholder=\"ស្វែងរកសមាជិក…\" />",
-      "css": ".ds-label { display: block; margin-bottom: 4px; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; color: hsl(var(--foreground)); } .ds-input { display: flex; height: 32px; width: 100%; max-width: 320px; border-radius: 6px; border: 1px solid hsl(var(--input)); background: hsl(var(--background)); padding: 4px 12px; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; color: hsl(var(--foreground)); } .ds-input::placeholder { color: hsl(var(--muted-foreground)); } .ds-input:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }"
-    },
-    {
-      "name": "Ticket Tile",
+      "name": "Price Tile",
       "kind": "custom",
-      "refersTo": "ticket-tile",
-      "description": "The sale's signature: a 128px tile with a 2px facility edge and tint, the price in black weight. Tapping sells and prints.",
-      "html": "<button class=\"ds-tile ds-tile--swim\" type=\"button\"><span class=\"ds-tile-chip\">Swim</span><span class=\"ds-tile-name\">សំបុត្រហែលទឹក · Day pass</span><span class=\"ds-tile-price\">$3</span></button><button class=\"ds-tile ds-tile--gym\" type=\"button\"><span class=\"ds-tile-chip\">Gym</span><span class=\"ds-tile-name\">Gym day pass</span><span class=\"ds-tile-price\">$2</span></button><button class=\"ds-tile ds-tile--steam\" type=\"button\"><span class=\"ds-tile-chip\">Steam</span><span class=\"ds-tile-name\">Steam</span><span class=\"ds-tile-price\">$5</span></button>",
-      "css": ".ds-tile { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: space-between; width: 180px; height: 128px; margin: 4px; padding: 12px; border-radius: 12px; border: 2px solid; background: #FFFFFF; text-align: left; cursor: pointer; font-family: Roboto, Nokora, sans-serif; transition: background-color 0.15s; } .ds-tile-chip { padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; } .ds-tile-name { font-size: 0.875rem; font-weight: 500; color: hsl(var(--foreground)); } .ds-tile-price { font-size: 1.875rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.01em; } .ds-tile--swim { border-color: #2563EB; background: #DBEAFE; } .ds-tile--swim .ds-tile-chip { background: #2563EB; color: #FFFFFF; } .ds-tile--swim .ds-tile-price { color: #1D4ED8; } .ds-tile--gym { border-color: #16A34A; background: #DCFCE7; } .ds-tile--gym .ds-tile-chip { background: #16A34A; color: #FFFFFF; } .ds-tile--gym .ds-tile-price { color: #15803D; } .ds-tile--steam { border-color: #EA580C; background: #FFEDD5; } .ds-tile--steam .ds-tile-chip { background: #EA580C; color: #FFFFFF; } .ds-tile--steam .ds-tile-price { color: #C2410C; } .ds-tile:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }"
+      "refersTo": "price-tile",
+      "description": "The sale unit: a 160×112 board card with a 3px facility stripe, the facility dots, the name clamped to two lines, and the price in marker weight. Tapping sells and prints.",
+      "html": "<button class=\"ds-tile\" type=\"button\"><span class=\"ds-tile__stripe\"><i style=\"background:#1F5AE0\"></i></span><span class=\"ds-tile__dots\"><i style=\"background:#1F5AE0\"></i></span><span class=\"ds-tile__name\">ហែលទឹក · Swimming</span><span class=\"ds-tile__price\" style=\"color:#1F5AE0\">$3</span><span class=\"ds-tile__meta\">ចូល ១ ដង</span></button><button class=\"ds-tile\" type=\"button\"><span class=\"ds-tile__stripe\"><i style=\"background:#1F5AE0\"></i><i style=\"background:#12A150\"></i><i style=\"background:#F0620E\"></i></span><span class=\"ds-tile__dots\"><i style=\"background:#1F5AE0\"></i><i style=\"background:#12A150;margin-left:-4px\"></i><i style=\"background:#F0620E;margin-left:-4px\"></i></span><span class=\"ds-tile__name\">ហែលទឹក + ហាត់ប្រាណ + ចំហុយ</span><span class=\"ds-tile__price\" style=\"color:#7A3FE4\">$4.50</span><span class=\"ds-tile__meta\">ចូល ១ ដង</span></button>",
+      "css": ".ds-tile { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; width: 160px; min-height: 112px; margin: 4px; padding: 0.75rem; border: 1px solid #D9DEE3; border-radius: 0.75rem; background: #FFFFFF; color: #1F2328; text-align: left; cursor: pointer; font-family: Roboto, Nokora, sans-serif; }\n.ds-tile__stripe { position: absolute; inset: 0 0 auto 0; display: flex; height: 3px; overflow: hidden; border-radius: 0.75rem 0.75rem 0 0; }\n.ds-tile__stripe i { flex: 1; }\n.ds-tile__dots { position: absolute; right: 0.75rem; top: 0.75rem; display: inline-flex; mix-blend-mode: multiply; }\n.ds-tile__dots i { width: 10px; height: 10px; border-radius: 9999px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.15); }\n.ds-tile__name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 0.5rem; font-size: 0.875rem; font-weight: 500; }\n.ds-tile__price { margin-top: auto; font-size: 1.875rem; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }\n.ds-tile__meta { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; color: hsl(215 16% 38%); }\n.ds-tile:hover { border-color: hsl(215 16% 38% / 0.4); }\n.ds-tile:active { transform: scale(0.98); }\n.ds-tile:focus-visible { outline: 2px solid #1F2328; outline-offset: 2px; }"
     },
     {
-      "name": "Facility and Status Chips",
+      "name": "Magnet Chip",
       "kind": "chip",
-      "refersTo": "chip-swim",
-      "description": "Full-round Caption pills: facility tint with facility ink, or a mark's tint with its deep step. Never grey text on a tint.",
-      "html": "<span class=\"ds-chip ds-chip--swim\">Swim</span><span class=\"ds-chip ds-chip--gym\">Gym</span><span class=\"ds-chip ds-chip--steam\">Steam</span><span class=\"ds-chip ds-chip--combo\">Swim + Gym</span><span class=\"ds-chip ds-chip--active\">Active</span><span class=\"ds-chip ds-chip--pending\">Pending</span><span class=\"ds-chip ds-chip--rejected\">Rejected</span>",
-      "css": ".ds-chip { display: inline-flex; align-items: center; padding: 2px 10px; margin: 0 6px 6px 0; border-radius: 9999px; font-family: Roboto, Nokora, sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; } .ds-chip--swim { background: #DBEAFE; color: #1D4ED8; } .ds-chip--gym { background: #DCFCE7; color: #15803D; } .ds-chip--steam { background: #FFEDD5; color: #C2410C; } .ds-chip--combo { background: #F3E8FF; color: #7E22CE; } .ds-chip--active { background: #DCFCE7; color: #15803D; } .ds-chip--pending { background: #FFEDD5; color: #C2410C; } .ds-chip--rejected { background: #FEE2E2; color: #B91C1C; }"
+      "refersTo": "magnet-chip",
+      "description": "A record's state: a physical-looking disc beside an ink label. This replaces the tinted status pill entirely.",
+      "html": "<span class=\"ds-chip\"><i class=\"ds-magnet\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #16A34A\"></i>បានដំណើរការ · Processed</span><span class=\"ds-chip\"><i class=\"ds-magnet\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #F5C518\"></i>រង់ចាំ · Pending</span><span class=\"ds-chip\"><i class=\"ds-magnet\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #DC2626\"></i>បដិសេធ · Rejected</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 1rem; font-family: Roboto, Nokora, sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; color: #1F2328; }\n.ds-magnet { display: inline-block; width: 22px; height: 22px; border-radius: 9999px; box-shadow: 0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18); }"
+    },
+    {
+      "name": "Commit Button",
+      "kind": "button",
+      "refersTo": "button-commit",
+      "description": "The action that takes money or settles a request: amber ground with INK lettering, because white on amber fails at 3.1:1 and ink passes at 5.1:1. Hover draws a second marker stroke under it.",
+      "html": "<button class=\"ds-btn ds-btn--commit\" type=\"button\">លក់ · Sell</button> <button class=\"ds-btn ds-btn--commit-outline\" type=\"button\">បោះពុម្ពម្តងទៀត · Print again</button> <button class=\"ds-btn ds-btn--default\" type=\"button\">រក្សាទុក · Save</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 0 0.75rem; border-radius: 0.375rem; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25; cursor: pointer; transition: background-color .15s, color .15s, box-shadow .15s; border: none; margin-right: 0.5rem; }\n.ds-btn--default { background: #1F2328; color: #FFFFFF; }\n.ds-btn--default:hover { background: rgb(31 35 40 / 0.9); }\n.ds-btn--commit { background: #D97B2A; color: #1F2328; font-weight: 600; }\n.ds-btn--commit:hover { box-shadow: inset 0 -3px 0 #C46D22; }\n.ds-btn--commit:active { background: #C46D22; }\n.ds-btn--commit-outline { border: 1px solid #C46D22; background: rgb(217 123 42 / 0.1); color: #1F2328; }\n.ds-btn--commit-outline:hover { background: rgb(217 123 42 / 0.25); }\n.ds-btn:focus-visible { outline: 2px solid #1F2328; outline-offset: 2px; }"
+    },
+    {
+      "name": "Board Header",
+      "kind": "custom",
+      "refersTo": "nav-item",
+      "description": "Every surface opens with the same masthead: the club and the date on one baseline, the title beneath, closed by a 2px ink rule.",
+      "html": "<header class=\"ds-board-header\"><div class=\"ds-board-header__top\"><span>មិង ហួរ ក្លឹបហាត់ប្រាណ &amp; អាងហែលទឹក</span><span class=\"ds-board-header__date\">FRIDAY, SEPTEMBER 4, 2026</span></div><h1 class=\"ds-board-header__title\">លក់សំបុត្រ · Sell Tickets</h1><p class=\"ds-board-header__sub\">ចុចតម្លៃដើម្បីលក់ និងបោះពុម្ព</p></header>",
+      "css": ".ds-board-header { padding-bottom: 0.75rem; border-bottom: 2px solid #1F2328; font-family: Roboto, Nokora, sans-serif; color: #1F2328; }\n.ds-board-header__top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; color: hsl(215 16% 38%); }\n.ds-board-header__date { text-transform: uppercase; }\n.ds-board-header__title { margin: 0.25rem 0 0; font-size: 1.5rem; font-weight: 900; line-height: 1.2; }\n.ds-board-header__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: hsl(215 16% 38%); }"
     },
     {
       "name": "Data Table (compact ledger)",
       "kind": "table",
       "refersTo": "table-header-cell",
-      "description": "The compact density: text-caption headers in sentence case, 17px leading rows, vertical hairlines, tabular figures right-aligned.",
-      "html": "<table class=\"ds-table\"><thead><tr><th>Date</th><th>Member</th><th>Facility</th><th class=\"ds-num\">Amount</th></tr></thead><tbody><tr><td class=\"ds-num\">2026-09-04</td><td>ចាន់ ដារ៉ា</td><td><span class=\"ds-chip ds-chip--swim\">Swim</span></td><td class=\"ds-num\">$3.00</td></tr><tr><td class=\"ds-num\">2026-09-04</td><td>Sok Pisey</td><td><span class=\"ds-chip ds-chip--gym\">Gym</span></td><td class=\"ds-num\">$45.00</td></tr></tbody></table>",
-      "css": ".ds-table { width: 100%; max-width: 560px; border-collapse: separate; border-spacing: 0; border-radius: 8px; border: 1px solid hsl(var(--border)); overflow: hidden; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; color: hsl(var(--foreground)); background: hsl(var(--card)); } .ds-table th { text-align: left; padding: 6px 12px; background: hsl(var(--muted) / 0.5); color: hsl(var(--muted-foreground)); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; } .ds-table td { padding: 3px 12px; line-height: 17px; border-top: 1px solid hsl(var(--border)); white-space: nowrap; } .ds-table td + td, .ds-table th + th { border-left: 1px solid hsl(var(--border) / 0.6); } .ds-table tbody tr:hover td { background: hsl(var(--muted) / 0.5); } .ds-table .ds-num { text-align: right; font-variant-numeric: tabular-nums; } .ds-chip { display: inline-flex; padding: 1px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; } .ds-chip--swim { background: #DBEAFE; color: #1D4ED8; } .ds-chip--gym { background: #DCFCE7; color: #15803D; }"
+      "description": "The compact density: caption headers on the tray, 3px row padding at 17px leading, vertical hairlines, tabular figures, and magnet chips in the status column.",
+      "html": "<table class=\"ds-table\"><thead><tr><th>ម៉ោង</th><th>អតិថិជន</th><th>សេវា</th><th class=\"ds-num\">តម្លៃ</th><th>ស្ថានភាព</th></tr></thead><tbody><tr><td class=\"ds-num\">09:12</td><td>ចាន់ ដារ៉ា</td><td><i class=\"ds-dot\" style=\"background:#1F5AE0\"></i> ហែលទឹក</td><td class=\"ds-num\">$3.00</td><td><i class=\"ds-magnet-sm\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #16A34A\"></i></td></tr><tr><td class=\"ds-num\">09:15</td><td>សុខ ពិសី</td><td><i class=\"ds-dot\" style=\"background:#12A150\"></i> ហាត់ប្រាណ</td><td class=\"ds-num\">$2.00</td><td><i class=\"ds-magnet-sm\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #F5C518\"></i></td></tr></tbody></table>",
+      "css": ".ds-table { width: 100%; max-width: 560px; border-collapse: separate; border-spacing: 0; border: 1px solid #D9DEE3; border-radius: 0.5rem; overflow: hidden; background: #FFFFFF; color: #1F2328; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; }\n.ds-table th { padding: 0.375rem 0.75rem; background: #F4F6F8; color: hsl(215 16% 38%); text-align: left; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; }\n.ds-table td { padding: 3px 0.75rem; line-height: 17px; border-top: 1px solid #D9DEE3; white-space: nowrap; }\n.ds-table td + td, .ds-table th + th { border-left: 1px solid rgb(217 222 227 / 0.6); }\n.ds-table tbody tr:hover td { background: #F4F6F8; }\n.ds-table .ds-num { text-align: right; font-variant-numeric: tabular-nums; }\n.ds-dot { display: inline-block; width: 10px; height: 10px; border-radius: 9999px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25); vertical-align: middle; }\n.ds-magnet-sm { display: inline-block; width: 14px; height: 14px; border-radius: 9999px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.15); }"
     },
     {
       "name": "Sidebar Nav Item",
       "kind": "nav",
       "refersTo": "nav-item",
-      "description": "The ledger's margin: Margin Ink labels on the Margin ground; the active item on Margin Wash in Deep Ink, no accent bar.",
-      "html": "<nav class=\"ds-sidebar\"><div class=\"ds-nav-group\">Sales</div><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 9a3 3 0 0 1 0 6v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3a3 3 0 0 1 0-6V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/><path d=\"M13 5v2\"/><path d=\"M13 17v2\"/><path d=\"M13 11v2\"/></svg>Ticket</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>Members</a></nav>",
-      "css": ".ds-sidebar { display: flex; flex-direction: column; gap: 4px; width: 256px; padding: 8px; background: hsl(var(--sidebar-background, 0 0% 98%)); color: hsl(var(--sidebar-foreground, 240 5.3% 26.1%)); border-right: 1px solid hsl(var(--border)); font-family: Roboto, Nokora, sans-serif; } .ds-nav-group { padding: 8px 12px 4px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: hsl(var(--muted-foreground)); } .ds-nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 500; color: inherit; text-decoration: none; transition: background-color 0.15s, color 0.15s; } .ds-nav-item:hover { background: hsl(var(--sidebar-accent, 240 4.8% 95.9%)); } .ds-nav-item--active { background: hsl(var(--sidebar-accent, 240 4.8% 95.9%)); color: hsl(var(--foreground)); }"
-    },
-    {
-      "name": "Dialog",
-      "kind": "overlay",
-      "description": "A bg-black/80 scrim; a Paper panel with an 8px radius and the Overlay shadow, entering with a fade, 95% zoom and a slide.",
-      "html": "<div class=\"ds-dialog-scrim\"><div class=\"ds-dialog\" role=\"dialog\" aria-modal=\"true\"><div class=\"ds-dialog-header\"><h3 class=\"ds-dialog-title\">Approve transfer request?</h3><button class=\"ds-dialog-close\" type=\"button\" aria-label=\"Close\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg></button></div><p class=\"ds-dialog-body\">Membership #10428 moves to Sok Pisey. This request can only be processed once.</p><div class=\"ds-dialog-footer\"><button class=\"ds-btn-outline\" type=\"button\">Cancel</button><button class=\"ds-btn-success\" type=\"button\">Approve</button></div></div></div>",
-      "css": ".ds-dialog-scrim { position: relative; display: flex; align-items: center; justify-content: center; background: rgb(0 0 0 / 0.8); padding: 16px; } .ds-dialog { width: 100%; max-width: 480px; border-radius: 8px; border: 1px solid hsl(var(--border)); background: hsl(var(--card)); color: hsl(var(--card-foreground)); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); padding: 24px; font-family: Roboto, Nokora, sans-serif; } .ds-dialog-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; } .ds-dialog-title { margin: 0; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.015em; } .ds-dialog-close { border: none; background: transparent; color: hsl(var(--muted-foreground)); padding: 4px; border-radius: 4px; cursor: pointer; } .ds-dialog-close:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); } .ds-dialog-body { margin: 0 0 16px; font-size: 0.875rem; line-height: 1.5; } .ds-dialog-footer { display: flex; justify-content: flex-end; gap: 8px; } .ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; height: 32px; padding: 4px 12px; border-radius: 6px; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25; cursor: pointer; transition: background-color 0.15s, color 0.15s; border: 1px solid hsl(var(--border)); background: hsl(var(--background)); color: hsl(var(--foreground)); } .ds-btn-success { display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; height: 32px; padding: 4px 12px; border-radius: 6px; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25; cursor: pointer; transition: background-color 0.15s, color 0.15s; border: none; background: hsl(var(--success)); color: hsl(var(--primary-foreground)); }"
+      "description": "The board's index on the marker tray: a dot that turns ink when active, the active item on a white chip, no accent bar.",
+      "html": "<nav class=\"ds-side\"><div class=\"ds-side__group\">ម៉ឺនុយ</div><a class=\"ds-side__item ds-side__item--active\" href=\"#\"><i class=\"ds-side__dot\"></i>លក់សំបុត្រ</a><a class=\"ds-side__item\" href=\"#\"><i class=\"ds-side__dot ds-side__dot--off\"></i>សមាជិក</a></nav>",
+      "css": ".ds-side { display: flex; flex-direction: column; gap: 2px; width: 220px; padding: 0.5rem; background: #F4F6F8; border-right: 1px solid #D9DEE3; font-family: Roboto, Nokora, sans-serif; }\n.ds-side__group { padding: 0.5rem 0.75rem 0.25rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: hsl(215 16% 38%); }\n.ds-side__item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #1F2328; text-decoration: none; }\n.ds-side__item--active { background: #FFFFFF; }\n.ds-side__item:hover { background: rgb(255 255 255 / 0.6); }\n.ds-side__dot { width: 8px; height: 8px; border-radius: 9999px; background: #1F2328; }\n.ds-side__dot--off { background: #9CA3AF; }"
     },
     {
       "name": "Printed Slip",
       "kind": "custom",
       "refersTo": "print-slip",
-      "description": "The 405px ticket slip: a 2px black frame, the club's Khmer name, a QR, the code, the date in red, price, and the towel/key line. Paper, not chrome.",
-      "html": "<div class=\"ds-slip\"><div class=\"ds-slip-shop\">មិង ហួរ ក្លឹបហាត់ប្រាណ &amp; អាងហែលទឹក</div><div class=\"ds-slip-branch\">(សាខាចំការដូង)</div><div class=\"ds-slip-qr\"></div><div class=\"ds-slip-code\">TKT-8F3A2C</div><div class=\"ds-slip-date\">04/09/2026 09:12</div><div class=\"ds-slip-row\"><span>អ្នកលក់: Sokha</span><span>$3.00</span></div><hr class=\"ds-slip-rule\" /><div class=\"ds-slip-row\"><span>កន្សែង / កូនសោ:</span><span>________</span></div><div class=\"ds-slip-thanks\">សូមអរគុណ!</div></div>",
-      "css": ".ds-slip { width: 405px; padding: 16px; border: 2px solid #000000; background: #FFFFFF; color: #000000; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; line-height: 1.5; text-align: center; } .ds-slip-shop { font-size: 1.125rem; font-weight: 600; } .ds-slip-branch { margin-bottom: 8px; } .ds-slip-qr { width: 150px; height: 150px; margin: 8px auto; background: repeating-conic-gradient(#000 0 25%, #fff 0 50%) 0 0 / 20px 20px; } .ds-slip-code { font-weight: 600; letter-spacing: 0.08em; } .ds-slip-date { color: #EF4444; margin-bottom: 8px; } .ds-slip-row { display: flex; justify-content: space-between; text-align: left; } .ds-slip-rule { height: 2px; border: none; background: #000000; margin: 8px 0; } .ds-slip-thanks { margin-top: 8px; font-weight: 600; }"
+      "description": "The one component that is not the board: 405px of paper with a 2px black frame, the club's Khmer name, a QR, and the date in the only colour on the sheet.",
+      "html": "<div class=\"ds-slip\"><div class=\"ds-slip__shop\">មិង ហួរ ក្លឹបហាត់ប្រាណ &amp; អាងហែលទឹក</div><div class=\"ds-slip__branch\">(សាខាចំការដូង)</div><div class=\"ds-slip__qr\"></div><div class=\"ds-slip__code\">TKT-8F3A2C</div><div class=\"ds-slip__date\">04/09/2026 09:12</div><div class=\"ds-slip__row\"><span>អ្នកលក់: Sokha</span><span>$3.00</span></div><hr class=\"ds-slip__rule\" /><div class=\"ds-slip__row\"><span>កន្សែង / កូនសោ:</span><span>________</span></div><div class=\"ds-slip__thanks\">សូមអរគុណ!</div></div>",
+      "css": ".ds-slip { width: 405px; padding: 1rem; border: 2px solid #000000; background: #FFFFFF; color: #000000; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; line-height: 1.5; text-align: center; }\n.ds-slip__shop { font-size: 1.125rem; font-weight: 900; line-height: 1.4; }\n.ds-slip__branch { margin-bottom: 0.5rem; }\n.ds-slip__qr { width: 150px; height: 150px; margin: 0.5rem auto; background: repeating-conic-gradient(#000 0 25%, #fff 0 50%) 0 0 / 20px 20px; }\n.ds-slip__code { font-weight: 700; letter-spacing: 0.08em; }\n.ds-slip__date { color: #DC2626; margin-bottom: 0.5rem; }\n.ds-slip__row { display: flex; justify-content: space-between; text-align: left; }\n.ds-slip__rule { height: 2px; border: none; background: #000000; margin: 0.5rem 0; }\n.ds-slip__thanks { margin-top: 0.5rem; font-weight: 700; }"
     }
   ],
   "narrative": {
-    "northStar": "The Counter Ledger",
-    "overview": "The artifact at the centre of this product is the ledger kept at the club's front desk: every sale a line, every member a page, and a slip torn off and handed over with each entry. The interface is that ledger made electronic for a laptop — ruled, compact, unembarrassed about being full of figures — and the slip is still real: a Khmer receipt with a QR code that the gate reads. Where NAN HR's register tracks days and hours, this one tracks entries and dollars, and it inherits the same near-monochrome slate register to do it.\n\nTwo things distinguish it from its siblings. First, the scale: the reference screen is a 1366×768 laptop at a counter with a queue, so controls are 32px, the content pane pads at 12px, and tables have a compact \"ledger\" density tuned line by line for Khmer. Second, the colour: the club has three facilities — swim, gym, steam — and a combination package, and each has a colour that staff read faster than a name. Blue, green, orange and purple are the ledger's index tabs, used on ticket tiles, price rows and chips, and they are the only saturated system beyond the four record-state marks.\n\nThe type system is built for Khmer first: Roboto and Nokora bundled offline, secondary text darkened until it clears 6.5:1 on white, and a caption step with a taller line so stacked Khmer consonants never touch. On paper the same care becomes a HarfBuzz-shaped Noto Sans Khmer on 80mm thermal roll.",
+    "northStar": "The Gym Whiteboard",
+    "overview": "The counter runs on the board behind the desk. Prices are written up in marker, grouped in columns by facility; today's sales are written down underneath as they happen; and every record that is waiting on someone carries a magnet. The interface is that board made electronic — a white field with a faint printed grid, marker-hued headings, thick marker rules between sections, and one amber marker reserved for the action that takes money.\n\nThe colour system is the board's own logic. Four marker hues name the four things the club sells access to — blue for swimming, green for the gym, orange for the steam room, purple for a combination — and they appear as a stripe across the top of a price tile, as a dot beside a name, and nowhere else. Five magnets name the state of a record: done, pending, rejected, informational, and off. Those two systems, plus amber for a commitment, are the entire saturated palette; everything else is ink on board with one hairline.\n\nThe scale is a counter's, not a showroom's. The reference screen is a 1366×768 laptop with a queue at the desk, so controls are 36px, the content pane pads at 12px, and tables run at a compact ledger density tuned line by line for Khmer. Secondary text is deliberately darker than a stock theme would set it, and the caption step carries extra line height, because Khmer stacks subscript consonants that crowd the line beneath. Both faces are bundled with the app; the counter never waits on a network to render a price.",
     "keyCharacteristics": [
-      "Ruled, not boxed — hairline dividers and a wash band do the separating work",
-      "Compact by design: a 32px control scale and a ledger table density for a laptop",
-      "Four facility colours as index tabs, four record-state marks, nothing else saturated",
-      "Khmer-tuned contrast and line height, on screen and on the printed slip",
-      "One amber mark, on the sign-in surface only — the family mark, not the club's",
-      "Flat at rest, sticky header, offcanvas sidebar with an icon rail"
+      "A white board with a printed 24px grid, ruled off in 2px marker between sections.",
+      "Four marker hues for facilities, five magnets for record state, one amber for the commitment.",
+      "Marker weight is real weight: headings and prices are set at 900.",
+      "Compact by design — 36px controls, 12px page padding, a ledger table density.",
+      "Khmer-tuned contrast and line height, on screen and on the printed slip.",
+      "Light-only, laptop-first, with the printed slip as its own paper world."
     ],
     "rules": [
       {
         "name": "The Facility Rule",
-        "body": "Blue, green, orange and purple mean swim, gym, steam and combination — on a ticket tile, a price row, a chip, a report column. They are never chosen per page for variety. The three duplicate palettes in `Ticket.tsx`, `TicketPriceConfig.tsx` and `MemberPriceTable.tsx` (one of which reads a `badge` key that does not exist) are drift to collapse into one definition.",
+        "body": "Blue, green, orange and purple mean swimming, gym, steam and combination — on a tile, a price row, a chip, a report column. They are never chosen per page for variety, and they are defined exactly once, in `frontend/src/lib/facility.ts`. A page that declares its own facility palette is a defect; there were three such copies before this system existed.",
         "section": "colors"
       },
       {
-        "name": "The Four Marks Rule",
-        "body": "Success, Warning, Info and Stop are the complete state palette. A new record state maps onto one of them or is expressed in ink and annotation grey.",
+        "name": "The Two Systems Rule",
+        "body": "A marker hue says what something *is*; a magnet says what state it is *in*. They never swap jobs. A record's status is never coloured with a facility hue, and a facility is never represented by a magnet colour.",
         "section": "colors"
       },
       {
-        "name": "The Grey Ledger Rule",
-        "body": "Chrome is Floor and Paper. The two hundred raw `gray-*` and ninety `black` classes in the pages are the same drift NAN HR had: new work uses `bg-card`, `text-muted-foreground`, `border-border`, and a page touched for other reasons is the moment to convert.",
-        "section": "colors"
-      },
-      {
-        "name": "The Legible Khmer Rule",
-        "body": "Annotation Grey stays at 38% lightness. Lightening it back toward shadcn's default for Latin taste breaks Khmer at caption size, and the detector currently finds no grey-on-colour defects here — keep it that way.",
+        "name": "The Ink Text Rule",
+        "body": "Gym green and steam orange do not clear 4.5:1 on white, so no sentence, label or table cell is ever set in a marker hue. Marker colour lives in dots, stripes and the large price figure; the words stay ink.",
         "section": "colors"
       },
       {
         "name": "The One Amber Rule",
-        "body": "Amber marks the family's sign-in surface and nothing inside the app. It is not a heading, a button variant, a chip or a \"this looks plain\" fix.",
+        "body": "Amber marks the committing action and nothing else — never a heading, a border for emphasis, a chip, or an answer to \"this looks plain\". It is also the only place in the product where a colour carries ink lettering rather than white, and that is deliberate: the contrast floor decides the lettering, not the convention.",
         "section": "colors"
       },
       {
-        "name": "The Palette Restraint Rule",
-        "body": "No gradients on data surfaces. The indigo gradient on the member profile header and the purple-to-pink banner and purple heading in the customer-type report are the three \"AI palette\" findings the detector raises today; they are drift, and a report tile is Paper with a facility chip.",
+        "name": "The Legible Khmer Rule",
+        "body": "Soft ink stays at 38% lightness. Lightening it back toward a stock theme's default for Latin taste breaks Khmer at caption size.",
         "section": "colors"
-      },
-      {
-        "name": "The Dark Mirror Rule",
-        "body": "Every token has a `.dark` counterpart, and thirty- four `dark:` utilities exist, but nothing enables dark mode and a stray `.dark { @apply bg-gray-800 }` conflicts with the token. The app is light-only in practice; do not design for dark here until the toggle exists.",
-        "section": "colors"
-      },
-      {
-        "name": "The Locked Pairing Rule",
-        "body": "Roboto and Nokora are a binding pair. Roboto is flagged by the design detector as an overused face and that flag is knowingly suppressed in `.impeccable/config.json`: the Khmer metric match outranks Latin distinctiveness in a product whose fallback language is Khmer. A proposal to change the Latin face must prove compatibility with Nokora in a compact table row and on the printed slip.",
-        "section": "typography"
-      },
-      {
-        "name": "The Khmer-In-Every-Stack Rule",
-        "body": "Every stack carries a Khmer face — the global rule guarantees it on screen. The print window's `Khmer OS Content` should become Nokora so paper and screen shape Khmer the same way.",
-        "section": "typography"
       },
       {
         "name": "The Caption Floor Rule",
-        "body": "`text-caption` (12px at 1.6) is the small step. Arbitrary `text-[12px]`, `text-[10px]` and `text-[9px]` sizes are drift except on the printed slips, which are paper, not chrome, and are recorded in `.impeccable/config.json`.",
+        "body": "`text-caption` at 0.75rem is the smallest type on screen. Arbitrary `text-[Npx]` sizes are drift; the printed slips are the sole exception, because they are paper calibrated to a thermal raster rather than to this ramp.",
         "section": "typography"
       },
       {
-        "name": "The Black Price Rule",
-        "body": "Black weight is for the price on a ticket tile. Six uses today, all of them that; a seventh anywhere else is a defect.",
+        "name": "The Marker Weight Rule",
+        "body": "Weight 900 belongs to headings and to the price on a tile. It is the system's way of writing in marker, and spending it anywhere else makes the board shout.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Money, counts, dates in a column and ticket codes are set with tabular numerals, and money is formatted through one helper (`frontend/src/lib/money.ts`) rather than per page.",
+        "section": "typography"
+      },
+      {
+        "name": "The Bundled Face Rule",
+        "body": "Both faces ship with the application. A new face must be added to `@fontsource` and bundled, never referenced from a CDN, and must prove it sits with Nokora in a compact table row and on the printed slip.",
         "section": "typography"
       },
       {
         "name": "The Laptop Rule",
-        "body": "Design at 1366×768. Thirty-two-pixel controls, twelve-pixel page padding, compact table density. A component that only works at 1920 is wrong here.",
+        "body": "Design at 1366×768. A component that only works at 1920 is wrong here.",
         "section": "layout"
       },
       {
-        "name": "The One Card Rule",
-        "body": "Every list, CRUD and report route is one Card with one title and one DataTable. Nested cards are how a dense page becomes an unreadable page.",
+        "name": "The Board Header Rule",
+        "body": "Every surface opens with the same header block and closes it with a 2px ink rule. It is a masthead, not an eyebrow: the club name and the date share a baseline, and the page title sits on the row below.",
+        "section": "layout"
+      },
+      {
+        "name": "The Register Above The Fold Rule",
+        "body": "On the sale surface, today's board must begin within the first viewport at the reference size. Tile columns give up height for it.",
         "section": "layout"
       },
       {
         "name": "The Two Densities Rule",
-        "body": "A table is either comfortable (uppercase tracked caption headers, zebra rows, `py-1.5`) or compact (the Notion-style ledger: `text-caption` headers in sentence case, `py-[3px]` rows at `17px` leading, tabular figures, vertical hairlines, no zebra). The choice is made per table in `tableDensity.ts`, never per cell.",
+        "body": "A table is comfortable or compact, chosen once in the density module, never adjusted per cell.",
         "section": "layout"
       },
       {
-        "name": "The Column Priority Rule",
-        "body": "Narrow screens drop columns by importance or stack the row as a card; they never wrap figures.",
-        "section": "layout"
-      },
-      {
-        "name": "The Flat-At-Rest Rule",
-        "body": "If it does not float, it has no shadow. Cards and table shells get `border border-border`.",
+        "name": "The Flat Board Rule",
+        "body": "If it is a surface, it has no shadow — cards and tables take `border border-rule`. If it is an object on the board, it may. The magnet is the only object.",
         "section": "elevation"
       },
       {
-        "name": "The Scrim-Not-Shadow Rule",
-        "body": "Dialog separation is the `bg-black/80` scrim's job; reach for it before a heavier shadow.",
-        "section": "elevation"
-      },
-      {
-        "name": "The One Rule Weight Rule",
-        "body": "1px, `{colors.rule}`, everywhere on screen except the ticket tile's facility edge.",
+        "name": "The Marker Stroke Rule",
+        "body": "A thick line is a marker stroke and means a section boundary or a product's identity. Nothing else gets one; there is no accent border on a card.",
         "section": "shapes"
       },
       {
         "name": "The Radius Ladder Rule",
-        "body": "Controls 6px, tables and dialogs 8px, cards and tiles 12px, chips full. A container never rounds tighter than the control inside it.",
-        "section": "shapes"
-      },
-      {
-        "name": "The Slip Rule",
-        "body": "The printed slip has square corners, a 2px black frame, black text on white and 2px rules. It is paper: no radius, no grey, no tint that a thermal printer would fade.",
+        "body": "Controls 6px, tables and dialogs 8px, tiles and cards 12px, magnets and chips full. A container never rounds tighter than the control inside it.",
         "section": "shapes"
       },
       {
         "name": "The Confirming Motion Rule",
-        "body": "No entrance animation on a table row or a tile, no attention-seeking loop, no bouncy easing. This is an eight-hour tool.",
+        "body": "No entrance animation on a table row or a price tile, no attention-seeking loop, no bouncy easing. This is an eight-hour tool with a queue in front of it.",
         "section": "components"
       },
       {
-        "name": "The Keyframe Home Rule",
-        "body": "Keyframes live in `tailwind.config.cjs` or `index.css`. `animate-shimmer`, `animate-fade`, `animate-slide`, `animate-step-in` and `animate-fadeIn` are used but defined nowhere — they do nothing today. Define them in the config or remove the classes.",
+        "name": "The Declared Keyframe Rule",
+        "body": "An animation class must have a keyframe behind it. Several classes in this codebase once animated nothing at all; a class without a declared keyframe is a defect, and keyframes live in `tailwind.config.cjs` or `index.css`, never inside a page.",
         "section": "components"
       }
     ],
     "dos": [
-      "colour a ticket tile, price row or chip by its facility — swim blue, gym green, steam orange, combo purple — from one shared definition.",
-      "map a record's state onto Success, Warning, Info or Stop, and use the matching button variant for the action that produces it.",
-      "keep controls at `32px` and page padding at `12px`; this is a laptop tool.",
-      "pick a table's density once, in `tableDensity.ts`, and set every money and count column in Figure with `tabular-nums`, right-aligned.",
-      "keep Annotation Grey at 38% lightness and `text-caption` at 1.6 line height; check a Khmer header cell before calling a table done.",
-      "give resting cards and table shells `border border-border` and no shadow; reserve shadow for the sticky header, dialogs and dropdowns.",
-      "keep the printed slip black on white with square corners and 2px rules.",
-      "use the token classes (`bg-card`, `text-muted-foreground`, `border-border`) instead of `gray-*` and `black` on new work.",
-      "reach for a shadcn primitive in `frontend/src/components/ui/` before writing one, and delete `_ui-backup-pre-nanhr/` rather than consulting it."
+      "take facility colour from `lib/facility.ts` and nowhere else, and let a combination tile show its stripes side by side.",
+      "say what state a record is in with a magnet, and what a product is with a marker hue.",
+      "keep controls at 36px and page padding at 12px; this is a laptop tool.",
+      "put ink lettering on amber, and reserve amber for the one committing action on a surface.",
+      "set a product name, a label and a table cell in ink, whatever colour its facility is.",
+      "open every surface with the board header and close the block with a 2px ink rule.",
+      "keep today's board inside the first viewport on the sale surface, even at the cost of visible tiles.",
+      "name a panel's scope when the figures beside it and the rows beneath it come from different queries.",
+      "set money through the shared formatter and every compared figure in tabular numerals.",
+      "keep soft ink at 38% and the caption step at 1.6 line height, and check a Khmer header before calling a table done.",
+      "keep the printed slip black on white with square corners and 2px rules."
     ],
     "donts": [
-      "use a gradient on a data surface; the profile header and the customer-type banner are the drift the detector already names.",
-      "define a facility palette in a page; three copies exist and one reads a key that is not there.",
-      "use black weight anywhere but the price on a ticket tile.",
-      "use an arbitrary `text-[Npx]` size on screen; `text-caption` is the floor and the slip is the only exception.",
-      "add a fifth saturated hue outside the four facilities and four marks; purple belongs to combination packages, not to headings.",
-      "use amber inside the app; it is the sign-in mark.",
-      "put a thick or coloured border on a card; the ticket tile's facility edge is the one exception.",
-      "use an animation class that has no keyframe, or declare a keyframe inside a page.",
-      "design for dark mode until a toggle exists and the stray `.dark` rule is removed.",
-      "introduce a fifth icon library; four already coexist (Heroicons, Lucide, react-icons, Headless UI). Lucide is the shadcn default; converge on it.",
-      "let a table wrap or shrink its figures on narrow screens; drop columns by priority or stack the row."
+      "declare a facility palette inside a page.",
+      "set text in gym green or steam orange; they do not clear 4.5:1 on white.",
+      "put white lettering on amber.",
+      "use amber for a heading, a chip, a border or a background.",
+      "use the black weight anywhere but a heading and a tile price.",
+      "add a shadow to a card or a table shell. The magnet and the sticky navbar are the only things that lift.",
+      "put a thick or coloured border on a card; the 2px section rule and the 3px tile stripe are the only heavy lines.",
+      "use an arbitrary `text-[Npx]` size on screen; the printed slip is the only exception.",
+      "ship an animation class with no keyframe behind it, or declare a keyframe inside a page.",
+      "let a table wrap or shrink its figures on narrow screens; drop columns by priority or stack the row.",
+      "design for dark mode. The board is light-only and the stray `.dark` rule that once contradicted the tokens has been removed.",
+      "add a fifth icon library. Lucide is the direction of travel; a file being touched moves toward it."
     ]
   }
 }

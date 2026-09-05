@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ColumnFiltersState,
   FilterFn,
@@ -42,10 +42,10 @@ type AvatarCellProps = { display_name: string; username: string; imageUrl: strin
 export function AvatarCell({ display_name, username, imageUrl }: AvatarCellProps) {
   return (
     <div className="flex items-center gap-3">
-      <img className="h-8 w-8 rounded-full object-cover" src={imageUrl} alt="" />
+      <img className="h-8 w-8 rounded-full border border-rule object-cover" src={imageUrl} alt="" />
       <div>
-        <div className="text-sm font-medium">{display_name}</div>
-        <div className="text-xs text-muted-foreground">{username}</div>
+        <div className="text-sm font-medium text-ink">{display_name}</div>
+        <div className="text-xs text-ink-soft">{username}</div>
       </div>
     </div>
   );
@@ -54,9 +54,9 @@ export function AvatarCell({ display_name, username, imageUrl }: AvatarCellProps
 // ─── Sort icon ────────────────────────────────────────────────────────────────
 
 function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
-  if (sorted === "asc")  return <ArrowUp className="h-3 w-3 ml-1" />;
-  if (sorted === "desc") return <ArrowDown className="h-3 w-3 ml-1" />;
-  return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
+  if (sorted === "asc")  return <ArrowUp className="ml-1 h-3 w-3" aria-hidden="true" />;
+  if (sorted === "desc") return <ArrowDown className="ml-1 h-3 w-3" aria-hidden="true" />;
+  return <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" aria-hidden="true" />;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -66,13 +66,14 @@ interface IChildProps {
   columns: any;
 }
 
+/** The member's ledgers: a compact tanstack table in the board's table shell. */
 export default function DataTable({ columns, data }: IChildProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
 
   const table = useReactTable({
-    data,
+    data: data ?? [],
     columns,
     filterFns: { fuzzy: fuzzyFilter },
     state: { columnFilters, globalFilter, columnVisibility },
@@ -92,20 +93,17 @@ export default function DataTable({ columns, data }: IChildProps) {
   useEffect(() => { table.setPageSize(20); }, [table]);
 
   return (
-    <div className="rounded-lg border overflow-hidden">
+    <div className="overflow-hidden rounded-lg border border-rule bg-card">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id} className="bg-muted/50 hover:bg-muted/50">
+              <TableRow key={hg.id} className="hover:bg-transparent">
                 {hg.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2.5"
-                  >
+                  <TableHead key={header.id}>
                     {header.isPlaceholder ? null : (
                       <div
-                        className={`flex items-center ${header.column.getCanSort() ? "cursor-pointer select-none hover:text-foreground" : ""}`}
+                        className={`flex items-center ${header.column.getCanSort() ? "cursor-pointer select-none hover:text-ink" : ""}`}
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -122,15 +120,15 @@ export default function DataTable({ columns, data }: IChildProps) {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground text-sm">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-ink-soft">
                   គ្មានទិន្នន័យ
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="hover:bg-muted/30">
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-3 py-2 text-sm">
+                    <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

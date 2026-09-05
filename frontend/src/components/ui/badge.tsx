@@ -3,22 +3,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * A neutral label written on the board (an age group, a count, a tag).
+ * Record states are not badges — they are magnets: see components/board/MagnetChip.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full px-2 py-0.5 text-caption font-medium leading-[1.4] transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+        default: "bg-ink text-white",
+        secondary: "bg-tray text-ink",
+        destructive: "bg-magnet-rejected text-white",
+        outline: "border border-rule bg-card text-ink",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "outline",
     },
   }
 )

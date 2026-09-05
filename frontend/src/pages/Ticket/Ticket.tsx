@@ -1,15 +1,27 @@
-// @ts-nocheck
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { ComponentToPrint } from "../../components/ComponentToPrint/index";
 import { v4 as uuidv4 } from "uuid";
 import { gql, useQuery } from "@apollo/client";
 import { useCreateTicketPaymentMutation } from "../../generated/graphql";
-import { Button } from "@/components/ui/Button";
 import { TypeOptions, toast } from "react-toastify";
-import { Ticket as TicketIcon, Loader2, Settings2 } from "lucide-react";
+import { Settings2, Ticket as TicketIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { PriceTile } from "@/components/board/PriceTile";
+import { TodayBoard, type BoardLine, type TallyRow } from "@/components/board/TodayBoard";
+import { FacilityDot } from "@/components/board/FacilityMark";
+import { FACILITIES, FACILITY_ORDER, facilityColumn, facilityColor } from "@/lib/facility";
+import { todayIso } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import TicketPriceConfigPage from "../TicketConfig/TicketPriceConfig";
+
+/** The desktop shell's print bridge; absent in a plain browser. */
+const printBridge = () =>
+  (window as unknown as { electronAPI?: { printComponent1?: (url: string, cb: (r: unknown) => void) => void; printComponent?: (url: string, cb: (r: unknown) => void) => void } })
+    .electronAPI;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -19,13 +31,31 @@ const notify = (message: string, auto_Close: boolean | number, toastType: TypeOp
   }
 };
 
-const datetime_format = (date_time: string) => {
+const datetime_format = (date_time: string | Date) => {
   const date = new Date(date_time);
   return (
     date.toLocaleDateString("fr-CA") +
     " " +
     date.toLocaleTimeString(navigator.language, { hour: "2-digit", minute: "2-digit" })
   );
+};
+
+/** Today's lines at this counter survive a page change but not the day. */
+const linesKey = () => `board-lines:${todayIso()}`;
+const readLines = (): BoardLine[] => {
+  try {
+    const raw = sessionStorage.getItem(linesKey());
+    return raw ? (JSON.parse(raw) as BoardLine[]) : [];
+  } catch {
+    return [];
+  }
+};
+const writeLines = (lines: BoardLine[]) => {
+  try {
+    sessionStorage.setItem(linesKey(), JSON.stringify(lines.slice(0, 200)));
+  } catch {
+    /* storage full or unavailable: the board just does not persist */
+  }
 };
 
 // ─── GraphQL ─────────────────────────────────────────────────────────────────
@@ -39,47 +69,79 @@ const GET_TICKET_CONFIGS = gql`
   }
 `;
 
-// ─── Facility colour palette (mirrors config page) ───────────────────────────
-
-const FACILITY_COLORS: Record<string, { header: string; card: string; hover: string; text: string; dot: string }> = {
-  SWIM:  { header: "bg-blue-500",   card: "bg-blue-50 border-blue-200 hover:border-blue-400",   hover: "hover:bg-blue-100",  text: "text-blue-600",  dot: "bg-blue-400" },
-  GYM:   { header: "bg-green-500",  card: "bg-green-50 border-green-200 hover:border-green-400", hover: "hover:bg-green-100", text: "text-green-600", dot: "bg-green-400" },
-  STEAM: { header: "bg-orange-500", card: "bg-orange-50 border-orange-200 hover:border-orange-400", hover: "hover:bg-orange-100", text: "text-orange-600", dot: "bg-orange-400" },
-};
-
-const facilityColor = (code: string) =>
-  FACILITY_COLORS[code] ?? {
-    header: "bg-gray-500", card: "bg-gray-50 border-gray-200 hover:border-gray-400",
-    hover: "hover:bg-gray-100", text: "text-gray-600", dot: "bg-gray-400",
-  };
+// The same aggregate the income report reads: how many tickets at each price
+// today, every seller. Keeps the board's tally and the report on one row set.
+const TODAY_TALLY = gql`
+  query BoardTicketTally($dateFrom: String!, $dateTo: String!, $userId: Float!) {
+    GetTicketPayment(dateFrom: $dateFrom, dateTo: $dateTo, userId: $userId) {
+      price
+      qty
+    }
+  }
+`;
 
 // ─── Sale tab ────────────────────────────────────────────────────────────────
 
 function TicketSale() {
+  const { t } = useTranslation();
   const [uuid, setUuid] = useState("");
   const [price, setPrice] = useState(0);
   const [seller, setSeller] = useState("");
   const [activeId, setActiveId] = useState<number | null>(null);
+  const [lines, setLines] = useState<BoardLine[]>(() => readLines());
 
   const { data: configData, loading: configLoading } = useQuery(GET_TICKET_CONFIGS, {
     fetchPolicy: "no-cache",
   });
 
+  const today = todayIso();
+  const { data: tallyData, loading: tallyLoading, refetch: refetchTally } = useQuery(TODAY_TALLY, {
+    variables: { dateFrom: today, dateTo: today, userId: 0 },
+    fetchPolicy: "network-only",
+  });
+
   const allConfigs: any[] = configData?.GetTicketPriceConfigs ?? [];
 
-  // Colour for a config: use first facility's code (primary colour)
-  const primaryColor = (cfg: any) =>
-    facilityColor(cfg.facilities?.[0]?.code ?? "");
+  // The four fixed columns of the board, each owned by a facility; a product
+  // that grants more than one facility is written in the combination column.
+  const columns = useMemo(
+    () =>
+      FACILITY_ORDER.map((code) => ({
+        code,
+        meta: FACILITIES[code],
+        label: t(`ticket.column.${code.toLowerCase()}`),
+        tiles: allConfigs
+          .filter((cfg) => facilityColumn(cfg.facilities) === code)
+          .sort((a, b) => a.price - b.price),
+      })),
+    [allConfigs, t]
+  );
+
+  // Today's tally, coloured by the tile that sells at that price.
+  const tally: TallyRow[] = useMemo(() => {
+    const rows = (tallyData?.GetTicketPayment ?? []) as { price: number | string; qty: number | string }[];
+    return rows
+      .map((row) => ({
+        price: Number(row.price),
+        qty: Number(row.qty),
+        facilities: allConfigs.find((c) => Number(c.price) === Number(row.price))?.facilities ?? [],
+      }))
+      .sort((a, b) => a.price - b.price);
+  }, [tallyData, allConfigs]);
+
+  useEffect(() => {
+    writeLines(lines);
+  }, [lines]);
 
   const componentRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handlePrint1 = async (target: HTMLIFrameElement) => {
     return new Promise(() => {
-      const data = target.contentWindow.document.documentElement.outerHTML;
+      const data = target.contentWindow!.document.documentElement.outerHTML;
       const blob = new Blob([data], { type: "text/html; charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      window.electronAPI.printComponent1(url, (response: any) => {
+      printBridge()?.printComponent1?.(url, (response) => {
         console.log("Main: ", response);
       });
     });
@@ -97,14 +159,15 @@ function TicketSale() {
   const handleSelect = async (cfg: any) => {
     setActiveId(cfg.config_id);
     setPrice(cfg.price);
-    setSeller(localStorage.getItem("display_name") || "");
+    const sellerName = localStorage.getItem("display_name") || "";
+    setSeller(sellerName);
     const uid = (await uuidv4()).slice(0, 16);
     setUuid(uid);
-    buttonRef.current.click();
+    buttonRef.current?.click();
 
     const result = await createTicketPayment({
       variables: {
-        userId: parseInt(localStorage.getItem("user_id")),
+        userId: parseInt(localStorage.getItem("user_id") ?? "0"),
         price: cfg.price,
         ticketCode: uid + "Ticket",
       },
@@ -112,105 +175,101 @@ function TicketSale() {
 
     if (result.data?.CreateTicketPayment.success) {
       notify("Success", true, "success");
+      // The board gains a line.
+      setLines((prev) => [
+        {
+          id: uid,
+          at: new Date().toISOString(),
+          seller: sellerName,
+          code: uid + "Ticket",
+          facilities: cfg.facilities ?? [],
+          amount: cfg.price,
+          printed: true,
+        },
+        ...prev,
+      ]);
+      refetchTally();
       await new Promise((r) => setTimeout(r, 700));
     } else {
-      notify(result.errors, 5000, "error");
+      notify(String(result.errors ?? "Error"), 5000, "error");
     }
     setActiveId(null);
+  };
+
+  // The hidden slip still holds the newest sale's code, price and seller, so
+  // "print again" is the same print with the same paper.
+  const handlePrintAgain = () => {
+    if (!uuid) return;
+    buttonRef.current?.click();
   };
 
   const isLoading = activeId !== null;
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-cyan-100 rounded-lg">
-          <TicketIcon className="h-5 w-5 text-cyan-600" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">លក់សំបុត្រ</h1>
-          <p className="text-sm text-muted-foreground">ជ្រើសរើសតម្លៃ — ប្រព័ន្ធដំណើរការដោយស្វ័យប្រវត្តិ</p>
-        </div>
-      </div>
+      <BoardHeader titleKey="menu.sellTicket" subtitle={t("board.sellHint")} />
 
       {/* Hidden print button */}
       <button ref={buttonRef} className="hidden" onClick={handlePrint} />
 
       {configLoading ? (
-        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-28 rounded-xl bg-muted animate-pulse" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" role="status" aria-live="polite">
+          {FACILITY_ORDER.map((code) => (
+            <div key={code} className="rounded-lg border border-rule bg-card p-3">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="mt-4 h-28 w-40 rounded-xl" />
+              <Skeleton className="mt-3 h-28 w-40 rounded-xl" />
+            </div>
           ))}
         </div>
       ) : allConfigs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-20 gap-3">
-          <TicketIcon className="h-10 w-10 text-muted-foreground/40" />
-          <p className="font-medium text-muted-foreground">មិនទាន់មានតម្លៃ Ticket</p>
-          <p className="text-xs text-muted-foreground text-center max-w-xs">
-            Admin ត្រូវចូលទៅ <strong>កំណត់តម្លៃ Ticket</strong> ដើម្បីបន្ថែម
-          </p>
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule bg-card py-16">
+          <TicketIcon className="h-8 w-8 text-ink-soft" aria-hidden="true" />
+          <p className="font-semibold text-ink">{t("board.noPrices")}</p>
+          <p className="text-caption text-ink-soft">{t("board.noPricesHint")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 gap-3">
-          {allConfigs.map((cfg) => {
-            const colors = primaryColor(cfg);
-            const busy = activeId === cfg.config_id;
-            const isMulti = cfg.facilities?.length > 1;
-            return (
-              <button
-                key={cfg.config_id}
-                disabled={isLoading}
-                onClick={() => handleSelect(cfg)}
-                className={`
-                  relative flex flex-col items-center justify-center gap-1.5
-                  rounded-xl border-2 p-3 h-32 transition-all
-                  ${colors.card}
-                  ${isLoading && !busy ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                  ${busy ? "scale-95 shadow-inner" : "hover:shadow-md active:scale-95"}
-                `}
-              >
-                {busy ? (
-                  <Loader2 className={`h-7 w-7 animate-spin ${colors.text}`} />
-                ) : (
-                  <>
-                    {/* Price */}
-                    <span className={`text-3xl font-black ${colors.text}`}>
-                      ${cfg.price}
-                    </span>
-
-                    {/* Facility badges */}
-                    <div className="flex flex-wrap justify-center gap-0.5">
-                      {cfg.facilities?.map((f: any) => {
-                        const fc = facilityColor(f.code);
-                        return (
-                          <span key={f.facility_id} className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${fc.badge}`}>
-                            {f.name}
-                          </span>
-                        );
-                      })}
-                    </div>
-
-                    {/* Age group */}
-                    {cfg.age_group && (
-                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
-                        {cfg.age_group}
-                      </span>
-                    )}
-
-                    {/* Label */}
-                    {cfg.label && (
-                      <span className="text-[10px] text-muted-foreground text-center leading-tight px-1">
-                        {cfg.label}
-                      </span>
-                    )}
-                  </>
-                )}
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {columns.map((col) => (
+            <section
+              key={col.code}
+              aria-label={col.label}
+              className={cn("min-w-0 rounded-lg border border-rule p-3", col.meta.tint)}
+            >
+              <header className="flex items-center gap-2">
+                <FacilityDot code={col.code} size={12} />
+                <h2 className="marker-caps text-ink">{col.label}</h2>
+                <span className="ml-auto text-caption text-ink-soft">{col.tiles.length}</span>
+              </header>
+              <div className="mt-2 h-0.5 rounded-full" style={{ background: facilityColor(col.code) }} />
+              {col.tiles.length === 0 ? (
+                <p className="py-6 text-center text-caption text-ink-soft">{t("board.emptyColumn")}</p>
+              ) : (
+                <div className="mt-3 flex flex-wrap items-stretch gap-3 md:max-h-[calc(100vh-32rem)] md:overflow-y-auto md:pb-1">
+                  {col.tiles.map((cfg) => (
+                    <PriceTile
+                      key={cfg.config_id}
+                      price={cfg.price}
+                      ageGroup={cfg.age_group}
+                      facilities={cfg.facilities}
+                      busy={activeId === cfg.config_id}
+                      disabled={isLoading && activeId !== cfg.config_id}
+                      onSelect={() => handleSelect(cfg)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          ))}
         </div>
       )}
+
+      <TodayBoard
+        lines={lines}
+        tally={tally}
+        tallyLoading={tallyLoading}
+        onPrintAgain={uuid ? handlePrintAgain : undefined}
+      />
 
       {/* Hidden print template */}
       <div className="hidden">
@@ -229,6 +288,7 @@ function TicketSale() {
 // ─── Page: Sale + Config tabs (Config is Admin-only) ─────────────────────────
 
 export default function Ticket() {
+  const { t } = useTranslation();
   const role = (typeof localStorage !== "undefined" && localStorage.getItem("role")) || "";
   const isAdmin = role === "Admin";
 
@@ -238,11 +298,11 @@ export default function Ticket() {
   return (
     <Tabs defaultValue="sale" className="space-y-4">
       <TabsList>
-        <TabsTrigger value="sale" className="gap-2">
-          <TicketIcon className="h-4 w-4" /> លក់សំបុត្រ
+        <TabsTrigger value="sale">
+          <TicketIcon aria-hidden="true" /> {t("ticket.sale")}
         </TabsTrigger>
-        <TabsTrigger value="config" className="gap-2">
-          <Settings2 className="h-4 w-4" /> កំណត់តម្លៃ
+        <TabsTrigger value="config">
+          <Settings2 aria-hidden="true" /> {t("ticket.priceSetup")}
         </TabsTrigger>
       </TabsList>
 

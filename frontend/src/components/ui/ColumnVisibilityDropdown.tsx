@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckIcon as Check, ViewColumnsIcon as Columns3 } from '@heroicons/react/24/outline';
+import { Check, Columns3 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export interface ColumnVisibilityItem {
@@ -58,15 +58,16 @@ export function ColumnVisibilityDropdown({
         type="button"
         onClick={() => setOpen(!open)}
         title={t('ui.columns.showOrHide')}
+        aria-expanded={open}
         className={cn(
-          'inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-md border border-input bg-background px-3 text-xs font-medium md:text-sm ring-offset-background transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+          'inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-md border border-rule bg-card px-3 text-sm font-medium text-ink ring-offset-background transition-colors hover:bg-tray focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
           triggerClassName
         )}
       >
-        <Columns3 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+        <Columns3 className="size-4" aria-hidden="true" />
         <span>{resolvedLabel}</span>
         {hiddenCount > 0 && (
-          <span className="rounded-full bg-primary/10 px-1.5 text-caption font-semibold text-primary">
+          <span className="rounded-full bg-ink px-1.5 text-caption font-semibold text-white">
             {columns.length - hiddenCount}/{columns.length}
           </span>
         )}
@@ -75,14 +76,14 @@ export function ColumnVisibilityDropdown({
       {open && (
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute right-0 z-50 mt-1 w-56 rounded-md border border-border bg-popover shadow-md animate-in fade-in-0 zoom-in-95"
+          className="absolute right-0 z-50 mt-1 w-56 rounded-md border border-rule bg-popover shadow-overlay animate-in fade-in-0 zoom-in-95"
         >
-          <div className="flex items-center justify-between border-b border-border px-3 py-1.5">
+          <div className="flex items-center justify-between border-b border-rule px-3 py-1.5">
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={showAll}
-              className="text-xs text-primary hover:underline"
+              className="text-xs font-medium text-ink hover:underline"
             >
               {t('ui.columns.showAll')}
             </button>
@@ -90,7 +91,7 @@ export function ColumnVisibilityDropdown({
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={hideAll}
-              className="text-xs text-muted-foreground hover:underline"
+              className="text-xs text-ink-soft hover:underline"
             >
               {t('ui.columns.hideAll')}
             </button>
@@ -105,11 +106,11 @@ export function ColumnVisibilityDropdown({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => toggle(column.key)}
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                  className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-ink hover:bg-tray"
                 >
                   <div
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
-                      isVisible ? 'border-primary bg-primary text-primary-foreground' : 'border-input'
+                      isVisible ? 'border-ink bg-ink text-white' : 'border-rule'
                     }`}
                   >
                     {isVisible && <Check className="h-3 w-3" />}

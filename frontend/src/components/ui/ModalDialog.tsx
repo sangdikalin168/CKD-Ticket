@@ -1,6 +1,6 @@
 import React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { XMarkIcon as X } from '@heroicons/react/24/outline';
+import { X } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '../../lib/utils';
 import { useOverlay } from './OverlayStack';
@@ -69,20 +69,20 @@ export const Dialog: React.FC<DialogProps> = ({
         {/* Content nests inside Overlay (Radix scrollable-overlay pattern) so
             the flex centering + edge padding layout carries over unchanged. */}
         <DialogPrimitive.Overlay
-          className="fixed inset-0 bg-black/60 flex items-center justify-center animate-fadeIn p-2 sm:p-4"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4"
           style={{ height: '100dvh', zIndex }}
         >
           <DialogPrimitive.Content
             aria-describedby={undefined}
             onEscapeKeyDown={(e) => { if (!isTopmost) e.preventDefault(); }}
             className={cn(
-              'bg-card rounded-lg shadow-xl border border-border w-full flex flex-col animate-slideUp focus:outline-none',
+              'bg-card rounded-xl shadow-overlay border border-rule w-full flex flex-col focus:outline-none',
               maxWidthClasses[maxWidth]
             )}
             style={{ maxHeight: 'calc(100dvh - 16px)' }}
           >
-            <div className="flex justify-between items-center p-3 sm:p-4 md:p-6 border-b border-border shrink-0">
-              <DialogPrimitive.Title className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+            <div className="flex justify-between items-center p-3 sm:p-4 md:p-6 border-b-2 border-ink shrink-0">
+              <DialogPrimitive.Title className="text-title font-black text-ink">
                 {title}
               </DialogPrimitive.Title>
               <DialogPrimitive.Close
@@ -108,7 +108,7 @@ export interface DialogFooterProps {
 
 export const DialogFooter: React.FC<DialogFooterProps> = ({ children }) => {
   return (
-    <div className="mt-4 sm:mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-card pt-3 sm:pt-4 border-t border-border -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 pb-0">
+    <div className="mt-4 sm:mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-card pt-3 sm:pt-4 border-t border-rule -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 pb-0">
       {children}
     </div>
   );
@@ -163,14 +163,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <DialogPrimitive.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fadeIn"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center"
           style={{ zIndex }}
         >
           <DialogPrimitive.Content
             onEscapeKeyDown={(e) => { if (!isTopmost) e.preventDefault(); }}
-            className="bg-card p-6 rounded-lg shadow-xl border border-border max-w-md w-full mx-4 focus:outline-none"
+            className="bg-card p-6 rounded-xl shadow-overlay border border-rule max-w-md w-full mx-4 focus:outline-none"
           >
-            <DialogPrimitive.Title className="text-xl font-semibold text-foreground mb-4">
+            <DialogPrimitive.Title className="text-title font-black text-ink mb-4">
               {title ?? 'បញ្ជាក់សកម្មភាព'}
             </DialogPrimitive.Title>
             <DialogPrimitive.Description className="text-muted-foreground mb-6">

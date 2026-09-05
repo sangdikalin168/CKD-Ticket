@@ -2,6 +2,11 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * The hand-built ledger table. Compact density by default (see
+ * ui/tableDensity.ts): ~24 rows on a 1366x768 screen. Header on the tray,
+ * hairline rows, no zebra.
+ */
 const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
@@ -9,7 +14,7 @@ const Table = React.forwardRef<
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm text-ink", className)}
       {...props}
     />
   </div>
@@ -20,7 +25,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead ref={ref} className={cn("bg-tray [&_tr]:border-b [&_tr]:border-rule", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -43,7 +48,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+      "border-t-2 border-ink bg-tray font-medium [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -58,7 +63,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "border-b border-rule/60 transition-colors hover:bg-tray/60 data-[state=selected]:bg-tray",
       className
     )}
     {...props}
@@ -73,9 +78,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      // Compact density (see ui/tableDensity.ts): fits ~24 rows on a
-      // 1366x768 screen instead of 10. Pass className to override per table.
-      "px-2 py-1 text-caption normal-case tracking-normal text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      "px-2 py-1 text-left align-middle text-caption font-medium normal-case tracking-normal text-ink-soft [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -91,7 +94,7 @@ const TableCell = React.forwardRef<
     ref={ref}
     className={cn(
       // leading-[19px] (not 17px) so Khmer subscripts clear the row below.
-      "px-2 py-[3px] text-caption leading-[19px] tabular-nums align-middle [&:has([role=checkbox])]:pr-0",
+      "px-2 py-[3px] align-middle text-caption leading-[19px] tabular-nums [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -105,7 +108,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    className={cn("mt-4 text-sm text-ink-soft", className)}
     {...props}
   />
 ))

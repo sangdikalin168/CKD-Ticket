@@ -1,17 +1,20 @@
-// @ts-nocheck
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2, Plus, Pencil, Settings2, Info, X, Image as ImageIcon } from "lucide-react";
+import { Trash2, Plus, Pencil, Settings2, X, Image as ImageIcon } from "lucide-react";
 import { toast } from "react-toastify";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { PriceTile } from "@/components/board/PriceTile";
+import { FacilityDot } from "@/components/board/FacilityMark";
+import { facilityByCode } from "@/lib/facility";
+import { cn } from "@/lib/utils";
 
 // ─── GraphQL ────────────────────────────────────────────────────────────────
 
@@ -40,27 +43,7 @@ const DELETE_CONFIG = gql`
   }
 `;
 
-// ─── Colour palette ──────────────────────────────────────────────────────────
-
-const COLORS: Record<string, { bg: string; badge: string; dot: string; check: string }> = {
-  SWIM:  { bg: "bg-blue-50 border-blue-200",   badge: "bg-blue-100 text-blue-700",    dot: "bg-blue-400",   check: "border-blue-400" },
-  GYM:   { bg: "bg-green-50 border-green-200",  badge: "bg-green-100 text-green-700",  dot: "bg-green-400",  check: "border-green-400" },
-  STEAM: { bg: "bg-orange-50 border-orange-200",badge: "bg-orange-100 text-orange-700",dot: "bg-orange-400", check: "border-orange-400" },
-};
-const fallback = { bg: "bg-gray-50 border-gray-200", badge: "bg-gray-100 text-gray-700", dot: "bg-gray-400", check: "border-gray-400" };
-const color = (code: string) => COLORS[code] ?? fallback;
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const dotRow = (facilities: any[]) => (
-  <div className="flex flex-wrap gap-1">
-    {facilities.map((f) => (
-      <span key={f.facility_id} className={`text-xs font-medium px-2 py-0.5 rounded-full ${color(f.code).badge}`}>
-        {f.name}
-      </span>
-    ))}
-  </div>
-);
+const AGE_GROUPS = ["កុមារ", "មនុស្សពេញវ័យ", "ចាស់"];
 
 // Resize an uploaded image to a small base64 JPEG (keeps DB + transport light).
 function fileToResizedDataUrl(file: File, maxSize = 512, quality = 0.72): Promise<string> {
@@ -85,23 +68,42 @@ function fileToResizedDataUrl(file: File, maxSize = 512, quality = 0.72): Promis
   });
 }
 
+/** A selectable choice written on the board: outline at rest, ink when chosen. */
+function Choice({ active, onClick, children, className }: any) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray",
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function TicketPriceConfigPage() {
+  const { t } = useTranslation();
   const { data, loading, refetch } = useQuery(GET_CONFIGS, { fetchPolicy: "no-cache" });
   const { data: facilitiesData } = useQuery(GET_FACILITIES);
   const [upsert, { loading: saving }] = useMutation(UPSERT_CONFIG);
   const [deleteConfig] = useMutation(DELETE_CONFIG);
 
   const [open, setOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
+  const [editItem, setEditItem] = useState<any | null>(null);
   const [price, setPrice] = useState("");
   const [label, setLabel] = useState("");
   const [ageGroup, setAgeGroup] = useState("");
   const [keyImage, setKeyImage] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
-  const configs: any[] = data?.GetTicketPriceConfigs ?? [];
+  const configs: any[] = [...(data?.GetTicketPriceConfigs ?? [])].sort((a, b) => a.price - b.price);
   const facilities: any[] = facilitiesData?.facilities ?? [];
 
   const toggleFacility = (id: number) => {
@@ -170,170 +172,131 @@ export default function TicketPriceConfigPage() {
   const previewFacilities = facilities.filter((f) => selectedIds.has(f.facility_id));
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
+      <BoardHeader
+        titleKey="ticket.priceSetup"
+        subtitle={t("ticket.priceSetupHint")}
+        actions={
+          <Button onClick={openAdd}>
+            <Plus aria-hidden="true" /> បន្ថែមតម្លៃ
+          </Button>
+        }
+      />
 
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-100 rounded-lg">
-            <Settings2 className="h-5 w-5 text-cyan-600" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold">កំណត់តម្លៃ Ticket</h1>
-            <p className="text-sm text-muted-foreground">
-              Cashier នឹងឃើញតម្លៃទាំងនេះ — Facility ត្រូវបានកំណត់ដោយស្វ័យប្រវត្តិ
-            </p>
-          </div>
-        </div>
-        <Button onClick={openAdd} className="gap-2">
-          <Plus className="h-4 w-4" /> បន្ថែមតម្លៃ
-        </Button>
-      </div>
-
-      {/* Info banner */}
-      <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-        <Info className="h-4 w-4 mt-0.5 shrink-0" />
-        <span>
-          តម្លៃ Ticket នីមួយៗ អាចភ្ជាប់ជាមួយ Facility ច្រើន —
-          ឧទាហរណ៍ $3 = Swimming + Gym។ Cashier គ្រាន់តែចុចតម្លៃ។
-        </span>
-      </div>
-
-      {/* Cards */}
+      {/* Tiles */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {[1,2,3,4].map(i => <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />)}
+        <div className="flex flex-wrap gap-3" role="status" aria-live="polite">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 w-40 rounded-xl" />)}
         </div>
       ) : configs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-16 gap-3">
-          <div className="p-3 bg-muted rounded-full">
-            <Settings2 className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <p className="font-medium">មិនទាន់មានការកំណត់</p>
-          <p className="text-sm text-muted-foreground">ចុច <strong>បន្ថែមតម្លៃ</strong> ដើម្បីចាប់ផ្តើម</p>
-          <Button variant="outline" size="sm" onClick={openAdd} className="mt-2 gap-2">
-            <Plus className="h-4 w-4" /> បន្ថែម
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule bg-card py-16">
+          <Settings2 className="h-8 w-8 text-ink-soft" aria-hidden="true" />
+          <p className="font-semibold text-ink">មិនទាន់មានការកំណត់</p>
+          <p className="text-caption text-ink-soft">ចុច <strong>បន្ថែមតម្លៃ</strong> ដើម្បីចាប់ផ្តើម</p>
+          <Button variant="outline" size="sm" onClick={openAdd} className="mt-2">
+            <Plus aria-hidden="true" /> បន្ថែម
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {configs.map((c) => {
-            const primary = c.facilities[0];
-            const col = primary ? color(primary.code) : fallback;
-            const isMulti = c.facilities.length > 1;
-            return (
-              <div
-                key={c.config_id}
-                className={`relative group rounded-xl border-2 ${col.bg} p-4 flex flex-col items-center gap-2 transition-shadow hover:shadow-md`}
-              >
-                {/* Hover actions */}
-                <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
-                  <button onClick={() => openEdit(c)} className="p-1 rounded-md bg-white/80 hover:bg-white shadow-sm">
-                    <Pencil className="h-3 w-3 text-gray-600" />
-                  </button>
-                  <button onClick={() => handleDelete(c.config_id)} className="p-1 rounded-md bg-white/80 hover:bg-red-50 shadow-sm">
-                    <Trash2 className="h-3 w-3 text-red-500" />
-                  </button>
-                </div>
-
-                {/* Key image */}
-                {c.key_image && (
-                  <img src={c.key_image} alt="key" className="h-12 w-12 rounded-md object-cover border" />
-                )}
-
-                {/* Price */}
-                <span className="text-3xl font-black">${c.price}</span>
-
-                {/* Facility badges */}
-                <div className="flex flex-wrap justify-center gap-1">
-                  {c.facilities.map((f: any) => (
-                    <span key={f.facility_id} className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${color(f.code).badge}`}>
-                      {f.name}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Age group */}
-                {c.age_group && (
-                  <Badge className="text-[10px] px-2 bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100">
-                    {c.age_group}
-                  </Badge>
-                )}
-
-                {/* Label */}
-                {c.label && (
-                  <span className="text-xs text-muted-foreground text-center">{c.label}</span>
-                )}
-
-                {/* Multi-facility indicator */}
-                {isMulti && (
-                  <Badge variant="outline" className="text-[10px] px-1.5">All Access</Badge>
-                )}
+        <ul className="flex flex-wrap items-stretch gap-3">
+          {configs.map((c) => (
+            <li key={c.config_id} className="group relative">
+              <PriceTile
+                price={c.price}
+                ageGroup={c.age_group}
+                caption={
+                  <>
+                    {c.age_group && <span className="font-medium text-ink">{c.age_group}</span>}
+                    {c.age_group && c.label && " · "}
+                    {c.label}
+                    {!c.age_group && !c.label && t("board.oneEntry")}
+                  </>
+                }
+                facilities={c.facilities}
+                corner={
+                  c.key_image ? (
+                    <img src={c.key_image} alt="key" className="h-6 w-6 rounded border border-rule object-cover" />
+                  ) : undefined
+                }
+              />
+              {/* Edit / delete sit on the tile's foot; always visible where there is no hover. */}
+              <div className="absolute bottom-2 right-2 flex gap-1 rounded-md bg-card/90 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)} aria-label={t("common.edit")}>
+                  <Pencil aria-hidden="true" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-magnet-rejected hover:bg-magnet-rejected/10 hover:text-magnet-rejected" onClick={() => handleDelete(c.config_id)} aria-label={t("common.delete")}>
+                  <Trash2 aria-hidden="true" />
+                </Button>
               </div>
-            );
-          })}
-        </div>
+            </li>
+          ))}
+        </ul>
       )}
 
       {/* Add / Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {editItem ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            <DialogTitle>
               {editItem ? "កែតម្លៃ Ticket" : "បន្ថែមតម្លៃ Ticket"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-1">
+          <div className="space-y-4">
 
             {/* Price */}
             <div className="space-y-1.5">
-              <Label>តម្លៃ ($)</Label>
+              <Label htmlFor="ticket-price">តម្លៃ ($)</Label>
               <Input
+                id="ticket-price"
                 type="number" step="0.5" min="0" placeholder="0.00"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 disabled={!!editItem}
-                className="text-lg font-bold"
+                className="text-title font-black"
               />
               {editItem && (
-                <p className="text-xs text-muted-foreground">តម្លៃមិនអាចផ្លាស់ប្តូរ — លុបហើយបន្ថែមថ្មី</p>
+                <p className="text-caption text-ink-soft">តម្លៃមិនអាចផ្លាស់ប្តូរ — លុបហើយបន្ថែមថ្មី</p>
               )}
             </div>
 
             {/* Facility multi-select */}
-            <div className="space-y-2">
-              <Label>Facility (ជ្រើសរើសបានច្រើន)</Label>
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium text-ink">{t("prices.chooseFacilities")}</legend>
               <div className="grid grid-cols-1 gap-2">
                 {facilities.map((f) => {
-                  const col = color(f.code);
+                  const meta = facilityByCode(f.code);
                   const checked = selectedIds.has(f.facility_id);
                   return (
                     <label
                       key={f.facility_id}
-                      className={`flex items-center gap-3 rounded-lg border-2 px-3 py-2.5 cursor-pointer transition-colors
-                        ${checked ? `${col.bg} border-current` : "bg-background border-muted hover:bg-muted/30"}`}
+                      className={cn(
+                        "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors",
+                        checked ? cn("border-ink", meta.tint) : "border-rule bg-card hover:bg-tray"
+                      )}
                     >
-                      <Checkbox
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-rule text-ink focus:ring-2 focus:ring-ring focus:ring-offset-2"
                         checked={checked}
-                        onCheckedChange={() => toggleFacility(f.facility_id)}
+                        onChange={() => toggleFacility(f.facility_id)}
                       />
-                      <span className={`w-2.5 h-2.5 rounded-full ${col.dot}`} />
-                      <span className="font-medium text-sm">{f.name}</span>
+                      <FacilityDot code={f.code} size={12} />
+                      <span className="text-sm font-medium text-ink">{f.name}</span>
                     </label>
                   );
                 })}
               </div>
               {selectedIds.size === 0 && (
-                <p className="text-xs text-destructive">ជ្រើសរើស Facility យ៉ាងហោចណាស់ 1</p>
+                <p className="text-caption text-magnet-rejected">ជ្រើសរើស Facility យ៉ាងហោចណាស់ 1</p>
               )}
-            </div>
+            </fieldset>
 
             {/* Label */}
             <div className="space-y-1.5">
-              <Label>Label <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="ticket-label">Label <span className="font-normal text-ink-soft">(optional)</span></Label>
               <Input
+                id="ticket-label"
                 placeholder="e.g. Day Pass, Morning, VIP"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
@@ -342,54 +305,44 @@ export default function TicketPriceConfigPage() {
 
             {/* Age group */}
             <div className="space-y-1.5">
-              <Label>ក្រុមអាយុ <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label>ក្រុមអាយុ <span className="font-normal text-ink-soft">(optional)</span></Label>
               <div className="flex flex-wrap gap-2">
-                {["កុមារ", "មនុស្សពេញវ័យ", "ចាស់"].map((ag) => (
-                  <button
-                    key={ag}
-                    type="button"
-                    onClick={() => setAgeGroup(ageGroup === ag ? "" : ag)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
-                      ${ageGroup === ag
-                        ? "bg-purple-100 text-purple-700 border-purple-300"
-                        : "bg-background border-muted hover:bg-muted/30 text-muted-foreground"
-                      }`}
-                  >
+                {AGE_GROUPS.map((ag) => (
+                  <Choice key={ag} active={ageGroup === ag} onClick={() => setAgeGroup(ageGroup === ag ? "" : ag)}>
                     {ag}
-                  </button>
+                  </Choice>
                 ))}
                 <Input
-                  className="h-8 w-32 text-sm"
+                  className="h-8 w-32"
                   placeholder="ផ្សេងទៀត..."
-                  value={!["កុមារ", "មនុស្សពេញវ័យ", "ចាស់", ""].includes(ageGroup) ? ageGroup : ""}
+                  aria-label="ក្រុមអាយុផ្សេងទៀត"
+                  value={![...AGE_GROUPS, ""].includes(ageGroup) ? ageGroup : ""}
                   onChange={(e) => setAgeGroup(e.target.value)}
                 />
               </div>
-              {ageGroup && (
-                <p className="text-xs text-muted-foreground">ជ្រើស: <strong>{ageGroup}</strong></p>
-              )}
             </div>
 
             {/* Key image upload — shown to check-in staff so they know which key to give */}
             <div className="space-y-1.5">
               <Label>
-                រូបកូនសោ (Key) <span className="text-muted-foreground font-normal">(optional)</span>
+                រូបកូនសោ (Key) <span className="font-normal text-ink-soft">(optional)</span>
               </Label>
               {keyImage ? (
                 <div className="relative inline-block">
-                  <img src={keyImage} alt="key" className="h-24 w-24 rounded-lg object-cover border" />
+                  <img src={keyImage} alt="key" className="h-24 w-24 rounded-lg border border-rule object-cover" />
                   <button
                     type="button"
                     onClick={() => setKeyImage("")}
-                    className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white shadow"
+                    aria-label={t("common.delete")}
+                    className="absolute -right-2 -top-2 rounded-full bg-magnet-rejected p-1 text-white shadow-magnet"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3 w-3" aria-hidden="true" />
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center gap-1 h-24 w-full rounded-lg border-2 border-dashed cursor-pointer hover:bg-muted/30">
-                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">ចុចដើម្បីដាក់រូបកូនសោ</span>
+                <label className="flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule hover:bg-tray">
+                  <ImageIcon className="h-5 w-5 text-ink-soft" aria-hidden="true" />
+                  <span className="text-caption text-ink-soft">ចុចដើម្បីដាក់រូបកូនសោ</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -401,35 +354,34 @@ export default function TicketPriceConfigPage() {
                   />
                 </label>
               )}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-ink-soft">
                 បុគ្គលិក Check-In នឹងឃើញរូបនេះ ដើម្បីដឹងថាត្រូវផ្តល់កូនសោណា
               </p>
             </div>
 
-            {/* Live preview */}
+            {/* Live preview — the tile as the cashier will see it */}
             {price && selectedIds.size > 0 && (
-              <div className="rounded-lg border-2 border-dashed p-3 flex flex-col items-center gap-2 bg-muted/30">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Preview</p>
-                <span className="text-2xl font-black">${price}</span>
-                <div className="flex flex-wrap justify-center gap-1">
-                  {previewFacilities.map((f) => (
-                    <span key={f.facility_id} className={`text-xs font-medium px-2 py-0.5 rounded-full ${color(f.code).badge}`}>
-                      {f.name}
-                    </span>
-                  ))}
-                </div>
-                {ageGroup && (
-                  <Badge className="text-[10px] px-2 bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100">
-                    {ageGroup}
-                  </Badge>
-                )}
-                {label && <span className="text-xs text-muted-foreground">{label}</span>}
-                {selectedIds.size > 1 && <Badge variant="outline" className="text-[10px]">All Access</Badge>}
+              <div className="flex items-center gap-4 rounded-lg border border-dashed border-rule bg-tray p-3">
+                <PriceTile
+                  price={parseFloat(price) || 0}
+                  ageGroup={ageGroup}
+                  caption={
+                    <>
+                      {ageGroup && <span className="font-medium text-ink">{ageGroup}</span>}
+                      {ageGroup && label && " · "}
+                      {label}
+                      {!ageGroup && !label && t("board.oneEntry")}
+                    </>
+                  }
+                  facilities={previewFacilities}
+                  corner={keyImage ? <img src={keyImage} alt="" className="h-6 w-6 rounded border border-rule object-cover" /> : undefined}
+                />
+                <p className="text-caption text-ink-soft">{t("common.preview")}</p>
               </div>
             )}
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>បោះបង់</Button>
             <Button onClick={handleSave} disabled={saving || selectedIds.size === 0}>
               {saving ? "កំពុងរក្សាទុក..." : "រក្សាទុក"}

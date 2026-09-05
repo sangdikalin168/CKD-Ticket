@@ -1,194 +1,149 @@
 ---
 name: CKD Ticket
-description: The counter ledger of a gym and swimming pool club — a compact register for a laptop, one colour per facility, and a Khmer slip with a QR code torn off every sale.
+description: The counter runs on the club's whiteboard — prices written up in marker, today's sales written down as they happen, and a magnet for the state of every record.
 colors:
-  ink: "hsl(222.2 47.4% 11.2%)"
-  ink-deep: "hsl(222.2 84% 4.9%)"
-  paper: "hsl(0 0% 100%)"
-  chalk: "hsl(210 40% 98%)"
-  rule: "hsl(214.3 31.8% 91.4%)"
-  wash: "hsl(210 40% 96.1%)"
-  annotation: "hsl(215.4 16.3% 38%)"
-  floor: "#F9FAFB"
-  margin: "hsl(0 0% 98%)"
-  margin-ink: "hsl(240 5.3% 26.1%)"
-  margin-wash: "hsl(240 4.8% 95.9%)"
-  success: "hsl(142 76% 36%)"
-  warning: "hsl(41 96% 40%)"
-  info: "hsl(217 83% 53%)"
-  stop: "hsl(0 84.2% 60.2%)"
-  swim: "#2563EB"
-  swim-tint: "#DBEAFE"
-  swim-ink: "#1D4ED8"
-  gym: "#16A34A"
-  gym-tint: "#DCFCE7"
-  gym-ink: "#15803D"
-  steam: "#EA580C"
-  steam-tint: "#FFEDD5"
-  steam-ink: "#C2410C"
-  combo: "#9333EA"
-  combo-tint: "#F3E8FF"
-  combo-ink: "#7E22CE"
+  board: "#FFFFFF"
+  board-grid: "#EEF1F4"
+  tray: "#F4F6F8"
+  rule: "#D9DEE3"
+  ink: "#1F2328"
+  ink-soft: "hsl(215 16% 38%)"
+  swim: "#1F5AE0"
+  gym: "#12A150"
+  steam: "#F0620E"
+  combo: "#7A3FE4"
+  magnet-done: "#16A34A"
+  magnet-pending: "#F5C518"
+  magnet-rejected: "#DC2626"
+  magnet-info: "#2563EB"
+  magnet-off: "#9CA3AF"
   amber: "#D97B2A"
   amber-deep: "#C46D22"
 typography:
-  display:
+  heading:
+    fontFamily: "Roboto, Nokora, sans-serif"
+    fontSize: "1.5rem"
+    fontWeight: 900
+    lineHeight: 1.2
+  title:
+    fontFamily: "Roboto, Nokora, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 900
+    lineHeight: 1.4
+  price:
     fontFamily: "Roboto, Nokora, sans-serif"
     fontSize: "1.875rem"
     fontWeight: 900
     lineHeight: 1.1
-    letterSpacing: "-0.01em"
-  title:
-    fontFamily: "Roboto, Nokora, sans-serif"
-    fontSize: "1.125rem"
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: "-0.015em"
+    fontFeature: "'tnum' 1"
   body:
     fontFamily: "Roboto, Nokora, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
-    letterSpacing: "normal"
+    fontFeature: "'tnum' 1"
   label:
     fontFamily: "Roboto, Nokora, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.25
-    letterSpacing: "normal"
   caption:
     fontFamily: "Roboto, Nokora, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1.6
     letterSpacing: "0.02em"
-  figure:
-    fontFamily: "Roboto, Nokora, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 500
-    lineHeight: 1.25
-    fontFeature: "'tnum' 1"
 rounded:
-  sm: "4px"
-  md: "6px"
-  lg: "8px"
-  xl: "12px"
+  sm: "0.25rem"
+  md: "0.375rem"
+  lg: "0.5rem"
+  xl: "0.75rem"
   full: "9999px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "12px"
-  lg: "16px"
-  xl: "24px"
+  xs: "0.25rem"
+  sm: "0.5rem"
+  md: "0.75rem"
+  lg: "1rem"
+  xl: "1.5rem"
 components:
-  button-primary:
+  button-default:
     backgroundColor: "{colors.ink}"
-    textColor: "{colors.chalk}"
+    textColor: "#FFFFFF"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "4px 12px"
-    height: "32px"
-  button-primary-hover:
-    backgroundColor: "hsl(222.2 47.4% 11.2% / 0.9)"
-    textColor: "{colors.chalk}"
-  button-success:
-    backgroundColor: "{colors.success}"
-    textColor: "{colors.chalk}"
+    padding: "0 0.75rem"
+    height: "36px"
+  button-commit:
+    backgroundColor: "{colors.amber}"
+    textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "4px 12px"
-    height: "32px"
-  button-destructive:
-    backgroundColor: "{colors.stop}"
-    textColor: "{colors.chalk}"
+    padding: "0 0.75rem"
+    height: "36px"
+  button-commit-outline:
+    backgroundColor: "rgb(217 123 42 / 0.1)"
+    textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "4px 12px"
-    height: "32px"
+    padding: "0 0.75rem"
+    height: "36px"
   button-outline:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink-deep}"
+    backgroundColor: "{colors.board}"
+    textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "4px 12px"
-    height: "32px"
-  button-ghost:
+    padding: "0 0.75rem"
+    height: "36px"
+  button-secondary:
+    backgroundColor: "{colors.tray}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.md}"
+    padding: "0 0.75rem"
+    height: "36px"
+  price-tile:
+    backgroundColor: "{colors.board}"
+    textColor: "{colors.ink}"
+    typography: "{typography.price}"
+    rounded: "{rounded.xl}"
+    padding: "0.75rem"
+    height: "112px"
+    width: "160px"
+  magnet-chip:
     backgroundColor: "transparent"
-    textColor: "{colors.ink-deep}"
-    typography: "{typography.label}"
-    rounded: "{rounded.md}"
-    padding: "4px 12px"
-    height: "32px"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
   input-default:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink-deep}"
+    backgroundColor: "{colors.board}"
+    textColor: "{colors.ink}"
     typography: "{typography.body}"
     rounded: "{rounded.md}"
-    padding: "4px 12px"
+    padding: "0 0.75rem"
     height: "32px"
     width: "100%"
-  card-default:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink-deep}"
-    rounded: "{rounded.xl}"
-    padding: "24px"
-  ticket-tile:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink-deep}"
-    typography: "{typography.display}"
-    rounded: "{rounded.xl}"
-    padding: "12px"
-    height: "128px"
-  chip-swim:
-    backgroundColor: "{colors.swim-tint}"
-    textColor: "{colors.swim-ink}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "2px 10px"
-  chip-gym:
-    backgroundColor: "{colors.gym-tint}"
-    textColor: "{colors.gym-ink}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "2px 10px"
-  chip-steam:
-    backgroundColor: "{colors.steam-tint}"
-    textColor: "{colors.steam-ink}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "2px 10px"
-  chip-combo:
-    backgroundColor: "{colors.combo-tint}"
-    textColor: "{colors.combo-ink}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "2px 10px"
   table-header-cell:
-    backgroundColor: "hsl(210 40% 96.1% / 0.5)"
-    textColor: "{colors.annotation}"
+    backgroundColor: "{colors.tray}"
+    textColor: "{colors.ink-soft}"
     typography: "{typography.caption}"
-    padding: "6px 12px"
-  table-row-hover:
-    backgroundColor: "hsl(210 40% 96.1% / 0.5)"
-    textColor: "{colors.ink-deep}"
+    padding: "0.375rem 0.75rem"
   nav-item:
     backgroundColor: "transparent"
-    textColor: "{colors.margin-ink}"
+    textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "8px 12px"
+    padding: "0.5rem 0.75rem"
   nav-item-active:
-    backgroundColor: "{colors.margin-wash}"
-    textColor: "{colors.ink-deep}"
+    backgroundColor: "{colors.board}"
+    textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "8px 12px"
+    padding: "0.5rem 0.75rem"
   print-slip:
-    backgroundColor: "{colors.paper}"
+    backgroundColor: "#FFFFFF"
     textColor: "#000000"
     typography: "{typography.body}"
     rounded: "0"
-    padding: "16px"
+    padding: "1rem"
     width: "405px"
 ---
 
@@ -196,474 +151,355 @@ components:
 
 ## Overview
 
-**Creative North Star: "The Counter Ledger"**
+**Creative North Star: "The Gym Whiteboard"**
 
-The artifact at the centre of this product is the ledger kept at the club's
-front desk: every sale a line, every member a page, and a slip torn off and
-handed over with each entry. The interface is that ledger made electronic for
-a laptop — ruled, compact, unembarrassed about being full of figures — and the
-slip is still real: a Khmer receipt with a QR code that the gate reads. Where
-NAN HR's register tracks days and hours, this one tracks entries and dollars,
-and it inherits the same near-monochrome slate register to do it.
+The counter runs on the board behind the desk. Prices are written up in marker,
+grouped in columns by facility; today's sales are written down underneath as they
+happen; and every record that is waiting on someone carries a magnet. The interface
+is that board made electronic — a white field with a faint printed grid, marker-hued
+headings, thick marker rules between sections, and one amber marker reserved for the
+action that takes money.
 
-Two things distinguish it from its siblings. First, the scale: the reference
-screen is a 1366×768 laptop at a counter with a queue, so controls are 32px,
-the content pane pads at 12px, and tables have a compact "ledger" density
-tuned line by line for Khmer. Second, the colour: the club has three
-facilities — swim, gym, steam — and a combination package, and each has a
-colour that staff read faster than a name. Blue, green, orange and purple are
-the ledger's index tabs, used on ticket tiles, price rows and chips, and they
-are the only saturated system beyond the four record-state marks.
+The colour system is the board's own logic. Four marker hues name the four things
+the club sells access to — blue for swimming, green for the gym, orange for the
+steam room, purple for a combination — and they appear as a stripe across the top of
+a price tile, as a dot beside a name, and nowhere else. Five magnets name the state
+of a record: done, pending, rejected, informational, and off. Those two systems, plus
+amber for a commitment, are the entire saturated palette; everything else is ink on
+board with one hairline.
 
-The type system is built for Khmer first: Roboto and Nokora bundled offline,
-secondary text darkened until it clears 6.5:1 on white, and a caption step
-with a taller line so stacked Khmer consonants never touch. On paper the same
-care becomes a HarfBuzz-shaped Noto Sans Khmer on 80mm thermal roll.
+The scale is a counter's, not a showroom's. The reference screen is a 1366×768
+laptop with a queue at the desk, so controls are 36px, the content pane pads at
+12px, and tables run at a compact ledger density tuned line by line for Khmer.
+Secondary text is deliberately darker than a stock theme would set it, and the
+caption step carries extra line height, because Khmer stacks subscript consonants
+that crowd the line beneath. Both faces are bundled with the app; the counter never
+waits on a network to render a price.
 
 **Key Characteristics:**
 
-- Ruled, not boxed — hairline dividers and a wash band do the separating work
-- Compact by design: a 32px control scale and a ledger table density for a laptop
-- Four facility colours as index tabs, four record-state marks, nothing else saturated
-- Khmer-tuned contrast and line height, on screen and on the printed slip
-- One amber mark, on the sign-in surface only — the family mark, not the club's
-- Flat at rest, sticky header, offcanvas sidebar with an icon rail
+- A white board with a printed 24px grid, ruled off in 2px marker between sections.
+- Four marker hues for facilities, five magnets for record state, one amber for the commitment.
+- Marker weight is real weight: headings and prices are set at 900.
+- Compact by design — 36px controls, 12px page padding, a ledger table density.
+- Khmer-tuned contrast and line height, on screen and on the printed slip.
+- Light-only, laptop-first, with the printed slip as its own paper world.
 
 ## Colors
 
-A near-monochrome cool-slate register on a pale floor, carrying four facility
-colours that name a product and four semantic marks that name a record's
-state.
+A white board carrying two colour systems that never overlap: marker hues say what a
+product is, magnets say what state a record is in.
 
 ### Primary
 
-- **Register Ink** (`{colors.ink}`): The near-black cool slate for primary
-  buttons, the active navigation label and headings. Slightly toward navy so
-  it reads as ink.
-- **Deep Ink** (`{colors.ink-deep}`): Body text and the focus ring — the
-  highest-contrast thing on the page.
+- **Ink** (`#1F2328`): dry-erase black, not pure black. Every heading, label, table cell and primary button. It is the darkest thing on the board.
+- **Soft Ink** (`hsl(215 16% 38%)`): the metadata voice — column headers, helper text, timestamps, the second line of a cell. Deliberately darker than the stock theme's secondary text so Khmer at caption size stays legible; this value is a commitment, not a default.
 
 ### Secondary
 
-- **Wash** (`{colors.wash}`): Table header bands at 50% alpha, hovered rows,
-  secondary buttons, the resting ground of ghost controls.
-- **Annotation Grey** (`{colors.annotation}`): Metadata voice — column
-  headers, helper text, placeholders, timestamps. Darkened from shadcn's
-  46.9% to 38% lightness so Khmer at caption size clears 6.5:1 on white. This
-  value is a commitment.
-- **Floor** (`{colors.floor}`): The app background behind the cards —
-  Tailwind's `gray-50`, used as a literal class on the content inset. It is
-  the one place the raw grey palette is sanctioned as chrome.
+- **Board** (`#FFFFFF`): the writing surface. Cards, tables, the navbar, the content field.
+- **Board Grid** (`#EEF1F4`): a printed 24px grid, drawn with two repeating gradients on board surfaces that want to read as the board itself rather than as a panel — the request columns, the sign-in field.
+- **Tray** (`#F4F6F8`): the marker tray. The sidebar's ground, table header bands, secondary buttons, the user chip.
+- **Rule** (`#D9DEE3`): the single hairline, for borders and row dividers. Section breaks use a 2px ink rule instead — that one is a marker stroke, not a hairline.
 
 ### Tertiary
 
-The index tabs, and the family mark.
+The four marker hues. Each names a facility and appears only as a tile stripe, a
+magnet-style dot, or a large price figure.
 
-- **Swim Blue** (`{colors.swim}`), **Gym Green** (`{colors.gym}`),
-  **Steam Orange** (`{colors.steam}`), **Combo Purple** (`{colors.combo}`):
-  Which facility a ticket, package or price row grants. Each comes with a
-  tint (`-tint`, the 100 step) for chip and tile grounds and an ink (`-ink`,
-  the 700 step) for text on that tint. They are Tailwind steps today, defined
-  three times over in three pages; they should be defined once.
-- **Amber** (`{colors.amber}`) and **Amber Deep** (`{colors.amber-deep}`):
-  The sign-in button and its hover, with the logo's pale plate. The same
-  amber CKD POS uses for its till — the family mark of these systems. It
-  appears nowhere inside the app.
+- **Swim Blue** (`#1F5AE0`)
+- **Gym Green** (`#12A150`)
+- **Steam Orange** (`#F0620E`)
+- **Combo Purple** (`#7A3FE4`): a product that grants more than one facility. A combination tile stripes all of its facilities side by side and overlaps their dots, so the mixture is visible rather than named.
 
-### Neutral
-
-- **Paper** (`{colors.paper}`): Cards, tables, the header, the slip. Pure
-  white.
-- **Chalk** (`{colors.chalk}`): Text on Register Ink and on semantic fills.
-- **Rule** (`{colors.rule}`): The single hairline — borders, input strokes,
-  row dividers.
-- **Margin** (`{colors.margin}`), **Margin Ink** (`{colors.margin-ink}`),
-  **Margin Wash** (`{colors.margin-wash}`): The sidebar's own muted trio, so
-  navigation reads as the ledger's margin rather than another data surface.
+Gym green and steam orange measure roughly 3.3:1 on white, so they are never used
+for text. They colour dots, stripes and the 1.875rem price figure only; a product's
+name is always ink.
 
 ### Semantic marks
 
-The four marks encode the state of a record, never decoration. They exist as
-tokens — `--success`, `--warning`, `--info`, `--destructive` — with matching
-button variants.
+The magnets. Each is a small disc with a printed highlight and a real drop shadow —
+the one object in the system that is allowed to look physical, because a magnet is.
 
-- **Success** (`{colors.success}`): Paid, approved, processed, active, in
-  stock.
-- **Warning** (`{colors.warning}`): Pending — a hold or transfer request
-  awaiting a checker or an approver; a membership about to expire.
-- **Info** (`{colors.info}`): Informational — a scheduled hold, a
-  system-generated line, a link.
-- **Stop** (`{colors.stop}`): Rejected, cancelled, expired, destructive
-  action, validation failure. The sign-out control in the sidebar footer is
-  rose for the same reason.
+- **Done** (`#16A34A`): paid, approved, processed, active.
+- **Pending** (`#F5C518`): awaiting a checker or an approver; a membership about to lapse.
+- **Rejected** (`#DC2626`): rejected, cancelled, expired, and the destructive action that produces it.
+- **Info** (`#2563EB`): informational or system-generated.
+- **Off** (`#9CA3AF`): inactive, or a state that has not been reached yet.
+
+### The commitment
+
+- **Amber** (`#D97B2A`) and **Amber Deep** (`#C46D22`): the action that takes money or settles a request — sell, print, process, sign in. Amber carries **ink lettering, not white**: white on amber measures 3.1:1 and fails, ink measures 5.1:1 and passes. Hover draws a 3px inset underline in the deep amber, like a second stroke of the same marker; active fills with it.
 
 ### Named Rules
 
-**The Facility Rule.** Blue, green, orange and purple mean swim, gym, steam
-and combination — on a ticket tile, a price row, a chip, a report column.
-They are never chosen per page for variety. The three duplicate palettes in
-`Ticket.tsx`, `TicketPriceConfig.tsx` and `MemberPriceTable.tsx` (one of which
-reads a `badge` key that does not exist) are drift to collapse into one
-definition.
+**The Facility Rule.** Blue, green, orange and purple mean swimming, gym, steam and
+combination — on a tile, a price row, a chip, a report column. They are never chosen
+per page for variety, and they are defined exactly once, in `frontend/src/lib/facility.ts`.
+A page that declares its own facility palette is a defect; there were three such
+copies before this system existed.
 
-**The Four Marks Rule.** Success, Warning, Info and Stop are the complete
-state palette. A new record state maps onto one of them or is expressed in
-ink and annotation grey.
+**The Two Systems Rule.** A marker hue says what something *is*; a magnet says what
+state it is *in*. They never swap jobs. A record's status is never coloured with a
+facility hue, and a facility is never represented by a magnet colour.
 
-**The Grey Ledger Rule.** Chrome is Floor and Paper. The two hundred raw
-`gray-*` and ninety `black` classes in the pages are the same drift NAN HR
-had: new work uses `bg-card`, `text-muted-foreground`, `border-border`, and a
-page touched for other reasons is the moment to convert.
+**The Ink Text Rule.** Gym green and steam orange do not clear 4.5:1 on white, so no
+sentence, label or table cell is ever set in a marker hue. Marker colour lives in
+dots, stripes and the large price figure; the words stay ink.
 
-**The Legible Khmer Rule.** Annotation Grey stays at 38% lightness. Lightening
-it back toward shadcn's default for Latin taste breaks Khmer at caption size,
-and the detector currently finds no grey-on-colour defects here — keep it
-that way.
+**The One Amber Rule.** Amber marks the committing action and nothing else — never a
+heading, a border for emphasis, a chip, or an answer to "this looks plain". It is
+also the only place in the product where a colour carries ink lettering rather than
+white, and that is deliberate: the contrast floor decides the lettering, not the
+convention.
 
-**The One Amber Rule.** Amber marks the family's sign-in surface and nothing
-inside the app. It is not a heading, a button variant, a chip or a "this
-looks plain" fix.
-
-**The Palette Restraint Rule.** No gradients on data surfaces. The indigo
-gradient on the member profile header and the purple-to-pink banner and
-purple heading in the customer-type report are the three "AI palette"
-findings the detector raises today; they are drift, and a report tile is
-Paper with a facility chip.
-
-**The Dark Mirror Rule.** Every token has a `.dark` counterpart, and thirty-
-four `dark:` utilities exist, but nothing enables dark mode and a stray
-`.dark { @apply bg-gray-800 }` conflicts with the token. The app is light-only
-in practice; do not design for dark here until the toggle exists.
+**The Legible Khmer Rule.** Soft ink stays at 38% lightness. Lightening it back
+toward a stock theme's default for Latin taste breaks Khmer at caption size.
 
 ## Typography
 
-**Body Font:** Roboto (bundled, weights 300–900) with Nokora (bundled,
-weights 100–900) as the Khmer face
-**Print Font:** Noto Sans Khmer on the ESC/POS worker; Roboto with Khmer OS
-Content in the browser print window
+**Body Font:** Roboto, weights 300–900, bundled through `@fontsource`.
+**Khmer Font:** Nokora, weights 100–900, bundled through `@fontsource`.
 
-**Character:** A plain, high-legibility grotesque paired with a Khmer face
-chosen for metric compatibility, both shipped with the app through
-`@fontsource` so a counter with no internet renders the same as one with it.
-A single global rule sets `'Roboto', 'Nokora', sans-serif` on every element.
-There is no display serif; the loudest thing in the system is a price in
-black weight on a ticket tile.
+**Character:** One stack does everything: `Roboto, Nokora, sans-serif`, set globally.
+Roboto covers Latin, Nokora covers Khmer, and the two never compete for a glyph.
+Both are bundled with the application rather than fetched, so a counter with no
+internet renders exactly like one with it — the faces used to load from a font CDN
+and no longer do. There is no display serif in this system. The loudest thing on the
+board is a price set in Roboto Black.
 
 ### Hierarchy
 
-- **Display** (Roboto, 900, `1.875rem`, 1.1): The price on a ticket tile —
-  `text-3xl font-black`, the one place the black weight belongs, so a cashier
-  can read a price across the desk.
-- **Title** (Roboto, 600, `1.125rem`, tight tracking): Card headings, dialog
-  titles, and the club's name at the head of a printed slip.
-- **Body** (Roboto, 400, `0.875rem`, 1.5): Table cells, form values,
-  descriptions — the register voice, and by far the most used size.
-- **Label** (Roboto, 500, `0.875rem`): Buttons, inputs, navigation items,
-  tabs.
-- **Caption** (Roboto, 500, `0.75rem`, 1.6, `0.02em`): The `text-caption`
-  step — column headers in compact density, chip labels, eyebrows, the
-  sidebar group label (which adds `tracking-[0.18em]` uppercase). The 1.6
-  line height is deliberate: stacked Khmer consonants need it.
-- **Figure** (Roboto, 500, `0.875rem`, tabular): Money, counts, dates in a
-  column, ticket codes. `tabular-nums` appears on compact cells, summary
-  tiles and progress figures; money is otherwise plain `$` text with
-  `toLocaleString`, and a shared money formatter is the missing piece.
+- **Heading** (900, 1.5rem, line-height 1.2): a board section's title. Marker weight is what makes it read as written up rather than typeset.
+- **Title** (900, 1.125rem, line-height 1.4): card and dialog headings, the club's name at the head of a printed slip.
+- **Price** (900, 1.875rem, line-height 1.1, tabular): the figure on a price tile, in its facility's marker hue. The one place the black weight is allowed outside a heading.
+- **Body** (400, 0.875rem, line-height 1.5, tabular): table cells, form values, descriptions — the register voice.
+- **Label** (500, 0.875rem, line-height 1.25): buttons, inputs, navigation items, tabs.
+- **Caption** (500, 0.75rem, line-height 1.6, letter-spacing 0.02em): the `text-caption` step — compact column headers, chip labels, eyebrows, the sidebar's group labels at 0.18em tracking. The 1.6 line height is deliberate and load-bearing: Khmer stacks coeng and below-vowels that crowd the next line at 1.4.
 
 ### Named Rules
 
-**The Locked Pairing Rule.** Roboto and Nokora are a binding pair. Roboto is
-flagged by the design detector as an overused face and that flag is knowingly
-suppressed in `.impeccable/config.json`: the Khmer metric match outranks Latin
-distinctiveness in a product whose fallback language is Khmer. A proposal to
-change the Latin face must prove compatibility with Nokora in a compact table
-row and on the printed slip.
+**The Caption Floor Rule.** `text-caption` at 0.75rem is the smallest type on screen.
+Arbitrary `text-[Npx]` sizes are drift; the printed slips are the sole exception,
+because they are paper calibrated to a thermal raster rather than to this ramp.
 
-**The Khmer-In-Every-Stack Rule.** Every stack carries a Khmer face — the
-global rule guarantees it on screen. The print window's `Khmer OS Content`
-should become Nokora so paper and screen shape Khmer the same way.
+**The Marker Weight Rule.** Weight 900 belongs to headings and to the price on a
+tile. It is the system's way of writing in marker, and spending it anywhere else
+makes the board shout.
 
-**The Caption Floor Rule.** `text-caption` (12px at 1.6) is the small step.
-Arbitrary `text-[12px]`, `text-[10px]` and `text-[9px]` sizes are drift
-except on the printed slips, which are paper, not chrome, and are recorded in
-`.impeccable/config.json`.
+**The Tabular Figures Rule.** Money, counts, dates in a column and ticket codes are
+set with tabular numerals, and money is formatted through one helper
+(`frontend/src/lib/money.ts`) rather than per page.
 
-**The Black Price Rule.** Black weight is for the price on a ticket tile.
-Six uses today, all of them that; a seventh anywhere else is a defect.
+**The Bundled Face Rule.** Both faces ship with the application. A new face must be
+added to `@fontsource` and bundled, never referenced from a CDN, and must prove it
+sits with Nokora in a compact table row and on the printed slip.
 
 ## Layout
 
-A shadcn sidebar (`16rem`, collapsing to a `3rem` icon rail, toggled with the
-`b` key and remembered in a cookie) beside a content inset on the Floor, under
-a sticky Paper header with a breadcrumb, the language switcher and the user
-menu. The content pane pads at `{spacing.md}` (12px) — not 24px — because the
-reference screen is a 1366×768 laptop. Below `md` the sidebar becomes a sheet
-and tables become stacked cards.
+A sidebar on the marker tray beside a content field on the board, under a sticky
+white navbar closed with a 2px ink rule rather than a shadow. The content pane pads
+at 12px because the reference screen is a 1366×768 laptop; the sidebar collapses to
+an icon rail, is toggled with Ctrl/Cmd+B, remembers its state in a cookie, and
+becomes a sheet below `md`.
 
-**The back-office page pattern:** a Card with a title and a DataTable that
-carries its own toolbar — search, filters, export to Excel, print — with the
-page's primary action in the toolbar, not the header.
+**The board pattern.** Every surface opens with a board header: the club's name and
+today's date on one baseline, the page title beneath it, and a 2px ink rule closing
+the block. Sections below it are separated by the same rule, never by cards inside
+cards.
 
-**The sale pattern:** the ticket page is a grid of `128px` tiles, one per
-price card, tinted by facility, the price in Display; tapping one sells and
-prints. Admins see a second tab for price configuration.
+**The sale pattern.** The ticket page is four facility columns of price tiles, each
+column capped so that today's board — the register of sales and its reprint control
+— begins above the fold at 1366×768. The columns scroll internally rather than
+pushing the register off the screen: on this surface the register is the promise, and
+a price the counter has to scroll for costs less than a register nobody can see.
 
-Spacing runs on a 4px base. Cards pad at `{spacing.xl}` (24px); controls are
-`32px` tall (`h-8`), small `28px`, large `36px`, icon `32px` square — the
-compact scale, chosen explicitly for the laptop.
-
-Breakpoint usage is `sm` and `md` heavy (141 and 106 uses) with a handful of
-`lg` and `xl`: mobile-aware, laptop-first.
+Spacing runs on a 4px base. Controls are 36px tall (32px small, 44px large), inputs
+32px, cards pad at 1.5rem, and tables offer two densities chosen once in
+`components/ui/tableDensity.ts`: comfortable, with tracked uppercase headers and
+zebra rows, or the compact ledger, with sentence-case caption headers, 3px row
+padding at 17px leading, vertical hairlines and tabular figures.
 
 ### Named Rules
 
-**The Laptop Rule.** Design at 1366×768. Thirty-two-pixel controls,
-twelve-pixel page padding, compact table density. A component that only
-works at 1920 is wrong here.
+**The Laptop Rule.** Design at 1366×768. A component that only works at 1920 is
+wrong here.
 
-**The One Card Rule.** Every list, CRUD and report route is one Card with
-one title and one DataTable. Nested cards are how a dense page becomes an
-unreadable page.
+**The Board Header Rule.** Every surface opens with the same header block and closes
+it with a 2px ink rule. It is a masthead, not an eyebrow: the club name and the date
+share a baseline, and the page title sits on the row below.
 
-**The Two Densities Rule.** A table is either comfortable (uppercase tracked
-caption headers, zebra rows, `py-1.5`) or compact (the Notion-style ledger:
-`text-caption` headers in sentence case, `py-[3px]` rows at `17px` leading,
-tabular figures, vertical hairlines, no zebra). The choice is made per table
-in `tableDensity.ts`, never per cell.
+**The Register Above The Fold Rule.** On the sale surface, today's board must begin
+within the first viewport at the reference size. Tile columns give up height for it.
 
-**The Column Priority Rule.** Narrow screens drop columns by importance or
-stack the row as a card; they never wrap figures.
+**The Two Densities Rule.** A table is comfortable or compact, chosen once in the
+density module, never adjusted per cell.
 
 ## Elevation & Depth
 
-**Surfaces are flat at rest.** Depth comes from the hairline Rule and from
-Wash. The incumbent code violates this in the usual way — `shadow-sm` on
-twenty-five resting cards and table shells, the Card primitive's default
-`shadow` — and those are drift. Shadow belongs to surfaces that float:
-dialogs, dropdowns, toasts, and the sticky header, which is allowed a
-`shadow-md` at 5% black because it genuinely floats over scrolling content.
+**The board is flat.** Depth comes from the hairline, the 2px marker rule, and the
+tray. Cards and table shells sit on the board with a 1px rule and no shadow.
+
+Two things are allowed to lift, and both are objects rather than surfaces: the
+**magnet**, which carries a real drop shadow and an inner lip because a magnet
+physically sits on a board, and the **sticky navbar**, which genuinely floats over
+scrolling content. Dialogs, dropdowns and the mobile sidebar sheet take an overlay
+shadow over a scrim.
 
 ### Shadow Vocabulary
 
-- **Header** (`box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)`
-  — Tailwind `shadow-md shadow-black/5`): The sticky navbar only.
-- **Overlay** (`box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`
-  — Tailwind `shadow-lg`): Dialogs (over a `bg-black/80` scrim), dropdowns,
-  the language menu.
-- **Modal** (Tailwind `shadow-xl`): Larger dialogs and sheets — ten uses,
-  interchangeable with Overlay; consolidate on Overlay.
+- **Magnet** (`box-shadow: 0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18)`): the state disc, at 22px, 14px and 10px. The inset lip is the underside of the magnet.
+- **Header** (`shadow-md` at 5% black): the sticky navbar only.
+- **Overlay** (`shadow-lg`): dialogs over a scrim, dropdowns, the language menu.
 
 ### Named Rules
 
-**The Flat-At-Rest Rule.** If it does not float, it has no shadow. Cards and
-table shells get `border border-border`.
-
-**The Scrim-Not-Shadow Rule.** Dialog separation is the `bg-black/80` scrim's
-job; reach for it before a heavier shadow.
+**The Flat Board Rule.** If it is a surface, it has no shadow — cards and tables take
+`border border-rule`. If it is an object on the board, it may. The magnet is the only
+object.
 
 ## Shapes
 
-One radius family from `--radius: 0.5rem` and one border weight. Controls at
-`{rounded.md}` (6px): buttons, inputs, tabs, navigation items. Tables, dialogs
-and dropdowns at `{rounded.lg}` (8px). Cards, ticket tiles and the login's
-logo plate at `{rounded.xl}` (12px). Chips and avatars fully round.
+One radius family from `--radius: 0.5rem`. Controls, inputs and navigation items sit
+at 0.375rem; tables, dialogs and dropdowns at 0.5rem; price tiles and cards at
+0.75rem; magnets, chips and avatars are fully round.
 
-Borders are 1px in `{colors.rule}`, with the ticket tile's `2px` facility
-border as the one sanctioned emphasis border — it is the tile's identity, not
-decoration. The printed slip's `2px` black frame is paper and follows paper
-rules. The thick borders the detector finds today are the loading page's
-`border-t-8` spinner and the DataTable's `border-b-2` spinner, recorded as
-exceptions in `.impeccable/config.json`.
+Borders are 1px in the rule colour, with two deliberate exceptions that are both
+marker strokes rather than decoration: the **2px ink rule** that closes a board
+header and separates sections, and the **3px facility stripe** across the top of a
+price tile, which is the tile's identity. A combination tile splits that stripe
+between its facilities.
+
+The printed slip has square corners, a 2px black frame and 2px rules. It is paper and
+follows paper rules.
 
 ### Named Rules
 
-**The One Rule Weight Rule.** 1px, `{colors.rule}`, everywhere on screen
-except the ticket tile's facility edge.
+**The Marker Stroke Rule.** A thick line is a marker stroke and means a section
+boundary or a product's identity. Nothing else gets one; there is no accent border
+on a card.
 
-**The Radius Ladder Rule.** Controls 6px, tables and dialogs 8px, cards and
-tiles 12px, chips full. A container never rounds tighter than the control
+**The Radius Ladder Rule.** Controls 6px, tables and dialogs 8px, tiles and cards
+12px, magnets and chips full. A container never rounds tighter than the control
 inside it.
-
-**The Slip Rule.** The printed slip has square corners, a 2px black frame,
-black text on white and 2px rules. It is paper: no radius, no grey, no tint
-that a thermal printer would fade.
 
 ## Components
 
+### Price Tile (signature component)
+
+The sale unit, and the thing a counter taps hundreds of times a day.
+
+- **Shape:** 160×112 minimum on the board, 0.75rem radius, 1px rule, a 3px facility stripe across the top, growing taller when a name needs two lines rather than clipping it.
+- **Content:** the facility dots at the top right, the product name in label weight clamped to two lines, and the price at the bottom in 1.875rem black in the facility's hue. A caption names what the price grants.
+- **Behaviour:** tapping sells and prints in one action — there is no confirmation step at the counter. The tile presses to 0.98 and today's board gains a line.
+- **Combination:** the stripe divides between the facilities and the dots overlap with `mix-blend-mode: multiply`, so two markers reading as one mixed stroke.
+
+### Magnet and Magnet Chip
+
+- **Magnet:** a disc at 22px, 14px or 10px, drawn with a white highlight at 35%/30%, its state colour beneath, a drop shadow and an inner lip.
+- **Chip:** a magnet beside a label in caption type and ink. This replaces the tinted status pill entirely; a record's state is a magnet on the board, not a coloured word.
+
+### Today's Board
+
+The register beneath the tiles on the sale surface: time, customer, facility dot,
+amount and a printed magnet, in the compact ledger density. New lines arrive at the
+top over 200ms — the one authored motion in the system — and the newest line offers
+an amber reprint.
+
+Its heading names its own scope, because the tally beside it and the lines beneath it
+do not share one: the tally is the server's figure for every counter today, the
+register is this counter's own session.
+
+### Request Columns
+
+Holds and transfers as magnet cards moving across three columns — requested, checked,
+processed — on a board-grid field. A state change slides the card to the next column.
+
 ### Buttons
 
-- **Character:** Plain, compact, confident. No gradient, no shadow, no
-  transform.
-- **Shape:** `{rounded.md}` (6px); `32px` default, `28px` small, `36px`
-  large, `32px` square icon.
-- **Primary:** Register Ink ground, Chalk text; hover to 90%.
-- **Semantic:** `success`, `warning`, `info` and `destructive` map onto the
-  four marks — approve, hold, inform, reject — so an action carries the
-  colour of the state it produces.
-- **Outline / Secondary / Ghost / Link:** As shadcn defines them; Outline is
-  the default secondary action in a toolbar.
-- **Focus:** `2px` ring in Deep Ink at `2px` offset via `focus-visible`.
-- **Disabled:** 50% opacity, pointer events off.
-
-### Ticket Tile
-
-The sale's signature component.
-
-- **Shape:** `{rounded.xl}` (12px), `2px` border in the facility colour,
-  `12px` padding, `128px` tall, ground tinted with the facility's tint.
-- **Content:** The facility chip and product name in Label, the price in
-  Display (black weight), the entitlement (days or entries) in Caption.
-- **Behaviour:** Tapping sells, prints and returns; there is no confirm step
-  at the counter.
-
-### Chips
-
-- **Facility chips:** Full-round, `2px 10px`, Caption type, facility tint
-  ground and facility ink text.
-- **Status chips:** The same construction on the four marks' tints — green
-  for active or approved, orange-amber for pending, blue for informational,
-  red for rejected — and grey on Wash for inactive. Built with the `-100`
-  ground and `-700`/`-800` text steps of the same hue; never grey text on a
-  tint.
-
-### Inputs / Fields
-
-- **Style:** Paper ground, 1px Rule stroke, `{rounded.md}`, `4px 12px`
-  padding, `32px` tall, Body type; placeholder in Annotation Grey.
-- **Focus:** `2px` Deep Ink ring at `2px` offset; the border does not change.
-- **Error:** Stop border and message.
-
-### Cards / Containers
-
-- **Corner Style:** `{rounded.xl}` (12px). **Background:** Paper.
-  **Border:** 1px Rule. **Shadow:** none at rest (the primitive's default
-  `shadow` is drift). **Padding:** `{spacing.xl}` (24px).
-- **Summary tiles:** The six-tone stat tile — value in Figure at Title size,
-  label in Caption — for the dashboard and report heads. Paper with a
-  facility or mark chip, not a gradient banner.
+- **Shape:** 0.375rem radius; 36px default, 32px small, 44px large, 36px square icon. `transition-colors` only.
+- **Default:** ink ground, white label.
+- **Commit:** amber ground with an **ink** label, hover drawing a 3px inset underline in amber deep, active filling with it. One per surface.
+- **Commit outline:** the same commitment at lower volume — an amber-deep border on a 10% amber wash — for a secondary reprint or a repeat action.
+- **Semantic:** destructive, warning, info and success take the four magnet colours, so an action wears the colour of the state it produces.
+- **Outline / Secondary / Ghost:** board with a rule, tray, and bare ink.
+- **Focus:** a 2px ink ring at 2px offset via `focus-visible`.
 
 ### Tables (DataTable)
 
-The workhorse. Everything in the back office is one.
+The back office's workhorse. Board shell at 0.5rem with a 1px rule and no shadow; a
+tray header band with caption-type soft-ink headers; rule hairlines between rows and
+a tray hover. The compact density adds vertical hairlines at 60% and tabular figures.
+Status columns carry magnet chips; facility columns carry a dot and a name. Rows
+become stacked cards below `md`. The toolbar owns search, filters, Excel and PDF
+export, and the page's primary action.
 
-- **Shell:** Paper, `{rounded.lg}` (8px), 1px Rule (the `shadow-sm` on it is
-  drift).
-- **Toolbar:** Search, custom filters, export (Excel via `xlsx-js-style`,
-  PDF, print window) and the page's primary action.
-- **Header:** Wash at 50% alpha; Annotation Grey in Caption — uppercase and
-  tracked in comfortable density, sentence case in compact.
-- **Rows:** Rule hairlines, Wash hover; zebra only in comfortable density;
-  compact adds vertical hairlines at 60% and `tabular-nums`.
-- **Mobile:** Rows become stacked cards below `md`.
+### Sidebar and Navbar
 
-### Navigation (Sidebar)
-
-- shadcn's sidebar on the Margin trio: `16rem` expanded, `3rem` icon rail,
-  `18rem` as a mobile sheet; group labels in uppercase Caption with
-  `0.18em` tracking; items `{rounded.md}` with `8px 12px` padding; the
-  active item on Margin Wash in Deep Ink, no accent bar; sign-out in rose at
-  the foot. Navigation is filtered by role.
-
-### Header (Navbar)
-
-- Sticky Paper bar with the Header shadow, a breadcrumb in Body, the language
-  switcher with SVG flags, a Rule separator and the avatar menu. The stock
-  photo avatar is drift; the user's initials on Wash is the intent.
+- **Sidebar:** the board's index on the tray — 16rem expanded, 3rem as an icon rail, 18rem as a mobile sheet. Group labels are caption caps at 0.18em. An item carries a magnet-style dot that turns ink when active, and the active item sits on a white chip. No left accent bar. Sign-out is in the rejected magnet's colour.
+- **Navbar:** white, sticky, closed with a 2px ink rule, carrying the breadcrumb, the language switcher and a user chip with the member's initials on tray.
 
 ### Dialogs
 
-- **Scrim:** `bg-black/80`. **Panel:** Paper, `{rounded.lg}` at `sm`,
-  `max-w-lg`, `24px` padding, Overlay shadow, entering with a fade, 95% zoom
-  and a slide from 48% over `200ms`.
-
-### Sign-in
-
-The one bespoke surface: a fixed, centred `360px` card on Paper, the logo on
-its pale plate, labels at 11px uppercase with `0.12em` tracking, and the
-Amber submit with a glow and a hover lift, entering on a staggered
-`nan-slide-up`. It is the family's sign-in, shared in spirit with CKD POS,
-and its treatments — the glow, the lift, the per-file hex colours, the
-off-scale label — stay inside this surface and are not precedents for the
-app.
+Radix dialogs on a scrim: a board panel at 0.75rem with a 2px ink rule under the
+title, entering with a fade, a 95% zoom and a slide over 200ms.
 
 ### Printed Slip
 
-- **Canvas:** `405px` wide in the browser, converted to an 80mm PDF by the
-  desktop shell; or a server-side document rendered by the ESC/POS worker at
-  576 dots with sizes 30/22/24px.
-- **Frame:** `2px` black border, square corners.
-- **Content:** The club's Khmer name centred in Title, the branch line, a
-  `150px` QR code, the ticket code, the date line in red (the one colour on
-  the slip, so a stale ticket is caught by eye), cashier, price, a `2px`
-  rule, and the towel/key fill-in line.
-- **Type:** Roboto and Nokora in the browser; Noto Sans Khmer shaped by
-  HarfBuzz on the worker. Literal pixel sizes here are paper, exempt from The
-  Caption Floor Rule.
+The one component that is not a screen, and the only thing here that is not the
+board.
+
+- **Canvas:** 405px wide in the browser, converted by the desktop shell to an 80mm PDF; the server-side path renders the same document on an ESC/POS worker at 576 dots with Khmer shaped by HarfBuzz.
+- **Frame:** a 2px black border, square corners, black on white, 2px rules.
+- **Content:** the club's Khmer name centred, the branch line, a 150px QR code, the ticket code, the date in red — the only colour on the slip, so a stale ticket is caught by eye — the cashier, the price, and the towel and key line.
+- **Rule:** the slip is paper. It does not take board tokens, marker hues, magnets or the type ramp; it takes ink, paper and the two bundled faces.
 
 ### Motion
 
-Motion confirms a state change and nothing else. `transition-colors` is the
-default; `200ms` for dialogs and dropdowns, `300ms` for sheets.
+Motion confirms a state change and nothing else. `transition-colors` is the default;
+200ms for dialogs, dropdowns and a new register line; 300ms for the mobile sheet.
 
-- **Radix `animate-in` / `animate-out`** (fade, 95% zoom, slide from top
-  48%; `200ms`): Dialogs, dropdowns, the mobile sidebar sheet.
-- **`accordion-down` / `accordion-up`** (`0.2s ease-out`): Disclosure.
-- **`animate-spin`** / **`animate-pulse`**: Loading only.
-- **`nan-slide-up`** (`0.55s cubic-bezier(0.16, 1, 0.3, 1)`, staggered
-  50ms): The sign-in surface only.
+- **Radix `animate-in` / `animate-out`** (fade, 95% zoom, slide from top): dialogs, dropdowns, the sidebar sheet.
+- **`accordion-down` / `accordion-up`** (0.2s ease-out): disclosure.
+- **Register line-in** (200ms): a sale writing itself onto today's board — the system's one authored moment.
+- **`animate-spin`** and the shimmer skeleton: loading only.
 
-**The Confirming Motion Rule.** No entrance animation on a table row or a
-tile, no attention-seeking loop, no bouncy easing. This is an eight-hour
-tool.
+**The Confirming Motion Rule.** No entrance animation on a table row or a price tile,
+no attention-seeking loop, no bouncy easing. This is an eight-hour tool with a queue
+in front of it.
 
-**The Keyframe Home Rule.** Keyframes live in `tailwind.config.cjs` or
-`index.css`. `animate-shimmer`, `animate-fade`, `animate-slide`,
-`animate-step-in` and `animate-fadeIn` are used but defined nowhere — they
-do nothing today. Define them in the config or remove the classes.
+**The Declared Keyframe Rule.** An animation class must have a keyframe behind it.
+Several classes in this codebase once animated nothing at all; a class without a
+declared keyframe is a defect, and keyframes live in `tailwind.config.cjs` or
+`index.css`, never inside a page.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** colour a ticket tile, price row or chip by its facility — swim
-  blue, gym green, steam orange, combo purple — from one shared definition.
-- **Do** map a record's state onto Success, Warning, Info or Stop, and use
-  the matching button variant for the action that produces it.
-- **Do** keep controls at `32px` and page padding at `12px`; this is a laptop
-  tool.
-- **Do** pick a table's density once, in `tableDensity.ts`, and set every
-  money and count column in Figure with `tabular-nums`, right-aligned.
-- **Do** keep Annotation Grey at 38% lightness and `text-caption` at 1.6 line
-  height; check a Khmer header cell before calling a table done.
-- **Do** give resting cards and table shells `border border-border` and no
-  shadow; reserve shadow for the sticky header, dialogs and dropdowns.
-- **Do** keep the printed slip black on white with square corners and 2px
-  rules.
-- **Do** use the token classes (`bg-card`, `text-muted-foreground`,
-  `border-border`) instead of `gray-*` and `black` on new work.
-- **Do** reach for a shadcn primitive in `frontend/src/components/ui/`
-  before writing one, and delete `_ui-backup-pre-nanhr/` rather than
-  consulting it.
+- **Do** take facility colour from `lib/facility.ts` and nowhere else, and let a combination tile show its stripes side by side.
+- **Do** say what state a record is in with a magnet, and what a product is with a marker hue.
+- **Do** keep controls at 36px and page padding at 12px; this is a laptop tool.
+- **Do** put ink lettering on amber, and reserve amber for the one committing action on a surface.
+- **Do** set a product name, a label and a table cell in ink, whatever colour its facility is.
+- **Do** open every surface with the board header and close the block with a 2px ink rule.
+- **Do** keep today's board inside the first viewport on the sale surface, even at the cost of visible tiles.
+- **Do** name a panel's scope when the figures beside it and the rows beneath it come from different queries.
+- **Do** set money through the shared formatter and every compared figure in tabular numerals.
+- **Do** keep soft ink at 38% and the caption step at 1.6 line height, and check a Khmer header before calling a table done.
+- **Do** keep the printed slip black on white with square corners and 2px rules.
 
 ### Don't:
 
-- **Don't** use a gradient on a data surface; the profile header and the
-  customer-type banner are the drift the detector already names.
-- **Don't** define a facility palette in a page; three copies exist and one
-  reads a key that is not there.
-- **Don't** use black weight anywhere but the price on a ticket tile.
-- **Don't** use an arbitrary `text-[Npx]` size on screen; `text-caption` is
-  the floor and the slip is the only exception.
-- **Don't** add a fifth saturated hue outside the four facilities and four
-  marks; purple belongs to combination packages, not to headings.
-- **Don't** use amber inside the app; it is the sign-in mark.
-- **Don't** put a thick or coloured border on a card; the ticket tile's
-  facility edge is the one exception.
-- **Don't** use an animation class that has no keyframe, or declare a
-  keyframe inside a page.
-- **Don't** design for dark mode until a toggle exists and the stray `.dark`
-  rule is removed.
-- **Don't** introduce a fifth icon library; four already coexist (Heroicons,
-  Lucide, react-icons, Headless UI). Lucide is the shadcn default; converge
-  on it.
-- **Don't** let a table wrap or shrink its figures on narrow screens; drop
-  columns by priority or stack the row.
+- **Don't** declare a facility palette inside a page.
+- **Don't** set text in gym green or steam orange; they do not clear 4.5:1 on white.
+- **Don't** put white lettering on amber.
+- **Don't** use amber for a heading, a chip, a border or a background.
+- **Don't** use the black weight anywhere but a heading and a tile price.
+- **Don't** add a shadow to a card or a table shell. The magnet and the sticky navbar are the only things that lift.
+- **Don't** put a thick or coloured border on a card; the 2px section rule and the 3px tile stripe are the only heavy lines.
+- **Don't** use an arbitrary `text-[Npx]` size on screen; the printed slip is the only exception.
+- **Don't** ship an animation class with no keyframe behind it, or declare a keyframe inside a page.
+- **Don't** let a table wrap or shrink its figures on narrow screens; drop columns by priority or stack the row.
+- **Don't** design for dark mode. The board is light-only and the stray `.dark` rule that once contradicted the tokens has been removed.
+- **Don't** add a fifth icon library. Lucide is the direction of travel; a file being touched moves toward it.

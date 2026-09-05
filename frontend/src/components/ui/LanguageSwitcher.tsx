@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { CheckIcon as Check, ChevronUpDownIcon as ChevronsUpDown, LanguageIcon as Languages } from '@heroicons/react/24/outline';
+import { Check, ChevronsUpDown, Languages } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,11 +36,11 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         <button
           type="button"
           aria-label={t('language.label')}
-          className={`flex h-9 items-center gap-2 rounded-md p-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-accent-foreground ${className}`}
+          className={`flex h-9 items-center gap-2 rounded-md px-2 text-sm text-ink outline-none transition-colors hover:bg-tray focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-tray ${className}`}
         >
           <LanguageFlag code={active.code} />
           <span className="hidden flex-1 truncate text-left sm:inline">{active.nativeName}</span>
-          <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 opacity-50 sm:inline" aria-hidden />
+          <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 text-ink-soft sm:inline" aria-hidden />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -63,26 +63,26 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
 const LanguageFlag: React.FC<{ code: string }> = ({ code }) => {
   const Flag = LANGUAGE_FLAGS[code];
-  if (!Flag) return <Languages className="h-4 w-4 shrink-0 opacity-70" aria-hidden />;
-  return <Flag className="h-3.5 w-5 shrink-0 overflow-hidden rounded-[2px] ring-1 ring-border" />;
+  if (!Flag) return <Languages className="h-4 w-4 shrink-0 text-ink-soft" aria-hidden />;
+  return <Flag className="h-3.5 w-5 shrink-0 overflow-hidden rounded-[2px] ring-1 ring-rule" />;
 };
 
 const LanguageMenuItem: React.FC<{ language: LanguageOption }> = ({ language }) => (
   <DropdownMenuPrimitive.RadioItem
     value={language.code}
-    className="flex cursor-pointer select-none items-center gap-3 rounded-sm px-2 py-2 outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[state=checked]:font-medium"
+    className="flex cursor-pointer select-none items-center gap-3 rounded-sm px-2 py-2 outline-none transition-colors focus:bg-tray focus:text-ink data-[state=checked]:font-medium"
   >
     <LanguageFlag code={language.code} />
     <span className="flex flex-1 flex-col text-left">
       <span className="text-sm leading-5">{language.nativeName}</span>
       {language.englishName !== language.nativeName && (
-        <span className="text-xs font-normal leading-4 text-muted-foreground">
+        <span className="text-xs font-normal leading-4 text-ink-soft">
           {language.englishName}
         </span>
       )}
     </span>
     <DropdownMenuPrimitive.ItemIndicator>
-      <Check className="h-4 w-4 text-primary" aria-hidden />
+      <Check className="h-4 w-4 text-ink" aria-hidden />
     </DropdownMenuPrimitive.ItemIndicator>
   </DropdownMenuPrimitive.RadioItem>
 );

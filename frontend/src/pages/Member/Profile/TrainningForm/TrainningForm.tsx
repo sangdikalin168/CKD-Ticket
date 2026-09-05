@@ -1,16 +1,23 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
-import { Dialog, Transition } from "@headlessui/react";
-import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
+import { CircleDollarSign } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DataTable from "../../Component/DataTable";
 import { useCreateTrainningPaymentMutation, useGetTranningPriceQuery } from "../../../../generated/graphql";
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { CouponInvoice } from "../../../../components/ComponentToPrint/CouponInvoice";
 import { Button } from "@/components/ui/Button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { formatMoney } from "@/lib/money";
 
 const notify = (
     message: string,
@@ -63,124 +70,82 @@ export const TrainingPaymentForm = ((props) => {
         }),
         columnHelperPriceTable.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => info.getValue(),
+            cell: (info) => <span className="font-semibold">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.id, {
             id: "Action",
             cell: (info) => (
-                <div className="flex">
-                    {
-                        <>
-                            <span className="hidden sm:block">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => {
-                                        setIsShowConfirmModal(true);
-                                        const row = info.row.original;
-                                        setMonthQty(row.month_qty);
-                                        setPromotion(row.name);
-                                        setPrice(row.price);
-                                        setType(row.type);
-                                    }}
-                                >
-                                    <CurrencyDollarIcon
-                                        className="h-4 w-4 text-green-500"
-                                        aria-hidden="true"
-                                    />
-                                </Button>
-                            </span>
-
-                        </>
-                    }
-                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                        setIsShowConfirmModal(true);
+                        const row = info.row.original;
+                        setMonthQty(row.month_qty);
+                        setPromotion(row.name);
+                        setPrice(row.price);
+                        setType(row.type);
+                    }}
+                >
+                    <CircleDollarSign aria-hidden="true" />
+                    លក់
+                </Button>
             ),
             header: () => <span>Action</span>,
             footer: (info) => info.column.id,
         }),
     ];
 
-    const cancelButtonRef = useRef(null);
-
-    const { data, loading: loading_price_table, refetch } = useGetTranningPriceQuery({ fetchPolicy: 'network-only' })
+    const { data, loading: loading_price_table } = useGetTranningPriceQuery({ fetchPolicy: 'network-only' })
     const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
     const [month_qty, setMonthQty] = useState(0);
     const [promotion, setPromotion] = useState("");
     const [price, setPrice] = useState(0);
     const [type, setType] = useState("");
 
-    return (
-        <>
-            <Transition.Root show={props.open_trainning} as={Fragment}>
-                <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={props.setOpenTrainning}>
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                    </Transition.Child>
+    const close = () => { props.setOpenTrainning(false); setIsShowConfirmModal(false) };
 
-                    <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                                enterTo="opacity-100 translate-y-0 sm:scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            >
-                                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
-                                    <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                                        <div className="">
-                                            <div className="mt-3 text-center">
-                                                <div className="mt-2">
-                                                    {!isShowConfirmModal ? <DataTable columns={columns_price_table} data={data?.GetTranningPrice} /> :
-                                                        <>
-                                                            <ConfirmModal
-                                                                setIsShowConfirmModal={setIsShowConfirmModal}
-                                                                month_qty={month_qty}
-                                                                promotion={promotion}
-                                                                price={price}
-                                                                customer_id={props.customer_id}
-                                                                user_id={parseInt(localStorage.getItem("user_id"))}
-                                                                customer_name={props.customer_name}
-                                                                phone={props.phone}
-                                                                type={type}
-                                                                refetch={props.refetch_trainning_payment}
-                                                                setOpenTrainning={props.setOpenTrainning}
-                                                            />
-                                                        </>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                                        <Button
-                                            type="button"
-                                            variant="destructive"
-                                            onClick={() => { props.setOpenTrainning(false); setIsShowConfirmModal(false) }}
-                                        >
-                                            បោះបង់
-                                        </Button>
-                                    </div>
-                                </Dialog.Panel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition.Root>
-        </>
+    return (
+        <Dialog open={props.open_trainning} onOpenChange={(open) => { if (!open) close(); }}>
+            <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>ហ្វឹកហាត់ · តារាងតម្លៃ</DialogTitle>
+                </DialogHeader>
+
+                {!isShowConfirmModal ? (
+                    loading_price_table ? (
+                        <p className="text-sm text-ink-soft">Loading...</p>
+                    ) : (
+                        <DataTable columns={columns_price_table} data={data?.GetTranningPrice ?? []} />
+                    )
+                ) : (
+                    <ConfirmModal
+                        setIsShowConfirmModal={setIsShowConfirmModal}
+                        month_qty={month_qty}
+                        promotion={promotion}
+                        price={price}
+                        customer_id={props.customer_id}
+                        user_id={parseInt(localStorage.getItem("user_id"))}
+                        customer_name={props.customer_name}
+                        phone={props.phone}
+                        type={type}
+                        refetch={props.refetch_trainning_payment}
+                        setOpenTrainning={props.setOpenTrainning}
+                    />
+                )}
+
+                {!isShowConfirmModal && (
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={close}>
+                            បោះបង់
+                        </Button>
+                    </DialogFooter>
+                )}
+            </DialogContent>
+        </Dialog>
     );
 });
 
@@ -222,7 +187,6 @@ const ConfirmModal = ((props) => {
             window.electronAPI.printComponent(url, (response: any) => {
                 console.log('Main: ', response);
             });
-            // console.log('Main: ', data);
 
             props.setIsShowConfirmModal(false);
         });
@@ -234,7 +198,7 @@ const ConfirmModal = ((props) => {
             await handlePrint1(printIframe);
         },
     });
-    const buttonRef = useRef<HTMLInputElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         // This function will be called after the component re-renders
@@ -244,9 +208,12 @@ const ConfirmModal = ((props) => {
     }, [payment_id]);
 
     return (
-        <>
+        <div className="space-y-4">
             <button className="hidden" ref={buttonRef} type="button" onClick={handlePrint}>Print</button>
-            <div className='hidden1'>
+
+            {/* The slip as it will print, so the cashier checks it before committing. */}
+            <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+                <p className="mb-2 text-caption text-ink-soft">វិក្កយបត្រ</p>
                 <CouponInvoice ref={componentRef}
                     invoice_id={payment_id}
                     payment_date={date_time_format(new Date())}
@@ -258,20 +225,22 @@ const ConfirmModal = ((props) => {
                 />
             </div>
 
-            <Button
-                type="button"
-                variant="destructive"
-                onClick={() => props.setIsShowConfirmModal(false)}
-            >
-                បោះបង់
-            </Button>
-            <Button
-                type="button"
-                className="bg-green-500 hover:bg-green-600 text-white"
-                onClick={handleSubmit}
-            >
-                យល់ព្រម
-            </Button>
-        </>
+            <DialogFooter>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => props.setIsShowConfirmModal(false)}
+                >
+                    ត្រឡប់
+                </Button>
+                <Button
+                    type="button"
+                    variant="commit"
+                    onClick={handleSubmit}
+                >
+                    យល់ព្រម · បោះពុម្ព
+                </Button>
+            </DialogFooter>
+        </div>
     );
 })

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Bars3Icon as Rows3, Bars4Icon as Rows4 } from '@heroicons/react/24/outline';
-import type { ComponentType, ComponentProps } from 'react';
+import { Rows3, Rows4 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { TableDensity } from '../../types/datatable';
 
@@ -10,11 +10,7 @@ interface DensityToggleProps {
   className?: string;
 }
 
-// Derived from the icon itself: heroicons ships forwardRef components whose
-// ref type does not fit a plain ComponentType<SVGProps<...>>.
-type IconComponent = ComponentType<ComponentProps<typeof Rows3>>;
-
-const DENSITY_OPTIONS: { value: TableDensity; icon: IconComponent; labelKey: string }[] = [
+const DENSITY_OPTIONS: { value: TableDensity; icon: LucideIcon; labelKey: string }[] = [
   { value: 'comfortable', icon: Rows3, labelKey: 'ui.dataTable.density.comfortable' },
   { value: 'compact', icon: Rows4, labelKey: 'ui.dataTable.density.compact' },
 ];
@@ -26,7 +22,7 @@ export function DensityToggle({ value, onChange, className = '' }: DensityToggle
       role="group"
       aria-label={t('ui.dataTable.density.label')}
       className={cn(
-        'inline-flex shrink-0 items-center gap-0.5 rounded-md border border-input bg-background p-0.5',
+        'inline-flex shrink-0 items-center gap-0.5 rounded-md border border-rule bg-card p-0.5',
         className
       )}
     >
@@ -43,8 +39,8 @@ export function DensityToggle({ value, onChange, className = '' }: DensityToggle
               'inline-flex h-full min-w-[28px] items-center justify-center rounded-[3px] px-1.5 transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isActive
-                ? 'bg-accent text-accent-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-ink text-white'
+                : 'text-ink-soft hover:text-ink'
             )}
           >
             <Icon className="h-3.5 w-3.5" aria-hidden="true" />

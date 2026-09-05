@@ -38,5 +38,6 @@
     "quiet": true,
     "auditLog": ".impeccable/hook.ndjson"
   },
-  "projectRoots": []
+  "projectRoots": [],
+  "buildPath": "code"
 }

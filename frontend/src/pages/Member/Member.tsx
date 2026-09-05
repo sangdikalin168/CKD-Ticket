@@ -1,7 +1,6 @@
-import { EyeIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { UsersIcon } from "@heroicons/react/24/outline";
+import { Eye, Plus, UserRound } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import { DataTable } from "@/components/ui/DataTable";
 import { CachedImage } from "@/components/ui/CachedImage";
@@ -16,13 +15,14 @@ import JWTManager from "../../utils/jwt";
 import MemberProfile from "./Profile/MemberProfile/MemberProfile";
 import { TypeOptions, toast } from "react-toastify";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { MagnetChip } from "@/components/board/MagnetChip";
 
 const notify = (
   message: string,
@@ -54,17 +54,14 @@ type Customer = {
   towel_status: string;
 };
 
-const StatusBadge = ({ date }: { date: string }) => {
-  const isActive = date ? new Date(date) >= new Date() : false;
+const isValid = (date: string) => (date ? new Date(date) >= new Date() : false);
+
+const StatusMagnet = ({ date }: { date: string }) => {
+  const active = isValid(date);
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-        isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
-      }`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`} />
-      {isActive ? "មានសុពលភាព" : "ផុតកំណត់"}
-    </span>
+    <MagnetChip tone={active ? "done" : "rejected"}>
+      {active ? "មានសុពលភាព" : "ផុតកំណត់"}
+    </MagnetChip>
   );
 };
 
@@ -77,23 +74,26 @@ const AvatarName = ({ name, imagePath }: { name: string; imagePath: string }) =>
   return (
     <div className="flex items-center gap-2">
       {src ? (
-        <CachedImage src={src} alt={name} className="h-7 w-7 rounded-full object-cover shrink-0" />
+        <CachedImage src={src} alt={name} className="h-7 w-7 shrink-0 rounded-full border border-rule object-cover" />
       ) : (
-        <UserCircleIcon className="h-7 w-7 text-gray-300 shrink-0" />
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rule bg-tray text-ink-soft">
+          <UserRound className="h-4 w-4" aria-hidden="true" />
+        </span>
       )}
-      <span className="font-medium truncate max-w-[160px]">{name}</span>
+      <span className="max-w-[180px] truncate font-medium text-ink">{name}</span>
     </div>
   );
 };
 
 export const Member = () => {
+  const { t } = useTranslation();
   const columns: ColumnDef<Customer>[] = [
     {
       key: "customer_id",
       header: "ID",
       sortable: true,
       render: (row) => (
-        <span className="text-muted-foreground text-xs">{row.customer_id}</span>
+        <span className="text-ink-soft">{row.customer_id}</span>
       ),
     },
     {
@@ -114,9 +114,7 @@ export const Member = () => {
       key: "end_membership_date",
       header: "ថ្ងៃផុតកំណត់",
       sortable: true,
-      render: (row) => (
-        <span className="text-sm">{row.end_membership_date || "—"}</span>
-      ),
+      render: (row) => <span>{row.end_membership_date || "—"}</span>,
     },
     {
       // Also derived from end_membership_date, so it needs its own key for the
@@ -124,11 +122,8 @@ export const Member = () => {
       key: "membership_status",
       header: "ស្ថានភាព",
       sortable: false,
-      accessor: (row) =>
-        row.end_membership_date && new Date(row.end_membership_date) >= new Date()
-          ? "មានសុពលភាព"
-          : "ផុតកំណត់",
-      render: (row) => <StatusBadge date={row.end_membership_date} />,
+      accessor: (row) => (isValid(row.end_membership_date) ? "មានសុពលភាព" : "ផុតកំណត់"),
+      render: (row) => <StatusMagnet date={row.end_membership_date} />,
     },
   ];
 
@@ -185,85 +180,70 @@ export const Member = () => {
   // and with fetchPolicy "no-cache" that empties `data` while in flight — so the
   // old condition swapped the table for a spinner on each keystroke-batch,
   // unmounting DataTable and wiping the search box the user was typing into.
-  if (member_loading && !hasLoadedOnce.current) return <LoadingPage message="Loading" />;
+  if (member_loading && !hasLoadedOnce.current) return <LoadingPage message={t("common.loading")} />;
 
   if (showProfile) return <MemberProfile ID={customer_id} />;
 
-  const activeCount = data_table.filter(
-    (c) => c.end_membership_date && new Date(c.end_membership_date) >= new Date()
-  ).length;
+  const activeCount = data_table.filter((c) => isValid(c.end_membership_date)).length;
 
   return (
     <>
-      <Card className="shadow-sm">
-        <CardHeader className="pb-0 px-5 pt-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                <UsersIcon className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <h1 className="text-base font-semibold text-gray-900">សមាជិក</h1>
-                <p className="text-xs text-muted-foreground">
-                  សរុប {totalCount} នាក់ · មានសុពលភាព {activeCount} នាក់
-                </p>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              className="gap-1.5 bg-indigo-600 hover:bg-indigo-700"
-              onClick={() => setShowCreate(true)}
-            >
-              <PlusCircleIcon className="h-4 w-4" />
-              បន្ថែមសមាជិក
-            </Button>
-          </div>
-        </CardHeader>
+      <BoardHeader
+        titleKey="members.title"
+        subtitle={t("members.count", { total: totalCount, active: activeCount })}
+        actions={
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus aria-hidden="true" />
+            {t("members.add")}
+          </Button>
+        }
+      />
 
-        <CardContent className="px-5 py-4">
-          <DataTable<Customer>
-            columns={columns}
-            data={data_table}
-            pageInfo={{
-              current_page: pageIndex + 1,
-              page_size: pageSize,
-              total_items: totalCount,
-              total_pages: serverPageCount,
-              has_next: pageIndex + 1 < serverPageCount,
-              has_previous: pageIndex > 0,
-            }}
-            currentPage={pageIndex + 1}
-            pageSize={pageSize}
-            onPageChange={(page) => setPageIndex(page - 1)}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setPageIndex(0);
-            }}
-            pageSizeOptions={[10, 20, 30, 50]}
-            searchValue={search}
-            onSearchChange={(term) => {
-              setSearch(term);
-              // A new search must start at page 1, otherwise a 3-match result
-              // viewed from page 12 renders empty.
-              setPageIndex(0);
-            }}
-            columnToggle
-            loading={member_loading}
-            exportFileName="members.csv"
-            printTitle="សមាជិក"
-            rowActions={(row) => [
-              {
-                label: "មើល",
-                onClick: () => {
-                  setCustomerID(row.customer_id);
-                  setShowProfile(true);
-                },
-                icon: <EyeIcon className="h-3.5 w-3.5" />,
-              },
-            ]}
-          />
-        </CardContent>
-      </Card>
+      <DataTable<Customer>
+        columns={columns}
+        data={data_table}
+        pageInfo={{
+          current_page: pageIndex + 1,
+          page_size: pageSize,
+          total_items: totalCount,
+          total_pages: serverPageCount,
+          has_next: pageIndex + 1 < serverPageCount,
+          has_previous: pageIndex > 0,
+        }}
+        currentPage={pageIndex + 1}
+        pageSize={pageSize}
+        onPageChange={(page) => setPageIndex(page - 1)}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
+        pageSizeOptions={[10, 20, 30, 50]}
+        searchValue={search}
+        onSearchChange={(term) => {
+          setSearch(term);
+          // A new search must start at page 1, otherwise a 3-match result
+          // viewed from page 12 renders empty.
+          setPageIndex(0);
+        }}
+        columnToggle
+        loading={member_loading}
+        exportFileName="members.csv"
+        printTitle="សមាជិក"
+        onRowClick={(row) => {
+          setCustomerID(row.customer_id);
+          setShowProfile(true);
+        }}
+        rowActions={(row) => [
+          {
+            label: "មើល",
+            onClick: () => {
+              setCustomerID(row.customer_id);
+              setShowProfile(true);
+            },
+            icon: <Eye className="h-4 w-4" aria-hidden="true" />,
+          },
+        ]}
+      />
 
       {/* Create member dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>

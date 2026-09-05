@@ -1,11 +1,31 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import React from "react";
 
+// The slip is paper: layout stays; the faces are named explicitly so the HTML the
+// desktop shell prints carries the same Roboto + Nokora pairing as the screen.
+const SLIP_FONT = { fontFamily: "'Roboto', 'Nokora', sans-serif" } as const;
+
+
 // https://reactjs.org/docs/refs-and-the-dom.html#refs-and-function-components
-export const MemberInvoice = React.forwardRef((props, ref) => {
+/** Every field is optional: the member, renewal, fruit and coupon flows each
+ *  fill the subset their slip needs, and the layout simply omits the rest. */
+export interface MemberInvoiceProps {
+    invoice_id?: number | string | null;
+    payment_date?: string | null;
+    cashier?: string | null;
+    c_name?: string | null;
+    phone?: string | null;
+    promotion?: string | null;
+    price?: number | string | null;
+    shift?: string | null;
+    /** Carried by the renewal flow; the printed layout does not show it. */
+    start_date?: string | null;
+    old_end?: string | null;
+    new_end?: string | null;
+}
+
+export const MemberInvoice = React.forwardRef<HTMLDivElement, MemberInvoiceProps>((props, ref) => {
     return (
-        <div ref={ref} className="w-[405px] left-0 top-0 z-10 justify-center content-center overflow-auto border-2 border-black">
+        <div ref={ref} style={SLIP_FONT} className="w-[405px] left-0 top-0 z-10 justify-center content-center overflow-auto border-2 border-black">
             <div className="text-center pt-3">
                 <p className="text-lg font-semibold text-black">មិង ហួរក្លឹបហាត់ប្រាណ & អាងហែលទឹក</p>
                 <p className="text-lg font-semibold text-black">(សាខាចំការដូង)</p>

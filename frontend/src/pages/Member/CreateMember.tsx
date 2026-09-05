@@ -1,8 +1,8 @@
-import { ArrowUpTrayIcon, CameraIcon, UserCircleIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { DialogFooter } from "@/components/ui/dialog";
 
 const CreateMember = ({ setShow, onSubmit }: any) => {
 
@@ -24,82 +24,57 @@ const CreateMember = ({ setShow, onSubmit }: any) => {
     };
 
     return (
-        <>
-            <form onSubmit={handleSubmit} className="border-2 p-2 mb-2 rounded-md bg-white">
-                <div>
-                    <div>
-                        <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-6">
-                            <div className="sm:col-span-2 space-y-2">
-                                <Label>
-                                    ឈ្មោះអតិថិជន
-                                </Label>
-                                <Input
-                                    type="text"
-                                    required
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="sm:col-span-2 space-y-2">
-                                <Label htmlFor="last-name">
-                                    លេខទូរស័ព្ទ
-                                </Label>
-                                <Input
-                                    id="last-name"
-                                    type="text"
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="sm:col-span-2 space-y-2">
-                                <Label htmlFor="gender">
-                                    ភេទ
-                                </Label>
-                                <select
-                                    id="gender"
-                                    className="block w-full rounded-md border border-input bg-background py-1.5 px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                    onChange={(e) => setGender(e.target.value)}
-                                >
-                                    <option defaultValue={"ប្រុស"} value="ប្រុស">ប្រុស</option>
-                                    <option value="ស្រី">ស្រី</option>
-                                </select>
-                            </div>
-
-                            <div className="col-span-full">
-                                <div className="flex mt-2 items-center gap-x-3">
-                                    <UserCircleIcon className="h-32 w-32 text-gray-300" aria-hidden="true" />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="flex gap-x-1"
-                                    >
-                                        <ArrowUpTrayIcon className="h-5 w-5" />
-                                        បញ្ចូលរូប
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="flex gap-x-1"
-                                    >
-                                        <CameraIcon className="h-5 w-5" />
-                                        ថតរូប
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+                <div className="space-y-1.5 sm:col-span-3">
+                    <Label htmlFor="new-member-name">ឈ្មោះអតិថិជន</Label>
+                    <Input
+                        id="new-member-name"
+                        type="text"
+                        required
+                        autoFocus
+                        onChange={(e) => setCustomerName(e.target.value)}
+                    />
                 </div>
-                <div className="mt-6 flex items-center justify-end gap-x-6">
-                    <Button type="button" variant="ghost" onClick={() => setShow(false)}>
-                        បោះបង់
-                    </Button>
-                    <Button type="submit">
-                        រក្សារទុក
-                    </Button>
+
+                <div className="space-y-1.5 sm:col-span-3">
+                    <Label htmlFor="new-member-phone">លេខទូរស័ព្ទ</Label>
+                    <Input
+                        id="new-member-phone"
+                        type="text"
+                        inputMode="tel"
+                        onChange={(e) => setPhone(e.target.value)}
+                    />
                 </div>
-            </form>
-        </>
+
+                <div className="space-y-1.5 sm:col-span-3">
+                    <Label htmlFor="gender">ភេទ</Label>
+                    <select
+                        id="gender"
+                        className="flex h-9 w-full rounded-md border border-rule bg-card px-3 py-1 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        defaultValue="ប្រុស"
+                        onChange={(e) => setGender(e.target.value)}
+                    >
+                        <option value="ប្រុស">ប្រុស</option>
+                        <option value="ស្រី">ស្រី</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* The photo is taken on the member's own board once the record exists. */}
+            <p className="text-caption text-ink-soft">
+                រូបថត និងម្រាមដៃ ថតនៅទំព័រសមាជិកបន្ទាប់ពីរក្សាទុក។
+            </p>
+
+            <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShow(false)}>
+                    បោះបង់
+                </Button>
+                <Button type="submit">
+                    រក្សាទុក
+                </Button>
+            </DialogFooter>
+        </form>
     )
 }
 

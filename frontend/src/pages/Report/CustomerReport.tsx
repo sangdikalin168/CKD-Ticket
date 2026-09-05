@@ -4,13 +4,19 @@
 // npm install html2pdf.js
 import html2pdf from "html2pdf.js";
 import * as XLSX from 'xlsx';
+import { useTranslation } from "react-i18next";
+import { FileDown, FileSpreadsheet, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DateInput } from "@/components/ui/DateInput";
 import { Label } from "@/components/ui/Label";
-import { Card, CardContent } from "@/components/ui/Card";
 import { DataTable } from "@/components/ui/DataTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";
 import type { ColumnDef } from "@/types/datatable";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { BoardSection } from "@/components/board/BoardSection";
+import { MagnetDot } from "@/components/board/MagnetChip";
+import { formatCount } from "@/lib/money";
 const CUSTOMER_SCAN_REPORT_QUERY = gql`
   query CustomerScanReport($toDate: String!, $fromDate: String!, $memberId: Float!) {
     customerScanReport(toDate: $toDate, fromDate: $fromDate, memberId: $memberId) {
@@ -108,7 +114,18 @@ const formatScanDate = (value: string) => {
   return `${day}-${month}-${year} ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
 };
 
+/** A figure on the board with its label written beside it. */
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="inline-flex items-baseline gap-3 rounded-lg border border-rule bg-card px-4 py-3">
+      <span className="text-caption text-ink-soft">{label}</span>
+      <span className="text-heading font-black leading-none text-ink">{value}</span>
+    </div>
+  );
+}
+
 export const CustomerReport = () => {
+  const { t } = useTranslation();
   // Ref for scan log section
   const scanLogRef = useRef<HTMLDivElement>(null);
 
@@ -117,7 +134,7 @@ export const CustomerReport = () => {
   const [selectedTab, setSelectedTab] = useState<'active' | 'expiring' | 'scan'>('active');
 
   // Query for all customers
-  const { loading: loadingCustomers, error: errorCustomers, data: dataCustomers } = useQuery(CUSTOMERS);
+  const { data: dataCustomers } = useQuery(CUSTOMERS);
 
   // Debounced search state for Scan Report
   const [searchValue, setSearchValue] = useState("");
@@ -240,7 +257,6 @@ export const CustomerReport = () => {
     const ws = XLSX.utils.json_to_sheet(data);
 
     // Define headers and set column widths
-    const headers = ['Customer ID', 'Name', 'Phone', 'Expiration Date'];
     const columnWidths = [
       { wch: 15 }, // Customer ID
       { wch: 30 }, // Name
@@ -262,41 +278,85 @@ export const CustomerReport = () => {
     XLSX.writeFile(wb, filename);
   };
 
-  return (
+  const exportScanLogPdf = () => {
+    if (!scanLogRef.current) {
+      alert('No scan log to export.');
+      return;
+    }
+    // Sanitize name for filename (remove special chars, spaces to _)
+    const name = selectedCustomer?.customer_name
+      ? selectedCustomer.customer_name.replace(/[^\w\dក-៿]+/g, '_')
+      : 'customer';
+    const id = selectedCustomer?.customer_id || '';
+    const filename = `scan-log-${name}-${id}.pdf`;
+    html2pdf()
+      .set({
+        margin: 10,
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      })
+      .from(scanLogRef.current)
+      .save();
+  };
+
+  const dateFields = (
     <>
-      {/* Tab Buttons */}
-      <div className="flex mb-6 gap-2">
-        <Button
-          variant={selectedTab === 'active' ? 'default' : 'outline'}
-          onClick={() => setSelectedTab('active')}
-        >
-          Active
-        </Button>
-        <Button
-          variant={selectedTab === 'expiring' ? 'default' : 'outline'}
-          onClick={() => setSelectedTab('expiring')}
-        >
-          Expiring
-        </Button>
-        <Button
-          variant={selectedTab === 'scan' ? 'default' : 'outline'}
-          onClick={() => setSelectedTab('scan')}
-        >
-          Scan Report
-        </Button>
+      <div className="w-40 space-y-1.5">
+        <Label htmlFor="cr-from">From Date</Label>
+        <DateInput
+          id="cr-from"
+          name="fromDate"
+          value={fromDate}
+          onChange={e => {
+            setFromDate(e.target.value);
+            setSearchClicked(false);
+          }}
+        />
       </div>
-      {tabLoading && <p className="text-center">Loading...</p>}
-      {tabError && (
-        <p className="text-center text-red-500 mb-4">Error: {tabError.message}</p>
-      )}
-      {/* Scan Report Tab */}
-      {selectedTab === 'scan' && (
-        <Card className="max-w-2xl mx-auto">
-          <CardContent className="p-6">
-            <div className="mb-4 flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Label className="block text-sm font-medium mb-1">Customer Search</Label>
+      <div className="w-40 space-y-1.5">
+        <Label htmlFor="cr-to">To Date</Label>
+        <DateInput
+          id="cr-to"
+          name="toDate"
+          value={toDate}
+          onChange={e => {
+            setToDate(e.target.value);
+            setSearchClicked(false);
+          }}
+        />
+      </div>
+    </>
+  );
+
+  return (
+    <div className="space-y-4">
+      <BoardHeader titleKey="reports.customers" />
+
+      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as typeof selectedTab)}>
+        <TabsList>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="expiring">Expiring</TabsTrigger>
+          <TabsTrigger value="scan">Scan Report</TabsTrigger>
+        </TabsList>
+
+        {tabLoading && <p className="mt-4 text-sm text-ink-soft" role="status">{t("common.loading")}</p>}
+        {tabError && (
+          <p className="mt-4 flex items-center gap-2 text-sm text-ink" role="alert">
+            <MagnetDot tone="rejected" size="sm" />
+            Error: {tabError.message}
+          </p>
+        )}
+
+        {/* Scan Report Tab */}
+        <TabsContent value="scan">
+          <BoardSection title="Scan Report">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end">
+              <div className="relative flex-1 space-y-1.5">
+                <Label htmlFor="scan-customer">Customer Search</Label>
                 <Input
+                  id="scan-customer"
                   type="text"
                   placeholder="Type ID, Name or Phone..."
                   value={searchValue}
@@ -311,11 +371,11 @@ export const CustomerReport = () => {
                 />
                 {/* Dropdown */}
                 {showDropdown && debouncedValue && filteredCustomers.length > 0 && (
-                  <ul className="absolute z-10 bg-white border border-gray-300 rounded w-full mt-1 max-h-48 overflow-y-auto shadow-lg">
+                  <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-rule bg-popover shadow-overlay">
                     {filteredCustomers.map((c: any) => (
                       <li
                         key={c.customer_id}
-                        className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                        className="cursor-pointer px-3 py-2 text-sm text-ink hover:bg-tray"
                         onClick={() => {
                           setSelectedCustomer(c);
                           setSearchValue(c.customer_name + ' (' + c.customer_id + ')');
@@ -329,77 +389,36 @@ export const CustomerReport = () => {
                   </ul>
                 )}
               </div>
-
-              <div>
-                <Label className="block text-sm font-medium mb-1">From Date</Label>
-                <DateInput
-                  name="fromDate"
-                  value={fromDate}
-                  onChange={e => {
-                    setFromDate(e.target.value);
-                    setSearchClicked(false);
-                  }}
-                />
-              </div>
-              <div>
-                <Label className="block text-sm font-medium mb-1">To Date</Label>
-                <DateInput
-                  name="toDate"
-                  value={toDate}
-                  onChange={e => {
-                    setToDate(e.target.value);
-                    setSearchClicked(false);
-                  }}
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                disabled={!selectedCustomer || !fromDate || !toDate}
-                onClick={() => setSearchClicked(true)}
-              >
-                Search
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={
-                  !dataScan ||
-                  !dataScan.customerScanReport ||
-                  !dataScan.customerScanReport.ScanLog.length
-                }
-                onClick={() => {
-                  if (!scanLogRef.current) {
-                    alert('No scan log to export.');
-                    return;
+              {dateFields}
+              <div className="flex gap-2">
+                <Button
+                  disabled={!selectedCustomer || !fromDate || !toDate}
+                  onClick={() => setSearchClicked(true)}
+                >
+                  <Search aria-hidden="true" />
+                  Search
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={
+                    !dataScan ||
+                    !dataScan.customerScanReport ||
+                    !dataScan.customerScanReport.ScanLog.length
                   }
-                  // Sanitize name for filename (remove special chars, spaces to _)
-                  const name = selectedCustomer?.customer_name
-                    ? selectedCustomer.customer_name.replace(/[^\w\d\u1780-\u17FF]+/g, '_')
-                    : 'customer';
-                  const id = selectedCustomer?.customer_id || '';
-                  const filename = `scan-log-${name}-${id}.pdf`;
-                  html2pdf()
-                    .set({
-                      margin: 10,
-                      filename,
-                      image: { type: 'jpeg', quality: 0.98 },
-                      html2canvas: { scale: 2, useCORS: true },
-                      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    })
-                    .from(scanLogRef.current)
-                    .save();
-                }}
-              >
-                Export to PDF
-              </Button>
+                  onClick={exportScanLogPdf}
+                >
+                  <FileDown aria-hidden="true" />
+                  PDF
+                </Button>
+              </div>
             </div>
             {/* Scan results */}
-            <div className="mt-6" ref={scanLogRef}>
-              {loadingScan && <p className="text-gray-600 text-center">Loading scan results...</p>}
-              {errorScan && <p className="text-red-500 text-center">Error: {errorScan.message}</p>}
+            <div className="mt-4" ref={scanLogRef}>
+              {loadingScan && <p className="text-center text-sm text-ink-soft">Loading scan results...</p>}
+              {errorScan && <p className="text-center text-sm text-magnet-rejected">Error: {errorScan.message}</p>}
               {dataScan && dataScan.customerScanReport && (
                 <div>
-                  <div className="mb-2 font-semibold text-center">Scan Log for {selectedCustomer?.customer_name} ({dataScan.customerScanReport.FromDate} to {dataScan.customerScanReport.ToDate})</div>
+                  <div className="mb-2 text-sm font-semibold text-ink">Scan Log for {selectedCustomer?.customer_name} ({dataScan.customerScanReport.FromDate} to {dataScan.customerScanReport.ToDate})</div>
                   {dataScan.customerScanReport.ScanLog.length > 0 ? (
                     <DataTable<ScanLogRow>
                       data={scanLogRows}
@@ -412,191 +431,92 @@ export const CustomerReport = () => {
                       exportable={false}
                       printable={false}
                       densityToggle={false}
+                      defaultDensity="compact"
                     />
                   ) : (
-                    <p className="text-center">No scan records found for this customer in the selected date range.</p>
+                    <p className="text-sm text-ink-soft">No scan records found for this customer in the selected date range.</p>
                   )}
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </BoardSection>
+        </TabsContent>
 
-      {/* Active Members Tab */}
-      {selectedTab === 'active' && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex justify-between mb-6">
-                  <div>
-                    <div className="text-2xl font-semibold mb-1"><span className="text-base font-normal text-gray-600 align-top"></span>{totalActive}</div>
-                    <div className="text-sm font-medium text-gray-600">Active Members</div>
-                  </div>
-                </div>
-                <Button
-                  variant="link"
-                  className="p-0 h-auto text-sm"
-                  onClick={() => setShowDetails(!showDetails)}
-                >
-                  {showDetails ? "Hide details" : "View details"}
-                </Button>
-              </CardContent>
-            </Card>
+        {/* Active Members Tab */}
+        <TabsContent value="active">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Figure label="Active Members" value={formatCount(totalActive)} />
+              <Button
+                variant="outline"
+                onClick={() => setShowDetails(!showDetails)}
+              >
+                {showDetails ? "Hide details" : "View details"}
+              </Button>
+            </div>
+
+            {/* Conditional Rendering for Table */}
+            {showDetails && (
+              <DataTable<CustomerRow>
+                data={filteredActiveRows}
+                columns={activeCustomerColumns}
+                currentPage={1}
+                pageSize={filteredActiveRows.length || 1}
+                onPageChange={() => { /* un-paginated */ }}
+                onPageSizeChange={() => { /* un-paginated */ }}
+                searchPlaceholder="Search name, phone or ID..."
+                searchValue={activeSearch}
+                onSearchChange={setActiveSearch}
+                exportFileName="active-customers.xlsx"
+                printTitle="Active Members"
+                densityToggle={false}
+                defaultDensity="compact"
+              />
+            )}
           </div>
+        </TabsContent>
 
-          {/* Conditional Rendering for Table */}
-          {showDetails && (
-            <Card>
-              <CardContent className="p-6">
-                <Button
-                  variant="link"
-                  className="p-0 h-auto text-sm mb-4"
-                  onClick={() => setShowDetails(!showDetails)}
-                >
-                  {showDetails ? "Hide details" : "View details"}
-                </Button>
-                <div className="overflow-x-auto">
+        {/* Expiring Members Tab */}
+        <TabsContent value="expiring">
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end">
+              {dateFields}
+              <Figure label="Expiring Members" value={formatCount(totalExpiring)} />
+              {/* Export to Excel button */}
+              <Button
+                variant="outline"
+                disabled={customersExpiring.length === 0}
+                onClick={() => exportToExcel(customersExpiring, fromDate, toDate)}
+              >
+                <FileSpreadsheet aria-hidden="true" />
+                Excel
+              </Button>
+            </div>
+
+            {toDate && (
+              <BoardSection title={`${totalExpiring} Customers Expiring from ${fromDate} to ${toDate}`}>
+                {customersExpiring.length > 0 ? (
                   <DataTable<CustomerRow>
-                    data={filteredActiveRows}
-                    columns={activeCustomerColumns}
+                    data={expiringRows}
+                    columns={expiringCustomerColumns}
                     currentPage={1}
-                    pageSize={filteredActiveRows.length || 1}
+                    pageSize={expiringRows.length || 1}
                     onPageChange={() => { /* un-paginated */ }}
                     onPageSizeChange={() => { /* un-paginated */ }}
-                    searchPlaceholder="Search name, phone or ID..."
-                    searchValue={activeSearch}
-                    onSearchChange={setActiveSearch}
-                    exportFileName="active-customers.xlsx"
-                    printTitle="Active Members"
+                    searchable={false}
+                    exportable={false}
+                    printable={false}
                     densityToggle={false}
+                    defaultDensity="compact"
                   />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </>
-      )}
-
-      {/* Expiring Members Tab */}
-      {selectedTab === 'expiring' && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex justify-between mb-6">
-                  <div>
-                    <div className="text-2xl font-semibold mb-1"><span className="text-base font-normal text-gray-600 align-top"></span>{totalExpiring}</div>
-                    <div className="text-sm font-medium text-gray-600">Expiring Members</div>
-                  </div>
-                </div>
-
-                <div className="mb-4 flex flex-col md:flex-row gap-4">
-                  <div>
-                    <Label className="block text-sm font-medium mb-1">From Date</Label>
-                    <DateInput
-                      name="fromDate"
-                      value={fromDate}
-                      onChange={e => {
-                        setFromDate(e.target.value);
-                        setSearchClicked(false);
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label className="block text-sm font-medium mb-1">To Date</Label>
-                    <DateInput
-                      name="toDate"
-                      value={toDate}
-                      onChange={e => {
-                        setToDate(e.target.value);
-                        setSearchClicked(false);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    disabled={!selectedCustomer || !fromDate || !toDate}
-                    onClick={() => setSearchClicked(true)}
-                  >
-                    Search
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    disabled={
-                      !dataScan ||
-                      !dataScan.customerScanReport ||
-                      !dataScan.customerScanReport.ScanLog.length
-                    }
-                    onClick={() => {
-                      if (!scanLogRef.current) {
-                        alert('No scan log to export.');
-                        return;
-                      }
-                      // Sanitize name for filename (remove special chars, spaces to _)
-                      const name = selectedCustomer?.customer_name
-                        ? selectedCustomer.customer_name.replace(/[^\w\d\u1780-\u17FF]+/g, '_')
-                        : 'customer';
-                      const id = selectedCustomer?.customer_id || '';
-                      const filename = `scan-log-${name}-${id}.pdf`;
-                      html2pdf()
-                        .set({
-                          margin: 10,
-                          filename,
-                          image: { type: 'jpeg', quality: 0.98 },
-                          html2canvas: { scale: 2, useCORS: true },
-                          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                        })
-                        .from(scanLogRef.current)
-                        .save();
-                    }}
-                  >
-                    PDF
-                  </Button>
-
-                  {/* Export to Excel button */}
-                  <Button
-                    variant="secondary"
-                    disabled={customersExpiring.length === 0}
-                    onClick={() => exportToExcel(customersExpiring, fromDate, toDate)}
-                  >
-                    Excel
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {toDate && (
-            <>
-              <div className="mb-4">
-                <div className="text-lg font-semibold">{totalExpiring} Customers Expiring from {fromDate} to {toDate}</div>
-                {customersExpiring.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <DataTable<CustomerRow>
-                      data={expiringRows}
-                      columns={expiringCustomerColumns}
-                      currentPage={1}
-                      pageSize={expiringRows.length || 1}
-                      onPageChange={() => { /* un-paginated */ }}
-                      onPageSizeChange={() => { /* un-paginated */ }}
-                      searchable={false}
-                      exportable={false}
-                      printable={false}
-                      densityToggle={false}
-                    />
-                  </div>
                 ) : (
-                  <p>No customers found for the selected expiration date.</p>
+                  <p className="text-sm text-ink-soft">No customers found for the selected expiration date.</p>
                 )}
-              </div>
-            </>
-          )}
-        </>
-      )}
-    </>
+              </BoardSection>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

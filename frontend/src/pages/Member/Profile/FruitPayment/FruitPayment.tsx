@@ -1,4 +1,5 @@
-import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
+// @ts-nocheck
+import { CircleDollarSign } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useEffect, useRef, useState } from "react";
 import DataTable from "../../Component/DataTable";
@@ -18,6 +19,8 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
 const notify = (
     message: string,
@@ -51,6 +54,8 @@ const date_format = (date_time: Date) => {
     return date.toLocaleDateString("fr-CA");
 };
 
+const MONTHS = [1, 3, 6, 12];
+
 export const FruitPayment = (props) => {
     const columnHelperPriceTable = createColumnHelper<PriceTable>();
     const columns_price_table = [
@@ -75,39 +80,29 @@ export const FruitPayment = (props) => {
 
         columnHelperPriceTable.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => info.getValue(),
+            cell: (info) => <span className="font-semibold">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.id, {
             id: "Action",
             cell: (info) => (
-                <div className="flex">
-                    {
-                        <>
-                            <span className="hidden sm:block">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => {
-                                        setIsShowConfirmModal(true);
-                                        const row = info.row.original;
-                                        setMonthQty(row.month_qty);
-                                        setPromotion(row.name);
-                                        setPrice(row.price);
-                                        setShift(row.shift);
-                                    }}
-                                >
-                                    <CurrencyDollarIcon
-                                        className="h-4 w-4 text-green-500"
-                                        aria-hidden="true"
-                                    />
-                                </Button>
-                            </span>
-                        </>
-                    }
-                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                        setIsShowConfirmModal(true);
+                        const row = info.row.original;
+                        setMonthQty(row.month_qty);
+                        setPromotion(row.name);
+                        setPrice(row.price);
+                        setShift(row.shift);
+                    }}
+                >
+                    <CircleDollarSign aria-hidden="true" />
+                    លក់
+                </Button>
             ),
             header: () => <span>Action</span>,
             footer: (info) => info.column.id,
@@ -120,12 +115,14 @@ export const FruitPayment = (props) => {
 
     const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
     const [member_price_table, setMemberPriceTable] = useState([]);
+    const [activeMonth, setActiveMonth] = useState(1);
 
     const FilterPriceTableByMonth = (month_qty: number) => {
         const result = price_table?.GetFruitPriceTable.filter(
             (p) => p.month_qty == month_qty
         );
-        setMemberPriceTable(result);
+        setActiveMonth(month_qty);
+        setMemberPriceTable(result ?? []);
     };
 
     const [month_qty, setMonthQty] = useState(1);
@@ -149,82 +146,72 @@ export const FruitPayment = (props) => {
                 }
             }}
         >
-            <DialogContent className="sm:max-w-3xl">
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>តារាងតម្លៃ</DialogTitle>
+                    <DialogTitle>ផ្សេងៗ · តារាងតម្លៃ</DialogTitle>
                 </DialogHeader>
 
-                <div className="mt-2">
-                    {!isShowConfirmModal ? (
-                        <>
-                            <div className="space-x-2 mb-3">
-                                <Button
+                {!isShowConfirmModal ? (
+                    <div className="space-y-3">
+                        <div className="flex flex-wrap gap-2" role="group" aria-label="ចំនួនខែ">
+                            {MONTHS.map((m) => (
+                                <button
+                                    key={m}
                                     type="button"
-                                    onClick={() => FilterPriceTableByMonth(1)}
+                                    aria-pressed={activeMonth === m}
+                                    onClick={() => FilterPriceTableByMonth(m)}
+                                    className={cn(
+                                        "inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                        activeMonth === m ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray"
+                                    )}
                                 >
-                                    1ខែ
-                                </Button>
-                                <Button
-                                    type="button"
-                                    onClick={() => FilterPriceTableByMonth(3)}
-                                >
-                                    3ខែ
-                                </Button>
-                                <Button
-                                    type="button"
-                                    onClick={() => FilterPriceTableByMonth(6)}
-                                >
-                                    6ខែ
-                                </Button>
-                                <Button
-                                    type="button"
-                                    onClick={() => FilterPriceTableByMonth(12)}
-                                >
-                                    12ខែ
-                                </Button>
-                            </div>
-                            {!loading ? (
-                                <DataTable
-                                    columns={columns_price_table}
-                                    data={member_price_table}
-                                />
-                            ) : (
-                                <div>Loading...</div>
-                            )}
-                        </>
-                    ) : (
-                        <ConfirmModal
-                            setIsShowConfirmModal={setIsShowConfirmModal}
-                            old_end={props.details?.end_fruit_date}
-                            month_qty={month_qty}
-                            promotion={promotion}
-                            shift={shift}
-                            price={price}
-                            customer_id={props.details?.customer_id}
-                            user_id={parseInt(
-                                localStorage.getItem("user_id")
-                            )}
-                            customer_name={props.details?.customer_name}
-                            phone={props.details?.phone}
-                            refetchMemberDetail={props.refetchMemberDetail}
-                            refetch={props.refechFruitPayment}
-                            setOpen={props.setOpen}
-                        />
-                    )}
-                </div>
+                                    {m}ខែ
+                                </button>
+                            ))}
+                        </div>
+                        {!loading ? (
+                            <DataTable
+                                columns={columns_price_table}
+                                data={member_price_table}
+                            />
+                        ) : (
+                            <p className="text-sm text-ink-soft">Loading...</p>
+                        )}
+                    </div>
+                ) : (
+                    <ConfirmModal
+                        setIsShowConfirmModal={setIsShowConfirmModal}
+                        old_end={props.details?.end_fruit_date}
+                        month_qty={month_qty}
+                        promotion={promotion}
+                        shift={shift}
+                        price={price}
+                        customer_id={props.details?.customer_id}
+                        user_id={parseInt(
+                            localStorage.getItem("user_id")
+                        )}
+                        customer_name={props.details?.customer_name}
+                        phone={props.details?.phone}
+                        refetchMemberDetail={props.refetchMemberDetail}
+                        refetch={props.refechFruitPayment}
+                        setOpen={props.setOpen}
+                    />
+                )}
 
-                <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={() => {
-                            props.setOpenFruit(false);
-                            setIsShowConfirmModal(false);
-                        }}
-                    >
-                        បោះបង់
-                    </Button>
-                </DialogFooter>
+                {!isShowConfirmModal && (
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                props.setOpenFruit(false);
+                                setIsShowConfirmModal(false);
+                            }}
+                        >
+                            បោះបង់
+                        </Button>
+                    </DialogFooter>
+                )}
             </DialogContent>
         </Dialog>
     );
@@ -240,14 +227,12 @@ const ConfirmModal = (props: any) => {
             // Add the duration to the effective date to get the next renewal date.
             const renewalDate = new Date(today);
             renewalDate.setMonth(renewalDate.getMonth() + duration);
-            //renewalDate.setFullYear(renewalDate.getFullYear() + duration / 12);
             return renewalDate;
         } else {
             duration = today.getMonth() - effectiveDate.getMonth() + month_qty;
             // Add the duration to the effective date to get the next renewal date.
             const renewalDate = new Date(effectiveDate);
             renewalDate.setMonth(renewalDate.getMonth() + month_qty);
-            //renewalDate.setFullYear(renewalDate.getFullYear() + month_qty / 12);
             return renewalDate;
         }
     };
@@ -293,7 +278,6 @@ const ConfirmModal = (props: any) => {
             window.electronAPI.printComponent(url, (response: any) => {
                 console.log("Main: ", response);
             });
-            // console.log('Main: ', data);
         });
     };
     const handlePrint = useReactToPrint({
@@ -303,7 +287,7 @@ const ConfirmModal = (props: any) => {
             await handlePrint1(printIframe);
         },
     });
-    const buttonRef = useRef<HTMLInputElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         // This function will be called after the component re-renders
@@ -314,7 +298,7 @@ const ConfirmModal = (props: any) => {
     }, [payment_id]);
 
     return (
-        <>
+        <div className="space-y-4">
             <button
                 className="hidden"
                 ref={buttonRef}
@@ -323,31 +307,21 @@ const ConfirmModal = (props: any) => {
             >
                 Print
             </button>
-            <p className="text-lg font-semibold leading-6 text-gray-900">
-                សុពលភាពចាស់: {props.old_end}
-            </p>
-            <p className="text-lg font-semibold leading-6 text-gray-900 mb-2 ">
-                ថ្ងៃបង់ប្រាក់បន្ទាប់: {date_format(renewalDate)}
-            </p>
-            <div className="flex gap-2 justify-end">
-                <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => props.setIsShowConfirmModal(false)}
-                >
-                    បោះបង់
-                </Button>
-                <Button
-                    type="button"
-                    variant="default"
-                    className="bg-green-500 hover:bg-green-600"
-                    onClick={handleSubmit}
-                >
-                    យល់ព្រម
-                </Button>
-            </div>
 
-            <div className="hidden1">
+            <dl className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border border-rule p-3">
+                    <dt className="text-caption text-ink-soft">សុពលភាពចាស់</dt>
+                    <dd className="text-title font-black text-ink">{props.old_end || "—"}</dd>
+                </div>
+                <div className="rounded-lg border border-rule p-3">
+                    <dt className="text-caption text-ink-soft">ថ្ងៃបង់ប្រាក់បន្ទាប់</dt>
+                    <dd className="text-title font-black text-ink">{date_format(renewalDate)}</dd>
+                </div>
+            </dl>
+
+            {/* The slip as it will print. */}
+            <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+                <p className="mb-2 text-caption text-ink-soft">វិក្កយបត្រ</p>
                 <MemberInvoice
                     ref={componentRef}
                     invoice_id={payment_id}
@@ -362,6 +336,23 @@ const ConfirmModal = (props: any) => {
                     shift={""}
                 />
             </div>
-        </>
+
+            <DialogFooter>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => props.setIsShowConfirmModal(false)}
+                >
+                    ត្រឡប់
+                </Button>
+                <Button
+                    type="button"
+                    variant="commit"
+                    onClick={handleSubmit}
+                >
+                    យល់ព្រម · បោះពុម្ព
+                </Button>
+            </DialogFooter>
+        </div>
     );
 };

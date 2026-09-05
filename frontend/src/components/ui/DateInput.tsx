@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CalendarIcon as Calendar } from '@heroicons/react/24/outline';
+import { Calendar } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 /**

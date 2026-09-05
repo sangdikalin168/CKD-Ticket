@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Fingerprint, Loader2, XCircle } from "lucide-react";
+import { Fingerprint, Loader2 } from "lucide-react";
 import { gql, useMutation } from "@apollo/client";
 
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import Notifications from "@/components/Notification";
+import { MagnetChip, MagnetDot } from "@/components/board/MagnetChip";
+import { cn } from "@/lib/utils";
 
 /**
  * Fingerprint enrollment modal for the member profile.
@@ -137,82 +140,88 @@ export function EnrollFingerprintModal({ open, setOpen, customerId, onSaved }: P
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Fingerprint className="h-5 w-5" /> ចុះស្នាមម្រាមដៃ
+            <Fingerprint className="h-5 w-5" aria-hidden="true" /> ចុះស្នាមម្រាមដៃ
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          <div className="text-sm text-muted-foreground">
-            អតិថិជន:{" "}
-            <span className="font-mono font-semibold text-foreground">{customerId ?? "—"}</span>
-          </div>
+        <div className="space-y-5">
+          <p className="text-sm text-ink-soft">
+            អតិថិជន{" "}
+            <span className="font-semibold text-ink">{customerId ?? "—"}</span>
+          </p>
 
-          <ProgressDots captured={captured} total={total} />
+          <ProgressMagnets captured={captured} total={total} />
 
           {phase.kind === "starting" && (
-            <Hint icon={<Loader2 className="h-4 w-4 animate-spin" />}>
+            <Hint icon={<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}>
               កំពុងចាប់ផ្តើម…
             </Hint>
           )}
           {phase.kind === "capturing" && (
-            <Hint icon={<Fingerprint className="h-4 w-4" />}>
+            <Hint icon={<Fingerprint className="h-4 w-4" aria-hidden="true" />}>
               ដាក់ម្រាមដៃលើម៉ាស៊ីន — លើកទី {phase.captured + 1} / {phase.total}។ លើកម្រាមដៃរវាងការស្កេន។
             </Hint>
           )}
           {phase.kind === "saving" && (
-            <Hint icon={<Loader2 className="h-4 w-4 animate-spin" />}>
+            <Hint icon={<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}>
               កំពុងបញ្ចូល និងរក្សាទុក…
             </Hint>
           )}
           {phase.kind === "saved" && (
-            <div className="flex items-start gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-2 rounded-md border border-rule bg-card px-3 py-2 text-sm text-ink" role="status">
+              <MagnetDot tone="done" size="sm" className="mt-0.5" />
               <span>ស្នាមម្រាមដៃបានរក្សាទុក — អតិថិជននេះអាចចូលដោយម្រាមដៃបាន។</span>
             </div>
           )}
           {phase.kind === "error" && (
-            <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-              <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-2 rounded-md border border-magnet-rejected/40 bg-magnet-rejected/5 px-3 py-2 text-sm text-ink" role="alert">
+              <MagnetDot tone="rejected" size="sm" className="mt-0.5" />
               <span>{phase.message}</span>
             </div>
           )}
-
-          <div className="flex gap-3">
-            <Button className="flex-1" variant={done ? "default" : "outline"} onClick={() => setOpen(false)}>
-              {done ? "បិទ" : "បោះបង់"}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button className="w-full sm:w-auto" variant={done ? "default" : "outline"} onClick={() => setOpen(false)}>
+            {done ? "បិទ" : "បោះបង់"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-function ProgressDots({ captured, total }: { captured: number; total: number }) {
+/** One magnet per sample: grey until the reader has it, green once captured. */
+function ProgressMagnets({ captured, total }: { captured: number; total: number }) {
   return (
-    <div className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center gap-4" aria-label={`${captured} / ${total}`}>
       {Array.from({ length: total }).map((_, i) => {
         const filled = i < captured;
         return (
           <div
             key={i}
-            className={`flex h-14 w-14 items-center justify-center rounded-full border-2 transition-colors ${
-              filled
-                ? "border-emerald-500 bg-emerald-500/15 text-emerald-500"
-                : "border-gray-300 text-gray-400"
-            }`}
+            className={cn(
+              "flex h-14 w-14 items-center justify-center rounded-full border transition-colors",
+              filled ? "border-magnet-done bg-magnet-done/10 text-ink" : "border-rule text-ink-soft"
+            )}
           >
-            <Fingerprint className="h-6 w-6" />
+            <span className="relative">
+              <Fingerprint className="h-6 w-6" aria-hidden="true" />
+              <MagnetDot tone={filled ? "done" : "off"} size="xs" className="absolute -right-2 -top-1" />
+            </span>
           </div>
         );
       })}
+      <MagnetChip tone={captured >= total ? "done" : "pending"} className="sr-only">
+        {captured} / {total}
+      </MagnetChip>
     </div>
   );
 }
 
 function Hint({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+    <div className="flex items-center gap-2 rounded-md border border-rule bg-tray px-3 py-2 text-sm text-ink">
       {icon}
       <span>{children}</span>
     </div>

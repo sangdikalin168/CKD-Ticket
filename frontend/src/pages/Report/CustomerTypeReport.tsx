@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { gql, useQuery } from "@apollo/client";
+import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
+import { ChevronRight, FileSpreadsheet, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
 import {
   Table,
   TableHeader,
@@ -12,6 +13,11 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { BoardHeader } from "@/components/board/BoardHeader";
+import { BoardSection } from "@/components/board/BoardSection";
+import { MagnetDot } from "@/components/board/MagnetChip";
+import { formatCount, formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
 // TypeScript interfaces
 interface CustomerMembershipDetail {
@@ -68,7 +74,18 @@ const CUSTOMERS_BY_MEMBERSHIP_DURATION = gql`
   }
 `;
 
+/** A figure on the board with its label written beside it. */
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-0 items-baseline gap-3 px-4 py-3">
+      <span className="truncate text-caption text-ink-soft">{label}</span>
+      <span className="text-heading font-black leading-none text-ink">{value}</span>
+    </div>
+  );
+}
+
 export const CustomerTypeReport = () => {
+  const { t } = useTranslation();
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -76,13 +93,13 @@ export const CustomerTypeReport = () => {
   // Helper function to format date
   const formatDate = (date: string | number): string => {
     if (!date) return '';
-    
+
     // If it's a timestamp (number or numeric string)
     const timestamp = typeof date === 'string' ? parseInt(date) : date;
     if (!isNaN(timestamp) && timestamp > 10000000000) {
       return new Date(timestamp).toLocaleDateString('fr-CA');
     }
-    
+
     // If it's already a date string
     if (typeof date === 'string') {
       const parsed = new Date(date);
@@ -90,7 +107,7 @@ export const CustomerTypeReport = () => {
         return parsed.toLocaleDateString('fr-CA');
       }
     }
-    
+
     return String(date);
   };
 
@@ -150,274 +167,228 @@ export const CustomerTypeReport = () => {
     XLSX.writeFile(wb, `របាយការណ៍ប្រភេទសមាជិកបច្ចុប្បន្ន_${today}.xlsx`);
   };
 
-  if (loading) return <p className="text-center mt-10">កំពុងផ្ទុក...</p>;
-  if (error) return <p className="text-center text-red-500 mt-10">កំហុស: {error.message}</p>;
-
   const reportData = data?.customersByMembershipDuration;
-  const selectedGroup = selectedDuration !== null 
+  const selectedGroup = selectedDuration !== null
     ? reportData?.groups.find((g: MembershipDurationGroup) => g.month_duration === selectedDuration)
     : null;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          របាយការណ៍ប្រភេទសមាជិកបច្ចុប្បន្ន
-        </h1>
-
-        {/* Search Button Section */}
-        <Card className="mb-6">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="w-full md:w-auto">
-                <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">
-                  មើលប្រភេទសមាជិកបច្ចុប្បន្ន
-                </h2>
-                <p className="text-gray-600 text-xs md:text-sm">
-                  បង្ហាញប្រភេទសមាជិកដែលអតិថិជនកំពុងប្រើប្រាស់បច្ចុប្បន្ន (ផ្អែកលើការទិញចុងក្រោយ)
-                </p>
-              </div>
-              <div className="flex gap-2 w-full md:w-auto">
-                <Button
-                  onClick={handleSearch}
-                  className="flex-1 md:flex-none"
-                >
-                  ស្វែងរក
-                </Button>
-                {reportData && (
-                  <Button
-                    onClick={exportToExcel}
-                    variant="secondary"
-                    className="flex-1 md:flex-none"
-                  >
-                    នាំចេញ Excel
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary Cards */}
-        {reportData && (
+    <div className="space-y-6">
+      <BoardHeader
+        titleKey="reports.memberTypes"
+        subtitle="បង្ហាញប្រភេទសមាជិកដែលអតិថិជនកំពុងប្រើប្រាស់បច្ចុប្បន្ន (ផ្អែកលើការទិញចុងក្រោយ)"
+        actions={
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-4 md:p-6 text-white">
-                <h3 className="text-base md:text-lg font-semibold mb-2">ចំនួនអតិថិជនសរុប</h3>
-                <p className="text-3xl md:text-4xl font-bold">{reportData.total_all_customers}</p>
-                <p className="text-xs md:text-sm mt-2 opacity-90">អតិថិជនសកម្មបច្ចុប្បន្ន</p>
-              </div>
-              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-4 md:p-6 text-white">
-                <h3 className="text-base md:text-lg font-semibold mb-2">តម្លៃសរុបពីការទិញចុងក្រោយ</h3>
-                <p className="text-3xl md:text-4xl font-bold">${reportData.total_all_revenue.toFixed(2)}</p>
-                <p className="text-xs md:text-sm mt-2 opacity-90">ពីការទិញចុងក្រោយរបស់អតិថិជនសកម្ម</p>
-              </div>
-            </div>
-
-            {/* Duration Groups */}
-            <Card className="mb-6">
-              <CardContent className="p-4 md:p-6">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">សង្ខេបតាមប្រភេទ</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                {reportData.groups.map((group: MembershipDurationGroup) => (
-                  <div
-                    key={group.month_duration}
-                    onClick={() => {
-                      setSelectedDuration(group.month_duration);
-                      setShowDetails(true);
-                    }}
-                    className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4 md:p-6 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105 active:scale-95"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl md:text-2xl font-bold text-purple-700">
-                        {group.month_duration} ខែ
-                      </h3>
-                      <div className="bg-purple-600 text-white rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center font-bold text-sm md:text-base">
-                        {group.total_customers}
-                      </div>
-                    </div>
-                    <div className="space-y-1 md:space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs md:text-sm text-gray-600">អតិថិជន:</span>
-                        <span className="font-semibold text-gray-800 text-sm md:text-base">{group.total_customers}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs md:text-sm text-gray-600">ចំណូល:</span>
-                        <span className="font-semibold text-green-600 text-sm md:text-base">${group.total_revenue.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs md:text-sm text-gray-600">មធ្យម:</span>
-                        <span className="font-semibold text-blue-600 text-sm md:text-base">
-                          ${group.total_customers > 0 ? (group.total_revenue / group.total_customers).toFixed(2) : '0.00'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Detailed Customer List */}
-            {showDetails && selectedGroup && (
-              <Card>
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                      លម្អិតអតិថិជន {selectedDuration} ខែ
-                    </h2>
-                    <Button
-                      onClick={() => setShowDetails(false)}
-                      variant="destructive"
-                      className="w-full sm:w-auto"
-                    >
-                      បិទ
-                    </Button>
-                  </div>
-
-                  {/* Mobile Card View */}
-                  <div className="block md:hidden space-y-4">
-                  {selectedGroup.customers.map((customer: CustomerMembershipDetail) => (
-                    <div key={customer.customer_id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start pb-2 border-b border-gray-300">
-                          <div>
-                            <p className="font-bold text-gray-900 text-lg">{customer.customer_name}</p>
-                            <p className="text-sm text-gray-600">{customer.customer_code}</p>
-                          </div>
-                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm font-semibold">
-                            ${customer.price.toFixed(2)}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <span className="text-gray-600">លេខទូរស័ព្ទ:</span>
-                            <p className="font-medium text-gray-900">{customer.phone}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">ភេទ:</span>
-                            <p className="font-medium text-gray-900">{customer.gender}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">ប្រភេទ:</span>
-                            <p className="font-medium text-gray-900">{customer.promotion}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">ផុតកំណត់:</span>
-                            <p className="font-medium text-gray-900">{formatDate(customer.end_membership_date)}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="pt-2 border-t border-gray-300">
-                          <span className="text-xs text-gray-500">កាលបរិច្ឆេទទូទាត់ចុងក្រោយ: </span>
-                          <span className="text-xs text-gray-700 font-medium">
-                            {new Date(customer.payment_date).toLocaleDateString('fr-CA')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Mobile Summary */}
-                  <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-gray-900">សរុប:</span>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600 text-lg">${selectedGroup.total_revenue.toFixed(2)}</p>
-                        <p className="text-sm text-gray-600">{selectedGroup.total_customers} អតិថិជន</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                  {/* Desktop Table View */}
-                  <div className="hidden md:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>លេខកូដ</TableHead>
-                        <TableHead>ឈ្មោះ</TableHead>
-                        <TableHead>លេខទូរស័ព្ទ</TableHead>
-                        <TableHead>ភេទ</TableHead>
-                        <TableHead>ប្រភេទ</TableHead>
-                        <TableHead>តម្លៃចុងក្រោយ</TableHead>
-                        <TableHead>កាលបរិច្ឆេទទូទាត់ចុងក្រោយ</TableHead>
-                        <TableHead>ផុតកំណត់</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedGroup.customers.map((customer: CustomerMembershipDetail) => (
-                        <TableRow key={customer.customer_id}>
-                          <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                            {customer.customer_code}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm font-medium text-gray-900">
-                            {customer.customer_name}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                            {customer.phone}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                            {customer.gender}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                            {customer.promotion}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm font-semibold text-green-600">
-                            ${customer.price.toFixed(2)}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                            {new Date(customer.payment_date).toLocaleDateString('fr-CA')}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                            {formatDate(customer.end_membership_date)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                    <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-sm font-bold text-gray-900 text-right">
-                          សរុប:
-                        </TableCell>
-                        <TableCell className="text-sm font-bold text-green-600">
-                          ${selectedGroup.total_revenue.toFixed(2)}
-                        </TableCell>
-                        <TableCell colSpan={2} className="text-sm font-bold text-gray-900">
-                          {selectedGroup.total_customers} អតិថិជន
-                        </TableCell>
-                      </TableRow>
-                    </TableFooter>
-                  </Table>
-                  </div>
-                </CardContent>
-              </Card>
+            <Button onClick={handleSearch} disabled={loading}>
+              <Search aria-hidden="true" />
+              ស្វែងរក
+            </Button>
+            {reportData && (
+              <Button onClick={exportToExcel} variant="outline">
+                <FileSpreadsheet aria-hidden="true" />
+                នាំចេញ Excel
+              </Button>
             )}
           </>
-        )}
+        }
+      />
 
-        {/* No Data Message */}
-        {!reportData && hasSearched && !loading && (
-          <Card>
-            <CardContent className="p-8 md:p-12 text-center">
-              <p className="text-gray-500 text-base md:text-lg">
-                មិនមានទិន្នន័យ
-              </p>
-            </CardContent>
-          </Card>
-        )}
+      {loading && <p className="text-sm text-ink-soft" role="status">កំពុងផ្ទុក...</p>}
+      {error && (
+        <p className="flex items-center gap-2 text-sm text-ink" role="alert">
+          <MagnetDot tone="rejected" size="sm" />
+          កំហុស: {error.message}
+        </p>
+      )}
 
-        {!hasSearched && (
-          <Card>
-            <CardContent className="p-8 md:p-12 text-center">
-              <p className="text-gray-500 text-base md:text-lg">
-                សូមចុចប៊ូតុង "ស្វែងរក" ដើម្បីមើលរបាយការណ៍
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {reportData && !loading && (
+        <>
+          {/* Figures */}
+          <section className="overflow-x-auto rounded-lg border border-rule bg-card">
+            <div className="flex min-w-max divide-x divide-rule">
+              <Figure label="អតិថិជនសកម្មបច្ចុប្បន្ន" value={formatCount(reportData.total_all_customers)} />
+              <Figure label="តម្លៃសរុបពីការទិញចុងក្រោយ" value={formatMoney(reportData.total_all_revenue, { decimals: 2 })} />
+            </div>
+          </section>
+
+          {/* Duration groups as a marker list */}
+          <BoardSection title="សង្ខេបតាមប្រភេទ">
+            <ul className="divide-y divide-rule rounded-lg border border-rule bg-card">
+              {reportData.groups.map((group: MembershipDurationGroup) => {
+                const active = showDetails && selectedDuration === group.month_duration;
+                return (
+                  <li key={group.month_duration}>
+                    <button
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        setSelectedDuration(group.month_duration);
+                        setShowDetails(true);
+                      }}
+                      className={cn(
+                        "grid w-full grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 px-4 py-2.5 text-left text-ink transition-colors hover:bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink",
+                        active && "bg-tray"
+                      )}
+                    >
+                      <span aria-hidden="true" className={cn("marker-dot", active ? "" : "opacity-60")} style={{ ["--marker" as string]: "var(--ink)" }} />
+                      <span className="text-title font-black">{group.month_duration} ខែ</span>
+                      <span className="inline-flex items-baseline gap-2">
+                        <span className="text-caption text-ink-soft">អតិថិជន</span>
+                        <span className="font-black">{formatCount(group.total_customers)}</span>
+                      </span>
+                      <span className="inline-flex items-baseline gap-2">
+                        <span className="text-caption text-ink-soft">ចំណូល</span>
+                        <span className="font-black">{formatMoney(group.total_revenue, { decimals: 2 })}</span>
+                      </span>
+                      <span className="hidden items-baseline gap-2 sm:inline-flex">
+                        <span className="text-caption text-ink-soft">មធ្យម</span>
+                        <span className="font-black">
+                          {formatMoney(group.total_customers > 0 ? group.total_revenue / group.total_customers : 0, { decimals: 2 })}
+                        </span>
+                      </span>
+                      <ChevronRight className="size-4 text-ink-soft" aria-hidden="true" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </BoardSection>
+
+          {/* Detailed Customer List */}
+          {showDetails && selectedGroup && (
+            <BoardSection
+              title={`លម្អិតអតិថិជន ${selectedDuration} ខែ`}
+              aside={
+                <Button onClick={() => setShowDetails(false)} variant="outline" size="sm">
+                  <X aria-hidden="true" />
+                  បិទ
+                </Button>
+              }
+            >
+              {/* Mobile Card View */}
+              <div className="block space-y-3 md:hidden">
+                {selectedGroup.customers.map((customer: CustomerMembershipDetail) => (
+                  <div key={customer.customer_id} className="rounded-lg border border-rule bg-card p-3">
+                    <div className="flex items-start justify-between gap-2 border-b border-rule pb-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-ink">{customer.customer_name}</p>
+                        <p className="text-caption text-ink-soft">{customer.customer_code}</p>
+                      </div>
+                      <span className="text-title font-black text-ink">{formatMoney(customer.price, { decimals: 2 })}</span>
+                    </div>
+
+                    <dl className="mt-2 grid grid-cols-2 gap-2 text-caption">
+                      <div>
+                        <dt className="text-ink-soft">លេខទូរស័ព្ទ</dt>
+                        <dd className="font-medium text-ink">{customer.phone}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ink-soft">ភេទ</dt>
+                        <dd className="font-medium text-ink">{customer.gender}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ink-soft">ប្រភេទ</dt>
+                        <dd className="font-medium text-ink">{customer.promotion}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ink-soft">ផុតកំណត់</dt>
+                        <dd className="font-medium text-ink">{formatDate(customer.end_membership_date)}</dd>
+                      </div>
+                      <div className="col-span-2 border-t border-rule pt-2">
+                        <dt className="text-ink-soft">កាលបរិច្ឆេទទូទាត់ចុងក្រោយ</dt>
+                        <dd className="font-medium text-ink">{new Date(customer.payment_date).toLocaleDateString('fr-CA')}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+
+                {/* Mobile Summary */}
+                <div className="flex items-center justify-between rounded-lg border-2 border-ink bg-card p-3">
+                  <span className="font-black text-ink">សរុប</span>
+                  <div className="text-right">
+                    <p className="text-title font-black text-ink">{formatMoney(selectedGroup.total_revenue, { decimals: 2 })}</p>
+                    <p className="text-caption text-ink-soft">{selectedGroup.total_customers} អតិថិជន</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden overflow-hidden rounded-lg border border-rule bg-card md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead>លេខកូដ</TableHead>
+                      <TableHead>ឈ្មោះ</TableHead>
+                      <TableHead>លេខទូរស័ព្ទ</TableHead>
+                      <TableHead>ភេទ</TableHead>
+                      <TableHead>ប្រភេទ</TableHead>
+                      <TableHead className="text-right">តម្លៃចុងក្រោយ</TableHead>
+                      <TableHead>កាលបរិច្ឆេទទូទាត់ចុងក្រោយ</TableHead>
+                      <TableHead>ផុតកំណត់</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedGroup.customers.map((customer: CustomerMembershipDetail) => (
+                      <TableRow key={customer.customer_id}>
+                        <TableCell className="whitespace-nowrap text-ink-soft">
+                          {customer.customer_code}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-medium">
+                          {customer.customer_name}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {customer.phone}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {customer.gender}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {customer.promotion}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-right font-semibold">
+                          {formatMoney(customer.price, { decimals: 2 })}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {new Date(customer.payment_date).toLocaleDateString('fr-CA')}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {formatDate(customer.end_membership_date)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-right font-black">
+                        សរុប
+                      </TableCell>
+                      <TableCell className="text-right font-black">
+                        {formatMoney(selectedGroup.total_revenue, { decimals: 2 })}
+                      </TableCell>
+                      <TableCell colSpan={2} className="font-black">
+                        {selectedGroup.total_customers} អតិថិជន
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              </div>
+            </BoardSection>
+          )}
+        </>
+      )}
+
+      {/* No Data Message */}
+      {!reportData && hasSearched && !loading && !error && (
+        <p className="rounded-lg border border-dashed border-rule bg-card px-4 py-10 text-center text-sm text-ink-soft">
+          {t("common.noData")}
+        </p>
+      )}
+
+      {!hasSearched && (
+        <p className="rounded-lg border border-dashed border-rule bg-card px-4 py-10 text-center text-sm text-ink-soft">
+          សូមចុចប៊ូតុង "ស្វែងរក" ដើម្បីមើលរបាយការណ៍
+        </p>
+      )}
     </div>
   );
 };

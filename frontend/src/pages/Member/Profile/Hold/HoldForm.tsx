@@ -1,11 +1,17 @@
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { DateInput } from "@/components/ui/DateInput";
 import { useCreateHoldRequestV2Mutation } from "../../../../generated/holdV2";
 import Notifications from "../../../../components/Notification";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);
@@ -19,7 +25,6 @@ const parse_iso = (iso: string) => {
 
 const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }: any) => {
 
-    const cancelButtonRef = useRef(null);
     // setDate returns a timestamp, not a Date — wrap it back up so
     // date_format receives the type it declares.
     const [selectedDateTo, setSelectedDateTo] = useState(
@@ -95,140 +100,87 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }:
     }
 
     return (
-        <Transition.Root show={open_hold} as={Fragment}>
-            <Dialog
-                as="div"
-                className="relative z-10"
-                initialFocus={cancelButtonRef}
-                onClose={setOpenHold}
-            >
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                </Transition.Child>
+        <Dialog open={open_hold} onOpenChange={setOpenHold}>
+            <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                    <DialogTitle>សុំច្បាប់ (ផ្អាកសមាជិកភាព)</DialogTitle>
+                </DialogHeader>
 
-                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            enterTo="opacity-100 translate-y-0 sm:scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        >
-                            <Dialog.Panel className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
-                                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                                    <div className="">
-                                        <div className="mt-3">
-                                            <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-6">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5 sm:col-span-2">
+                        <Label htmlFor="hold-reason">មូលហេតុនៃការសុំច្បាប់</Label>
+                        <Input
+                            id="hold-reason"
+                            type="text"
+                            required
+                            autoFocus
+                            onChange={(e) => setReason(e.target.value)}
+                        />
+                    </div>
 
-                                                <div className="sm:col-span-2">
-                                                    <Label className="block text-sm font-medium leading-6 text-gray-900">
-                                                        មូលហេតុនៃការសុំច្បាប់
-                                                    </Label>
-                                                    <div className="mt-2">
-                                                        <Input
-                                                            type="text"
-                                                            required
-                                                            onChange={(e) => setReason(e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="hold-from">ចាប់ពីថ្ងៃ</Label>
+                        <DateInput
+                            id="hold-from"
+                            name="from_date"
+                            value={selectedDateFrom}
+                            onChange={(e) => {
+                                if (e.target.value) handleChangeDateFrom(parse_iso(e.target.value));
+                            }}
+                        />
+                    </div>
 
-                                                {/* DateTime Picker */}
-                                                <div className="col-span-2 mr-1">
-                                                    <Label className="mb-2 block text-sm font-medium leading-6 text-gray-900">
-                                                        ចាប់ពីថ្ងៃ
-                                                    </Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="hold-to">ដល់ថ្ងៃទី</Label>
+                        <DateInput
+                            id="hold-to"
+                            name="to_date"
+                            value={selectedDateTo}
+                            onChange={(e) => {
+                                if (e.target.value) handleChangeDateTo(parse_iso(e.target.value));
+                            }}
+                        />
+                    </div>
 
-                                                    <DateInput
-                                                        name="from_date"
-                                                        value={selectedDateFrom}
-                                                        onChange={(e) => {
-                                                            if (e.target.value) handleChangeDateFrom(parse_iso(e.target.value));
-                                                        }}
-                                                    />
-                                                </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="hold-old-end">សុពលភាពចាស់</Label>
+                        <Input id="hold-old-end" type="text" readOnly value={old_end ?? ""} />
+                    </div>
 
-                                                {/* DateTime Picker */}
-                                                <div className="col-span-2">
-                                                    <Label className="mb-2 block text-sm font-medium leading-6 text-gray-900">
-                                                        ដល់ថ្ងៃទី
-                                                    </Label>
-                                                    <DateInput
-                                                        name="to_date"
-                                                        value={selectedDateTo}
-                                                        onChange={(e) => {
-                                                            if (e.target.value) handleChangeDateTo(parse_iso(e.target.value));
-                                                        }}
-                                                    />
-                                                </div>
-
-                                                <div className="sm:col-span-2">
-                                                    <Label className="block text-sm font-medium leading-6 text-gray-900">
-                                                        Old End
-                                                    </Label>
-                                                    <div className="mt-2">
-                                                        <Input
-                                                            type="text"
-                                                            readOnly
-                                                            value={old_end}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="sm:col-span-2">
-                                                    <Label className="block text-sm font-medium leading-6 text-gray-900">
-                                                        ចំនួនថ្ងៃសុំច្បាប់
-                                                    </Label>
-                                                    <div className="mt-2">
-                                                        <Input
-                                                            type="text"
-                                                            readOnly
-                                                            value={holdDays > 0 ? `${holdDays} ថ្ងៃ` : ""}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
-                                    <Button
-                                        type="button"
-                                        className="bg-blue-600 hover:bg-green-500 text-white"
-                                        disabled={submitting}
-                                        onClick={() => {
-                                            HandleCreateHoldRequest()
-                                        }}
-                                    >
-                                        ដាក់ការស្នើរសុំ
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        onClick={() => {
-                                            setOpenHold(false);
-                                        }}
-                                    >
-                                        បោះបង់
-                                    </Button>
-                                </div>
-                            </Dialog.Panel>
-                        </Transition.Child>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="hold-days">ចំនួនថ្ងៃសុំច្បាប់</Label>
+                        <Input
+                            id="hold-days"
+                            type="text"
+                            readOnly
+                            className="font-semibold"
+                            value={holdDays > 0 ? `${holdDays} ថ្ងៃ` : ""}
+                        />
                     </div>
                 </div>
-            </Dialog>
-        </Transition.Root>
+
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            setOpenHold(false);
+                        }}
+                    >
+                        បោះបង់
+                    </Button>
+                    <Button
+                        type="button"
+                        disabled={submitting}
+                        onClick={() => {
+                            HandleCreateHoldRequest()
+                        }}
+                    >
+                        ដាក់ការស្នើរសុំ
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 
 }

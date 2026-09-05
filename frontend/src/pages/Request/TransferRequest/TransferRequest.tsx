@@ -1,10 +1,10 @@
-import { DataTable } from '@/components/ui/DataTable';
 import type { ColumnDef } from '@/types/datatable';
 import LoadingPage from '../../../components/LoadingPage/LoadingPage';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ApprovalStatus, useApproveTransferRequestMutation, useCheckTransferRequestMutation, useCreateTransferMutation, useTransferRequestsQuery } from '../../../generated/graphql';
 import Notifications from '../../../components/Notification';
-import { PrinterIcon } from '@heroicons/react/20/solid';
+import { FileSpreadsheet, Printer } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { TransferInvoice } from '../../../components/ComponentToPrint/TransferInvoice';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +17,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { BoardHeader } from '@/components/board/BoardHeader';
+import { RequestColumns, type RequestCard } from '@/components/board/RequestColumns';
+import { MagnetChip, statusTone, type MagnetTone } from '@/components/board/MagnetChip';
+import { exportToExcel } from '@/utils/excelExport';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
 type TransferRequest = {
     request_id: number
@@ -58,207 +63,27 @@ const date_format = (date_time: string | Date) => {
     return date.toLocaleDateString("fr-CA");
 };
 
+const DECISION_LABEL: Record<string, string> = {
+    Pending: "មិនទាន់",
+    Approved: "ឯកភាព",
+    Rejected: "បដិសេធ",
+};
+
+/** Which column of the board a transfer sits in. */
+const columnOf = (r: TransferRequest) =>
+    r.processed_by != null ? "processed" : r.checker_status === "Pending" ? "requested" : "checked";
+
+/** The card's headline magnet: the furthest the request has got. */
+const overallTone = (r: TransferRequest): { tone: MagnetTone; label: string } => {
+    if (r.processed_by != null) return { tone: "done", label: "ដំណើរការរួច" };
+    if (r.checker_status === "Rejected" || r.approver_status === "Rejected") return { tone: "rejected", label: "បដិសេធ" };
+    if (r.checker_status === "Approved" && r.approver_status === "Approved") return { tone: "info", label: "រង់ចាំដំណើរការ" };
+    if (r.checker_status === "Approved") return { tone: "pending", label: "រង់ចាំសម្រេច" };
+    return { tone: "pending", label: "រង់ចាំពិនិត្យ" };
+};
+
 const TransferRequest = () => {
-    // Memoised: this 200-line literal used to be rebuilt on every keystroke.
-    // The closures only touch useState setters (stable) and pure helpers, so
-    // empty deps are safe.
-    const columns: ColumnDef<TransferRequest>[] = useMemo(() => [
-        {
-            key: 'display_name',
-            header: 'អ្នកស្នើ',
-            sortable: true,
-        },
-        {
-            key: 'request_date',
-            header: 'ថ្ងៃស្នើ',
-            sortable: true,
-            // accessor feeds export/copy/print so the spreadsheet matches the
-            // cell. Sorting does NOT use it — the string carries a 12-hour clock
-            // ('09:05 AM' / '02:05 PM'), which string-compares out of order, so
-            // the comparator below sorts this column on the raw timestamp.
-            accessor: (row) => datetime_format(row.request_date),
-            render: (row) => datetime_format(row.request_date),
-        },
-        {
-            // The click handlers HoldRequest has here were never ported (they
-            // referenced hooks this file does not declare), so these are plain
-            // text columns until a customer-detail dialog actually exists.
-            key: 'sender_name',
-            header: 'ពីឈ្មោះ',
-            sortable: true,
-        },
-        {
-            key: 'receiver_name',
-            header: 'ទៅឈ្មោះ',
-            sortable: true,
-        },
-        {
-            key: 'reason',
-            header: 'មូលហេតុ',
-            sortable: true,
-        },
-        {
-            key: 'checker_name',
-            header: 'អ្នកពិនិត្យ',
-            sortable: true,
-            // Sort/export mirror the rendered status — the raw checker_name is
-            // NULL for exactly the Pending rows a sorter is trying to group.
-            accessor: (row) => row.checker_status,
-            render: (row) => (
-                <>
-                    {
-                        row.checker_status === "Pending" ?
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600"
-                                onClick={() => {
-                                    HandleCheckerApprove();
-                                    setRequestID(row.request_id)
-                                }}
-                            >
-                                Action
-                            </Button>
-                            :
-                            <>
-                                {
-                                    row.checker_status === "Approved" ?
-                                        <div className="group">
-                                            <strong className="text-green-500 visible group-hover:invisible">Approved</strong>
-                                            <strong className="text-green-500 invisible group-hover:visible">{row.checker_comment}</strong>
-                                        </div>
-                                        :
-                                        <div className="group">
-                                            <strong className="text-red-500 visible group-hover:invisible">Rejected</strong>
-                                            <strong className="text-red-500 invisible group-hover:visible">{row.checker_comment}</strong>
-                                        </div>
-                                }
-                            </>
-
-                    }
-                </>
-
-            ),
-        },
-        {
-            key: 'approver_name',
-            header: 'អ្នកសម្រេច',
-            sortable: true,
-            accessor: (row) => row.approver_status,
-            render: (row) => (
-                <>
-                    {
-                        row.approver_status === "Pending" ?
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600"
-                                onClick={() => {
-                                    CheckApproverRole();
-                                    setRequestID(row.request_id)
-                                }}
-                            >
-                                Action
-                            </Button>
-                            :
-                            <>
-                                {
-                                    row.approver_status === "Approved" ?
-                                        <div className="group">
-                                            <strong className="text-green-500 visible group-hover:invisible">Approved</strong>
-                                            <strong className="text-green-500 invisible group-hover:visible">{row.approver_comment}</strong>
-                                        </div>
-                                        :
-                                        <div className="group">
-                                            <strong className="text-red-500 visible group-hover:invisible">Rejected</strong>
-                                            <strong className="text-red-500 invisible group-hover:visible">{row.approver_comment}</strong>
-                                        </div>
-                                }
-                            </>
-
-                    }
-                </>
-
-            ),
-        },
-        {
-            key: 'process',
-            header: 'Process',
-            sortable: true,
-            // accessor is what export/copy/print emit and what sorting compares —
-            // it must mirror the rendered state, not the request id.
-            accessor: (row) =>
-                row.checker_status === "Approved" && row.approver_status === "Approved"
-                    ? (row.processed_by == null ? "" : row.processed_name)
-                    : "Pending",
-            render: (row_data) => (
-                <div className="flex">
-                    {
-                        row_data.checker_status === "Approved" && row_data.approver_status === "Approved" ?
-                            <>
-                                {
-                                    row_data.processed_by == null ?
-                                        <span className="hidden sm:block">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => {
-                                                    // A zero-day transfer (sender already expired) would mark the
-                                                    // request Done and print an invoice for a move that never
-                                                    // happens — refuse up front instead.
-                                                    if (SenderRemainingDays(row_data.sender_old_end) === 0) {
-                                                        Notifications("សមាជិកភាពអ្នកផ្ទេរផុតកំណត់ហើយ — គ្មានថ្ងៃនៅសល់សម្រាប់ផ្ទេរទេ", "error")
-                                                        return;
-                                                    }
-                                                    setOpenPrint(true)
-                                                    setRequestID(row_data.request_id)
-
-                                                    setInvoiceDetail({
-                                                        invoice_id: 0,
-                                                        cashier: localStorage.getItem("display_name") || "",
-                                                        payment_date: datetime_format(new Date()),
-                                                        sender_id: row_data.sender_id,
-                                                        sender_name: row_data.sender_name,
-                                                        sender_phone: row_data.sender_phone,
-                                                        sender_old_end: row_data.sender_old_end,
-                                                        sender_new_end: SenderNewEnd(row_data.sender_old_end),
-                                                        receiver_id: row_data.receiver_id,
-                                                        receiver_name: row_data.receiver_name,
-                                                        receiver_phone: row_data.receiver_phone,
-                                                        receiver_old_end: row_data.receiver_old_end,
-                                                        // Raw value on purpose: date-only strings parse as UTC midnight
-                                                        // while datetimes parse as local, so pre-formatting here made the
-                                                        // two sides of the transfer measure different calendar days.
-                                                        receiver_new_end: ReceiverNewEnd(row_data.sender_old_end, row_data.receiver_old_end),
-                                                    })
-                                                }}
-                                            >
-                                                <PrinterIcon
-                                                    className="h-4 w-4 text-gray-500"
-                                                    aria-hidden="true"
-                                                />
-                                            </Button>
-                                        </span>
-                                        :
-                                        <p>{row_data.processed_name}</p>
-                                }
-
-                            </>
-                            :
-                            <>
-                                {
-                                    <p>Pending</p>
-                                }
-                            </>
-                    }
-                </div>
-            ),
-        },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], []);
+    const { t } = useTranslation();
 
     function countDaysBetweenDates(startDate: Date, endDate: Date) {
         // Convert both dates to UTC to ensure accurate calculation
@@ -350,65 +175,64 @@ const TransferRequest = () => {
     const processingRef = useRef(false);
 
     const [search, setSearch] = useState("")
-    const [page, setPage] = useState(1)
-    const [page_size, setPageSize] = useState(20)
 
     const requests = useMemo(
         () => (data?.TransferRequests ?? []) as TransferRequest[],
         [data]
     );
 
-    // The old table filtered internally; the new one only reports the search
-    // term, so filter here before slicing the current page.
+    // The board only reports the search term; filter here, newest first.
     const filtered_requests = useMemo(() => {
         const term = search.trim().toLowerCase();
-        if (!term) return requests;
-        return requests.filter((row) =>
-            [
-                row.display_name,
-                row.request_date,
-                row.sender_name,
-                row.receiver_name,
-                row.reason,
-                row.checker_name,
-                row.approver_name,
-                String(row.request_id),
-            ].some((value) => (value ?? "").toLowerCase().includes(term))
-        );
+        const list = term
+            ? requests.filter((row) =>
+                [
+                    row.display_name,
+                    row.request_date,
+                    row.sender_name,
+                    row.receiver_name,
+                    row.reason,
+                    row.checker_name,
+                    row.approver_name,
+                    String(row.request_id),
+                ].some((value) => (value ?? "").toLowerCase().includes(term))
+            )
+            : requests;
+        return [...list].sort((a, b) => new Date(b.request_date).getTime() - new Date(a.request_date).getTime());
     }, [requests, search]);
 
-    // Sorting lives here, not in DataTable: the table only ever receives the
-    // current page slice, so its built-in sort could only reorder ~20 rows.
-    // Passing onSortChange switches it to report-only mode, and the whole
-    // filtered set is sorted before slicing.
-    const [sort, setSort] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
+    // What the Excel export writes — the same fields the old table carried.
+    const exportColumns: ColumnDef<TransferRequest>[] = [
+        { key: 'request_id', header: 'ID' },
+        { key: 'display_name', header: 'អ្នកស្នើ' },
+        { key: 'request_date', header: 'ថ្ងៃស្នើ', accessor: (row) => datetime_format(row.request_date) },
+        { key: 'sender_name', header: 'ពីឈ្មោះ' },
+        { key: 'receiver_name', header: 'ទៅឈ្មោះ' },
+        { key: 'reason', header: 'មូលហេតុ' },
+        { key: 'checker_name', header: 'អ្នកពិនិត្យ', accessor: (row) => row.checker_status },
+        { key: 'checker_comment', header: 'មតិអ្នកពិនិត្យ', accessor: (row) => row.checker_comment ?? '' },
+        { key: 'approver_name', header: 'អ្នកសម្រេច', accessor: (row) => row.approver_status },
+        { key: 'approver_comment', header: 'មតិអ្នកសម្រេច', accessor: (row) => row.approver_comment ?? '' },
+        {
+            key: 'process',
+            header: 'Process',
+            accessor: (row) =>
+                row.checker_status === "Approved" && row.approver_status === "Approved"
+                    ? (row.processed_by == null ? "" : row.processed_name)
+                    : "Pending",
+        },
+    ];
 
-    const sorted_requests = useMemo(() => {
-        if (!sort.key) return filtered_requests;
-        const col = columns.find((c) => c.key === sort.key);
-        if (!col) return filtered_requests;
-        const valueOf = (row: TransferRequest) => {
-            // The date accessor exists for export formatting; its 12-hour string
-            // does not compare chronologically, so sort on the real timestamp.
-            if (sort.key === 'request_date') return new Date(row.request_date).getTime();
-            return col.accessor ? col.accessor(row) : row[sort.key as keyof TransferRequest];
-        };
-        return [...filtered_requests].sort((a, b) => {
-            const va = valueOf(a);
-            const vb = valueOf(b);
-            if (va == null && vb == null) return 0;
-            if (va == null) return sort.direction === 'asc' ? -1 : 1;
-            if (vb == null) return sort.direction === 'asc' ? 1 : -1;
-            if (typeof va === 'number' && typeof vb === 'number') {
-                return sort.direction === 'asc' ? va - vb : vb - va;
-            }
-            const cmp = String(va).toLowerCase().localeCompare(String(vb).toLowerCase());
-            return sort.direction === 'asc' ? cmp : -cmp;
-        });
-    }, [filtered_requests, sort, columns]);
-
-    const total_pages = Math.max(1, Math.ceil(sorted_requests.length / page_size));
-    const paged_requests = sorted_requests.slice((page - 1) * page_size, page * page_size);
+    const handleExport = () => {
+        try {
+            if (filtered_requests.length === 0) { showErrorToast(t("ui.dataTable.noExportData")); return; }
+            exportToExcel(filtered_requests, exportColumns, "transfer_requests.xlsx");
+            showSuccessToast(t("ui.dataTable.exportSuccess", { count: filtered_requests.length }));
+        } catch (err) {
+            showErrorToast(t("ui.dataTable.exportFailed"));
+            console.error("Export error:", err);
+        }
+    };
 
     const [invoice_detail, setInvoiceDetail] = useState({
         invoice_id: 0, cashier: "", payment_date: "",
@@ -462,9 +286,6 @@ const TransferRequest = () => {
         processingRef.current = true;
 
         try {
-            // Nothing is destructured from invoice_detail any more: every value
-            // the transfer needs is now derived server-side from locked rows.
-
             // Only the request id travels now. The server loads the request,
             // locks both customers FOR UPDATE, and computes the new end dates
             // itself — the browser's copies (sender_new_end etc.) are a stale
@@ -509,40 +330,115 @@ const TransferRequest = () => {
         }
     }, [invoice_detail]);
 
+    const openProcess = (row_data: TransferRequest) => {
+        // A zero-day transfer (sender already expired) would mark the
+        // request Done and print an invoice for a move that never
+        // happens — refuse up front instead.
+        if (SenderRemainingDays(row_data.sender_old_end) === 0) {
+            Notifications("សមាជិកភាពអ្នកផ្ទេរផុតកំណត់ហើយ — គ្មានថ្ងៃនៅសល់សម្រាប់ផ្ទេរទេ", "error")
+            return;
+        }
+        setOpenPrint(true)
+        setRequestID(row_data.request_id)
+
+        setInvoiceDetail({
+            invoice_id: 0,
+            cashier: localStorage.getItem("display_name") || "",
+            payment_date: datetime_format(new Date()),
+            sender_id: row_data.sender_id,
+            sender_name: row_data.sender_name,
+            sender_phone: row_data.sender_phone,
+            sender_old_end: row_data.sender_old_end,
+            sender_new_end: SenderNewEnd(row_data.sender_old_end),
+            receiver_id: row_data.receiver_id,
+            receiver_name: row_data.receiver_name,
+            receiver_phone: row_data.receiver_phone,
+            receiver_old_end: row_data.receiver_old_end,
+            // Raw value on purpose: date-only strings parse as UTC midnight
+            // while datetimes parse as local, so pre-formatting here made the
+            // two sides of the transfer measure different calendar days.
+            receiver_new_end: ReceiverNewEnd(row_data.sender_old_end, row_data.receiver_old_end),
+        })
+    };
+
+    const cards: RequestCard[] = filtered_requests.map((row) => {
+        const overall = overallTone(row);
+        const canProcess = row.checker_status === "Approved" && row.approver_status === "Approved" && row.processed_by == null;
+        return {
+            id: row.request_id,
+            column: columnOf(row),
+            title: `${row.sender_name} → ${row.receiver_name}`,
+            subtitle: `${row.display_name} · ${datetime_format(row.request_date)}`,
+            lines: [row.reason, row.processed_name ? `${t("requests.processed")}: ${row.processed_name}` : null].filter(Boolean) as string[],
+            tone: overall.tone,
+            toneLabel: overall.label,
+            extra: (
+                <>
+                    <MagnetChip tone={statusTone(row.checker_status)} className="text-ink-soft">
+                        {t("requests.checker")}: <span className="text-ink" title={row.checker_comment || undefined}>{DECISION_LABEL[row.checker_status] ?? row.checker_status}</span>
+                    </MagnetChip>
+                    <MagnetChip tone={statusTone(row.approver_status)} className="text-ink-soft">
+                        {t("requests.approver")}: <span className="text-ink" title={row.approver_comment || undefined}>{DECISION_LABEL[row.approver_status] ?? row.approver_status}</span>
+                    </MagnetChip>
+                </>
+            ),
+            actions: (row.checker_status === "Pending" || row.approver_status === "Pending" || canProcess) ? (
+                <>
+                    {row.checker_status === "Pending" && (
+                        <Button size="sm" variant="outline" onClick={() => { HandleCheckerApprove(); setRequestID(row.request_id) }}>
+                            {t("requests.checker")}
+                        </Button>
+                    )}
+                    {row.approver_status === "Pending" && (
+                        <Button size="sm" variant="outline" onClick={() => { CheckApproverRole(); setRequestID(row.request_id) }}>
+                            {t("requests.decide")}
+                        </Button>
+                    )}
+                    {canProcess && (
+                        <Button size="sm" variant="commit" onClick={() => openProcess(row)}>
+                            <Printer aria-hidden="true" />
+                            {t("requests.process")}
+                        </Button>
+                    )}
+                </>
+            ) : undefined,
+        };
+    });
+
     return (
         <>
+            <BoardHeader
+                titleKey="requests.transfer"
+                actions={
+                    <>
+                        <Input
+                            type="search"
+                            placeholder={t("common.searchPlaceholder")}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-56"
+                            aria-label={t("common.search")}
+                        />
+                        <Button variant="outline" onClick={handleExport} title={t("ui.dataTable.exportToExcel")}>
+                            <FileSpreadsheet aria-hidden="true" />
+                            {t("common.export")}
+                        </Button>
+                    </>
+                }
+            />
+
             {!loading ? (
-                <DataTable<TransferRequest>
-                    columns={columns}
-                    data={paged_requests}
-                    pageInfo={{
-                        current_page: page,
-                        page_size: page_size,
-                        total_items: filtered_requests.length,
-                        total_pages: total_pages,
-                        has_next: page < total_pages,
-                        has_previous: page > 1,
-                    }}
-                    currentPage={page}
-                    pageSize={page_size}
-                    onPageChange={setPage}
-                    onPageSizeChange={(size) => {
-                        setPageSize(size);
-                        setPage(1);
-                    }}
-                    pageSizeOptions={[10, 20, 30, 50]}
-                    searchValue={search}
-                    onSearchChange={(term) => {
-                        setSearch(term);
-                        setPage(1);
-                    }}
-                    onSortChange={(key, direction) => setSort({ key, direction })}
-                    columnToggle
-                    exportData={sorted_requests}
-                    exportFileName="transfer_requests.csv"
+                <RequestColumns
+                    columns={[
+                        { key: "requested", label: t("requests.requested") },
+                        { key: "checked", label: t("requests.checked") },
+                        { key: "processed", label: t("requests.processed") },
+                    ]}
+                    cards={cards}
+                    emptyLabel={t("requests.empty")}
                 />
             ) : (
-                <LoadingPage message={"Loading"} />
+                <LoadingPage message={t("common.loading")} />
             )}
 
             <Button
@@ -556,47 +452,22 @@ const TransferRequest = () => {
 
             {/* Checker Approve Or Reject */}
             <Dialog open={open_checker} onOpenChange={setOpenChecker}>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>ពិនិត្យសំណើ</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-2">
-                        <Label>បរិយាយ</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="checker-note">បរិយាយ</Label>
                         <Input
+                            id="checker-note"
                             type="text"
                             required
+                            autoFocus
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
-                    <DialogFooter className="flex-row-reverse gap-2">
-                        <Button
-                            type="button"
-                            className="bg-green-600 hover:bg-green-700"
-                            disabled={checker_saving}
-                            onClick={async () => {
-                                //TODO: Update To Checked
-                                const res = await checkerApprove({
-                                    variables: {
-                                        requestId: request_id,
-                                        checkerComment: description,
-                                        checkerStatus: ApprovalStatus.Approved
-                                    }
-                                })
-
-                                if (res.data?.CheckTransferRequest.success) {
-                                    Notifications("Approved", "success")
-                                    setOpenChecker(false);
-                                    refetch();
-                                    return;
-                                }
-
-                                Notifications("Failed", "error")
-
-                            }}
-                        >
-                            Approve
-                        </Button>
+                    <DialogFooter>
                         <Button
                             type="button"
                             variant="destructive"
@@ -624,43 +495,23 @@ const TransferRequest = () => {
                         >
                             Reject
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Admin Approve Or Reject */}
-            <Dialog open={open_approver} onOpenChange={setOpenApprover}>
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>សម្រេចសំណើ</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-2">
-                        <Label>បរិយាយ</Label>
-                        <Input
-                            type="text"
-                            required
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                    </div>
-                    <DialogFooter className="flex-row-reverse gap-2">
                         <Button
                             type="button"
-                            className="bg-green-600 hover:bg-green-700"
-                            disabled={approver_saving}
+                            variant="success"
+                            disabled={checker_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
-                                const res = await approveTransfer({
+                                const res = await checkerApprove({
                                     variables: {
                                         requestId: request_id,
-                                        approverComment: description,
-                                        approverStatus: ApprovalStatus.Approved
+                                        checkerComment: description,
+                                        checkerStatus: ApprovalStatus.Approved
                                     }
                                 })
 
-                                if (res.data?.ApproveTransferRequest.success) {
+                                if (res.data?.CheckTransferRequest.success) {
                                     Notifications("Approved", "success")
-                                    setOpenApprover(false);
+                                    setOpenChecker(false);
                                     refetch();
                                     return;
                                 }
@@ -671,6 +522,28 @@ const TransferRequest = () => {
                         >
                             Approve
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Admin Approve Or Reject */}
+            <Dialog open={open_approver} onOpenChange={setOpenApprover}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>សម្រេចសំណើ</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="approver-note">បរិយាយ</Label>
+                        <Input
+                            id="approver-note"
+                            type="text"
+                            required
+                            autoFocus
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
                         <Button
                             type="button"
                             variant="destructive"
@@ -698,6 +571,33 @@ const TransferRequest = () => {
                         >
                             Reject
                         </Button>
+                        <Button
+                            type="button"
+                            variant="success"
+                            disabled={approver_saving}
+                            onClick={async () => {
+                                //TODO: Update To Checked
+                                const res = await approveTransfer({
+                                    variables: {
+                                        requestId: request_id,
+                                        approverComment: description,
+                                        approverStatus: ApprovalStatus.Approved
+                                    }
+                                })
+
+                                if (res.data?.ApproveTransferRequest.success) {
+                                    Notifications("Approved", "success")
+                                    setOpenApprover(false);
+                                    refetch();
+                                    return;
+                                }
+
+                                Notifications("Failed", "error")
+
+                            }}
+                        >
+                            Approve
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -711,28 +611,29 @@ const TransferRequest = () => {
                     <DialogHeader>
                         <DialogTitle>វិក្កយបត្រ</DialogTitle>
                     </DialogHeader>
-                    <div className="mt-2">
+                    <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
                         <TransferInvoice
                             ref={InvoiceRef}
                             invoice_detail={invoice_detail}
                         />
                     </div>
-                    <DialogFooter className="flex-row-reverse gap-2">
+                    <DialogFooter>
                         <Button
                             type="button"
-                            className="bg-green-600 hover:bg-green-700"
-                            disabled={transfer_saving}
-                            onClick={() => { void ProcessTransfer(); }}
-                        >
-                            Process
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="destructive"
+                            variant="outline"
                             disabled={transfer_saving}
                             onClick={() => setOpenPrint(false)}
                         >
-                            Close
+                            {t("common.close")}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="commit"
+                            disabled={transfer_saving}
+                            onClick={() => { void ProcessTransfer(); }}
+                        >
+                            <Printer aria-hidden="true" />
+                            {t("requests.process")} · បោះពុម្ព
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -58,3 +58,7 @@ backend/logs/
 .impeccable/config.local.json
 .impeccable/hook.ndjson
 .impeccable/live/
+# Impeccable build state, review captures and comps are transient
+.impeccable/build/
+.impeccable/review/
+.impeccable/mocks/
