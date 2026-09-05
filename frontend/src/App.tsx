@@ -85,7 +85,7 @@ function Dashboard() {
         items={[
           { label: t("dashboard.today.tickets"), value: formatCount(figures.ticketsToday) },
           { label: t("dashboard.today.members"), value: formatCount(figures.members) },
-          { label: t("dashboard.today.income"), value: formatMoney(figures.incomeToday), tone: "paid" },
+          { label: t("dashboard.today.income"), value: formatMoney(figures.incomeToday) },
         ]}
       />
 

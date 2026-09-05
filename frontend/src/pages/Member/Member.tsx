@@ -1,7 +1,6 @@
 import { Eye, Plus, UserRound } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import { DataTable } from "@/components/ui/DataTable";
 import { CachedImage } from "@/components/ui/CachedImage";
 import type { ColumnDef } from "@/types/datatable";
@@ -23,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Chip } from "@/components/ui/Chip";
+import { FigureStrip } from "@/components/ui/FigureStrip";
+import { formatCount } from "@/lib/money";
 
 const notify = (
   message: string,
@@ -56,7 +57,8 @@ type Customer = {
 
 const isValid = (date: string) => (date ? new Date(date) >= new Date() : false);
 
-const StatusMagnet = ({ date }: { date: string }) => {
+/** Membership validity as one of the four marks. */
+const MembershipChip = ({ date }: { date: string }) => {
   const active = isValid(date);
   return (
     <Chip tone={active ? "paid" : "void"}>
@@ -93,7 +95,7 @@ export const Member = () => {
       header: "ID",
       sortable: true,
       render: (row) => (
-        <span className="text-ink-soft">{row.customer_id}</span>
+        <span className="figure text-ink-soft">{row.customer_id}</span>
       ),
     },
     {
@@ -114,7 +116,9 @@ export const Member = () => {
       key: "end_membership_date",
       header: "ថ្ងៃផុតកំណត់",
       sortable: true,
-      render: (row) => <span>{row.end_membership_date || "—"}</span>,
+      render: (row) => (
+        <span className="figure whitespace-nowrap">{row.end_membership_date || "—"}</span>
+      ),
     },
     {
       // Also derived from end_membership_date, so it needs its own key for the
@@ -123,7 +127,7 @@ export const Member = () => {
       header: "ស្ថានភាព",
       sortable: false,
       accessor: (row) => (isValid(row.end_membership_date) ? "មានសុពលភាព" : "ផុតកំណត់"),
-      render: (row) => <StatusMagnet date={row.end_membership_date} />,
+      render: (row) => <MembershipChip date={row.end_membership_date} />,
     },
   ];
 
@@ -151,11 +155,6 @@ export const Member = () => {
   const totalCount = countData?.GetCustomersCount ?? 0;
   const serverPageCount = Math.ceil(totalCount / pageSize);
 
-  // Whether the first page of results has ever arrived. Used to keep the table
-  // mounted across later refetches — see the loading guard below.
-  const hasLoadedOnce = useRef(false);
-  if (data) hasLoadedOnce.current = true;
-
   const handleSubmit = async (formData: any) => {
     const { data: result } = await createCustomer({
       variables: {
@@ -176,12 +175,6 @@ export const Member = () => {
     }
   };
 
-  // Only blank the page on the very first load. Every search re-runs the query,
-  // and with fetchPolicy "no-cache" that empties `data` while in flight — so the
-  // old condition swapped the table for a spinner on each keystroke-batch,
-  // unmounting DataTable and wiping the search box the user was typing into.
-  if (member_loading && !hasLoadedOnce.current) return <LoadingPage message={t("common.loading")} />;
-
   if (showProfile) return <MemberProfile ID={customer_id} />;
 
   const activeCount = data_table.filter((c) => isValid(c.end_membership_date)).length;
@@ -190,13 +183,24 @@ export const Member = () => {
     <>
       <PageHeader
         titleKey="members.title"
-        subtitle={t("members.count", { total: totalCount, active: activeCount })}
         actions={
           <Button onClick={() => setShowCreate(true)}>
             <Plus aria-hidden="true" />
             {t("members.add")}
           </Button>
         }
+      />
+
+      {/* The list's figures in one strip, never a row of stat cards. Nothing
+          blanks on first load: the strip and the table each draw their own
+          skeleton, so the search box the user is typing into stays mounted. */}
+      <FigureStrip
+        className="mb-4"
+        loading={member_loading && data_table.length === 0}
+        items={[
+          { label: t("members.title"), value: formatCount(totalCount) },
+          { label: t("common.valid"), value: formatCount(activeCount), tone: "paid" },
+        ]}
       />
 
       <DataTable<Customer>

@@ -64,18 +64,21 @@ export const TrainingPaymentForm = ((props) => {
         }),
         columnHelperPriceTable.accessor((row) => row.month_qty, {
             id: "ចំនួនខែ",
-            cell: (info) => info.getValue(),
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => <span className="font-semibold">{formatMoney(info.getValue())}</span>,
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure font-semibold">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.id, {
             id: "Action",
+            meta: { align: "right" },
             cell: (info) => (
                 <Button
                     type="button"
@@ -116,11 +119,11 @@ export const TrainingPaymentForm = ((props) => {
                 </DialogHeader>
 
                 {!isShowConfirmModal ? (
-                    loading_price_table ? (
-                        <p className="text-sm text-ink-soft">Loading...</p>
-                    ) : (
-                        <DataTable columns={columns_price_table} data={data?.GetTranningPrice ?? []} />
-                    )
+                    <DataTable
+                        columns={columns_price_table}
+                        data={data?.GetTranningPrice ?? []}
+                        loading={loading_price_table}
+                    />
                 ) : (
                     <ConfirmModal
                         setIsShowConfirmModal={setIsShowConfirmModal}

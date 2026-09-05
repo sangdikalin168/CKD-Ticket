@@ -222,9 +222,14 @@
     animation: shimmer 1.6s linear infinite;
   }
 
-  /* Figure: any number a person compares to another number. Roboto carries
-     both scripts here (POS's JetBrains Mono is not bundled and this app adds
-     no font), so the treatment is tabular figures with a slashed zero. */
+  /* Figure: any number a person compares to another number — money, counts,
+     times, page counts.
+     CKD-POS routes these through JetBrains Mono. This app does not, and the
+     divergence is deliberate: bundling a third face is a new runtime
+     dependency, and substituting the platform mono was tried and rejected —
+     a generic monospace gives the decimal point a full em, so "$1.50" renders
+     as "$1 . 50" at display size. Roboto's tabular figures with a slashed zero
+     give the same column alignment, which is what the treatment is for. */
   .figure {
     font-variant-numeric: tabular-nums slashed-zero;
     font-feature-settings: 'tnum' 1, 'zero' 1;

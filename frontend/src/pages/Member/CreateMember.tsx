@@ -61,7 +61,8 @@ const CreateMember = ({ setShow, onSubmit }: any) => {
                 </div>
             </div>
 
-            {/* The photo is taken on the member's own board once the record exists. */}
+            {/* The photo and fingerprint are taken on the member's own page, once the
+                record exists. */}
             <p className="text-caption text-ink-soft">
                 រូបថត និងម្រាមដៃ ថតនៅទំព័រសមាជិកបន្ទាប់ពីរក្សាទុក។
             </p>

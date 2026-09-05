@@ -144,7 +144,7 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }:
 
                     <div className="space-y-1.5">
                         <Label htmlFor="hold-old-end">សុពលភាពចាស់</Label>
-                        <Input id="hold-old-end" type="text" readOnly value={old_end ?? ""} />
+                        <Input id="hold-old-end" className="figure" type="text" readOnly value={old_end ?? ""} />
                     </div>
 
                     <div className="space-y-1.5">
@@ -153,7 +153,7 @@ const HoldForm = ({ open_hold, setOpenHold, customer_id, old_end, onSubmitted }:
                             id="hold-days"
                             type="text"
                             readOnly
-                            className="font-semibold"
+                            className="figure font-semibold"
                             value={holdDays > 0 ? `${holdDays} ថ្ងៃ` : ""}
                         />
                     </div>

@@ -18,13 +18,15 @@ export const TrainningPayment = (props: any) => {
   const trainningPaymencolumns = [
     trainningPaymentcolumnHelper.accessor((row) => row.payment_id, {
       id: "ID",
-      cell: (info) => <span className="text-ink-soft">{info.getValue()}</span>,
+      meta: { nowrap: true },
+      cell: (info) => <span className="figure text-ink-soft">{info.getValue()}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
     trainningPaymentcolumnHelper.accessor((row) => row.payment_date, {
       id: "ថ្ងៃបង់ប្រាក់",
-      cell: (info) => info.getValue(),
+      meta: { nowrap: true },
+      cell: (info) => <span className="figure">{info.getValue()}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
@@ -36,7 +38,8 @@ export const TrainningPayment = (props: any) => {
     }),
     trainningPaymentcolumnHelper.accessor((row) => row.price, {
       id: "តម្លៃ",
-      cell: (info) => <span className="font-medium">{formatMoney(info.getValue())}</span>,
+      meta: { align: "right", nowrap: true },
+      cell: (info) => <span className="figure font-medium">{formatMoney(info.getValue())}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),

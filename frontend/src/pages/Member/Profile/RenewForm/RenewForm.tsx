@@ -4,11 +4,12 @@ import { gql, useQuery } from "@apollo/client";
 import { useCreateCustomerPaymentMutation } from "../../../../generated/graphql";
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Tags } from "lucide-react";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { DateInput } from "@/components/ui/DateInput";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -53,7 +54,7 @@ const GET_ALL_PRICES = gql`
   }
 `;
 
-/** A filter written on the board: outline at rest, ink when chosen. */
+/** One option in a filter: outline at rest, the amber mark when chosen. */
 const Choice = ({ active, onClick, children }: any) => (
   <button
     type="button"
@@ -61,7 +62,7 @@ const Choice = ({ active, onClick, children }: any) => (
     aria-pressed={active}
     className={cn(
       "inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-wash"
+      active ? "border-amber-deep bg-amber text-ink" : "border-rule bg-card text-ink hover:bg-wash"
     )}
   >
     {children}
@@ -149,8 +150,21 @@ export const RenewForm = (props: any) => {
                 {[1,2,3,4].map(i => <Skeleton key={i} className="h-12 rounded-lg" />)}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="py-10 text-center text-sm text-ink-soft">
-                គ្មានតម្លៃត្រូវនឹងការជ្រើស
+              <div className="rounded-lg border border-rule bg-card">
+                <EmptyState
+                  icon={Tags}
+                  title="គ្មានតម្លៃត្រូវនឹងការជ្រើស"
+                  action={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setAge("Adult"); setShift("Full"); setMonthQty(null); }}
+                    >
+                      ទាំងអស់
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <div className="overflow-hidden rounded-lg border border-rule">
@@ -185,8 +199,8 @@ export const RenewForm = (props: any) => {
                           <span className="justify-self-center">
                             <FacilityMarks facilities={p.facilities} names={false} />
                           </span>
-                          <span className="text-right text-sm font-semibold text-ink">{p.monthQty}ខែ</span>
-                          <span className="figure text-right text-lg font-semibold text-ink">{formatMoney(p.price)}</span>
+                          <span className="figure whitespace-nowrap text-right text-sm font-semibold text-ink">{p.monthQty}ខែ</span>
+                          <span className="figure whitespace-nowrap text-right text-lg font-semibold text-ink">{formatMoney(p.price)}</span>
                         </button>
                       </li>
                     );
@@ -309,7 +323,7 @@ const ConfirmModal = (props: any) => {
             {selectedPrice.description}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 text-caption text-ink-soft">
-            <span>{selectedPrice.monthQty}ខែ · {shiftLabel(selectedPrice.shift)} · {ageLabel(selectedPrice.ageGroup)}</span>
+            <span><span className="figure">{selectedPrice.monthQty}ខែ</span> · {shiftLabel(selectedPrice.shift)} · {ageLabel(selectedPrice.ageGroup)}</span>
             <FacilityMarks facilities={selectedPrice.facilities} textClassName="text-ink-soft" />
           </div>
         </div>
@@ -344,7 +358,7 @@ const ConfirmModal = (props: any) => {
           />
         </div>
         <span className="text-sm text-ink-soft">→</span>
-        <span className="text-sm font-semibold text-ink">{date_format(renewalDate)}</span>
+        <span className="figure text-sm font-semibold text-ink">{date_format(renewalDate)}</span>
       </div>
 
       <DialogFooter>

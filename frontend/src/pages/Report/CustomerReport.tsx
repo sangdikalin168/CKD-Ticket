@@ -5,7 +5,7 @@
 import html2pdf from "html2pdf.js";
 import * as XLSX from 'xlsx';
 import { useTranslation } from "react-i18next";
-import { AlertCircle, FileDown, FileSpreadsheet, Search } from "lucide-react";
+import { AlertCircle, CalendarClock, FileDown, FileSpreadsheet, ScanLine, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateInput } from "@/components/ui/DateInput";
@@ -13,8 +13,11 @@ import { Label } from "@/components/ui/label";
 import { DataTable } from "@/components/ui/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";
 import type { ColumnDef } from "@/types/datatable";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FigureStrip } from "@/components/ui/FigureStrip";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
+import { SkeletonRows } from "@/components/ui/skeleton";
 
 import { formatCount } from "@/lib/money";
 const CUSTOMER_SCAN_REPORT_QUERY = gql`
@@ -114,16 +117,6 @@ const formatScanDate = (value: string) => {
   return `${day}-${month}-${year} ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
 };
 
-/** A figure on the board with its label written beside it. */
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="inline-flex items-baseline gap-3 rounded-lg border border-rule bg-card px-4 py-3">
-      <span className="text-caption text-ink-soft">{label}</span>
-      <span className="text-xl font-semibold leading-none text-ink">{value}</span>
-    </div>
-  );
-}
-
 export const CustomerReport = () => {
   const { t } = useTranslation();
   // Ref for scan log section
@@ -193,10 +186,11 @@ export const CustomerReport = () => {
     skip: !fromDate || !toDate, // Skip query if no date is provided
   });
 
-  // Loading / error state of the current tab, rendered below the tab bar.
-  // An early return here used to replace the whole page, so one failing
-  // query hid the tabs and the Expiring tab's date fields with it.
-  const tabLoading = (selectedTab === 'active' && loadingActive) || (selectedTab === 'expiring' && loadingExpiring);
+  // Error state of the current tab, rendered below the tab bar. An early
+  // return here used to replace the whole page, so one failing query hid the
+  // tabs and the Expiring tab's date fields with it. Loading is not announced
+  // here at all: the figure strip and the tables below each draw their own
+  // skeleton in their own shape, so nothing reflows when the rows land.
   const tabError = selectedTab === 'active' ? errorActive : selectedTab === 'expiring' ? errorExpiring : undefined;
 
   // Extract data for both queries
@@ -211,6 +205,7 @@ export const CustomerReport = () => {
       key: 'scanDate',
       header: 'Scan Date',
       sortable: true,
+      className: 'figure whitespace-nowrap',
       // Sort on the raw timestamp, display the formatted one.
       accessor: (row) => new Date(row.scanDate).getTime(),
       render: (row) => formatScanDate(row.scanDate),
@@ -227,21 +222,23 @@ export const CustomerReport = () => {
     )
     : activeRows;
 
+  // Column priority: a name and a phone number are what a counter looks up on
+  // a narrow screen; gender and the two dates fold away before a figure wraps.
   const activeCustomerColumns: ColumnDef<CustomerRow>[] = [
     { key: 'customer_name', header: 'Name', sortable: true },
-    { key: 'phone', header: 'Phone', sortable: true },
-    { key: 'gender', header: 'Gender', sortable: true },
-    { key: 'created_date', header: 'Created', sortable: true },
-    { key: 'end_membership_date', header: 'EndDate', sortable: true },
+    { key: 'phone', header: 'Phone', sortable: true, className: 'figure whitespace-nowrap' },
+    { key: 'gender', header: 'Gender', sortable: true, className: 'hidden sm:table-cell' },
+    { key: 'created_date', header: 'Created', sortable: true, className: 'figure hidden whitespace-nowrap lg:table-cell' },
+    { key: 'end_membership_date', header: 'EndDate', sortable: true, className: 'figure hidden whitespace-nowrap md:table-cell' },
   ];
 
   const expiringRows: CustomerRow[] = customersExpiring || [];
 
   const expiringCustomerColumns: ColumnDef<CustomerRow>[] = [
-    { key: 'customer_id', header: 'ID', sortable: true },
+    { key: 'customer_id', header: 'ID', sortable: true, align: 'right', className: 'figure hidden whitespace-nowrap sm:table-cell' },
     { key: 'customer_name', header: 'Name', sortable: true },
-    { key: 'phone', header: 'Phone', sortable: true },
-    { key: 'end_membership_date', header: 'Expire', sortable: true },
+    { key: 'phone', header: 'Phone', sortable: true, className: 'figure whitespace-nowrap' },
+    { key: 'end_membership_date', header: 'Expire', sortable: true, className: 'figure whitespace-nowrap' },
   ];
 
   const exportToExcel = (customers, fromDate, toDate) => {
@@ -341,7 +338,6 @@ export const CustomerReport = () => {
           <TabsTrigger value="scan">Scan Report</TabsTrigger>
         </TabsList>
 
-        {tabLoading && <p className="mt-4 text-sm text-ink-soft" role="status">{t("common.loading")}</p>}
         {tabError && (
           <p className="mt-4 flex items-center gap-2 text-sm text-ink" role="alert">
             <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
@@ -375,7 +371,7 @@ export const CustomerReport = () => {
                     {filteredCustomers.map((c: any) => (
                       <li
                         key={c.customer_id}
-                        className="cursor-pointer px-3 py-2 text-sm text-ink hover:bg-wash"
+                        className="cursor-pointer px-3 py-2 text-sm text-ink transition-colors hover:bg-wash"
                         onClick={() => {
                           setSelectedCustomer(c);
                           setSearchValue(c.customer_name + ' (' + c.customer_id + ')');
@@ -414,28 +410,44 @@ export const CustomerReport = () => {
             </div>
             {/* Scan results */}
             <div className="mt-4" ref={scanLogRef}>
-              {loadingScan && <p className="text-center text-sm text-ink-soft">Loading scan results...</p>}
-              {errorScan && <p className="text-center text-sm text-void">Error: {errorScan.message}</p>}
-              {dataScan && dataScan.customerScanReport && (
+              {loadingScan && (
+                <div className="overflow-hidden rounded-lg border border-rule bg-card">
+                  <SkeletonRows rows={6} className="px-2 py-1.5" />
+                </div>
+              )}
+              {errorScan && (
+                <p className="flex items-center gap-2 text-sm text-ink" role="alert">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
+                  Error: {errorScan.message}
+                </p>
+              )}
+              {!loadingScan && !errorScan && dataScan && dataScan.customerScanReport && (
                 <div>
-                  <div className="mb-2 text-sm font-semibold text-ink">Scan Log for {selectedCustomer?.customer_name} ({dataScan.customerScanReport.FromDate} to {dataScan.customerScanReport.ToDate})</div>
-                  {dataScan.customerScanReport.ScanLog.length > 0 ? (
-                    <DataTable<ScanLogRow>
-                      data={scanLogRows}
-                      columns={scanLogColumns}
-                      currentPage={1}
-                      pageSize={scanLogRows.length || 1}
-                      onPageChange={() => { /* un-paginated */ }}
-                      onPageSizeChange={() => { /* un-paginated */ }}
-                      searchable={false}
-                      exportable={false}
-                      printable={false}
-                      densityToggle={false}
-                      defaultDensity="compact"
-                    />
-                  ) : (
-                    <p className="text-sm text-ink-soft">No scan records found for this customer in the selected date range.</p>
-                  )}
+                  <div className="mb-2 text-sm font-semibold text-ink">
+                    Scan Log for {selectedCustomer?.customer_name} (
+                    <span className="figure">{dataScan.customerScanReport.FromDate}</span> to{' '}
+                    <span className="figure">{dataScan.customerScanReport.ToDate}</span>)
+                  </div>
+                  <DataTable<ScanLogRow>
+                    data={scanLogRows}
+                    columns={scanLogColumns}
+                    currentPage={1}
+                    pageSize={scanLogRows.length || 1}
+                    onPageChange={() => { /* un-paginated */ }}
+                    onPageSizeChange={() => { /* un-paginated */ }}
+                    searchable={false}
+                    exportable={false}
+                    printable={false}
+                    densityToggle={false}
+                    defaultDensity="compact"
+                    emptyState={
+                      <EmptyState
+                        icon={ScanLine}
+                        title={t("common.noData")}
+                        description="No scan records found for this customer in the selected date range."
+                      />
+                    }
+                  />
                 </div>
               )}
             </div>
@@ -445,21 +457,26 @@ export const CustomerReport = () => {
         {/* Active Members Tab */}
         <TabsContent value="active">
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <Figure label="Active Members" value={formatCount(totalActive)} />
-              <Button
-                variant="outline"
-                onClick={() => setShowDetails(!showDetails)}
-              >
-                {showDetails ? "Hide details" : "View details"}
-              </Button>
-            </div>
+            {/* One ruled strip, never a stat card. */}
+            <FigureStrip
+              aria-label="Active Members"
+              loading={loadingActive}
+              items={[{ label: "Active Members", value: formatCount(totalActive) }]}
+            />
+
+            <Button
+              variant="outline"
+              onClick={() => setShowDetails(!showDetails)}
+            >
+              {showDetails ? "Hide details" : "View details"}
+            </Button>
 
             {/* Conditional Rendering for Table */}
             {showDetails && (
               <DataTable<CustomerRow>
                 data={filteredActiveRows}
                 columns={activeCustomerColumns}
+                loading={loadingActive}
                 currentPage={1}
                 pageSize={filteredActiveRows.length || 1}
                 onPageChange={() => { /* un-paginated */ }}
@@ -471,6 +488,7 @@ export const CustomerReport = () => {
                 printTitle="Active Members"
                 densityToggle={false}
                 defaultDensity="compact"
+                emptyState={<EmptyState icon={Users} title={t("common.noData")} />}
               />
             )}
           </div>
@@ -481,7 +499,6 @@ export const CustomerReport = () => {
           <div className="space-y-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-end">
               {dateFields}
-              <Figure label="Expiring Members" value={formatCount(totalExpiring)} />
               {/* Export to Excel button */}
               <Button
                 variant="outline"
@@ -493,25 +510,42 @@ export const CustomerReport = () => {
               </Button>
             </div>
 
+            <FigureStrip
+              aria-label="Expiring Members"
+              loading={loadingExpiring}
+              items={[{ label: "Expiring Members", value: formatCount(totalExpiring) }]}
+            />
+
             {toDate && (
-              <Section title={`${totalExpiring} Customers Expiring from ${fromDate} to ${toDate}`}>
-                {customersExpiring.length > 0 ? (
-                  <DataTable<CustomerRow>
-                    data={expiringRows}
-                    columns={expiringCustomerColumns}
-                    currentPage={1}
-                    pageSize={expiringRows.length || 1}
-                    onPageChange={() => { /* un-paginated */ }}
-                    onPageSizeChange={() => { /* un-paginated */ }}
-                    searchable={false}
-                    exportable={false}
-                    printable={false}
-                    densityToggle={false}
-                    defaultDensity="compact"
-                  />
-                ) : (
-                  <p className="text-sm text-ink-soft">No customers found for the selected expiration date.</p>
-                )}
+              <Section
+                title={
+                  <>
+                    <span className="figure">{formatCount(totalExpiring)}</span> Customers Expiring from{' '}
+                    <span className="figure">{fromDate}</span> to <span className="figure">{toDate}</span>
+                  </>
+                }
+              >
+                <DataTable<CustomerRow>
+                  data={expiringRows}
+                  columns={expiringCustomerColumns}
+                  loading={loadingExpiring}
+                  currentPage={1}
+                  pageSize={expiringRows.length || 1}
+                  onPageChange={() => { /* un-paginated */ }}
+                  onPageSizeChange={() => { /* un-paginated */ }}
+                  searchable={false}
+                  exportable={false}
+                  printable={false}
+                  densityToggle={false}
+                  defaultDensity="compact"
+                  emptyState={
+                    <EmptyState
+                      icon={CalendarClock}
+                      title={t("common.noData")}
+                      description="No customers found for the selected expiration date."
+                    />
+                  }
+                />
               </Section>
             )}
           </div>

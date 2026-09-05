@@ -2,7 +2,7 @@ import { useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
-import { AlertCircle, ChevronRight, FileSpreadsheet, Search, X } from "lucide-react";
+import { AlertCircle, ChevronRight, FileSpreadsheet, Search, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,8 +13,12 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { StateDot } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FigureStrip } from "@/components/ui/FigureStrip";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
+import { SkeletonRows } from "@/components/ui/skeleton";
 
 import { formatCount, formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -73,16 +77,6 @@ const CUSTOMERS_BY_MEMBERSHIP_DURATION = gql`
     }
   }
 `;
-
-/** A figure on the board with its label written beside it. */
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex min-w-0 items-baseline gap-3 px-4 py-3">
-      <span className="truncate text-caption text-ink-soft">{label}</span>
-      <span className="text-xl font-semibold leading-none text-ink">{value}</span>
-    </div>
-  );
-}
 
 export const CustomerTypeReport = () => {
   const { t } = useTranslation();
@@ -172,6 +166,10 @@ export const CustomerTypeReport = () => {
     ? reportData?.groups.find((g: MembershipDurationGroup) => g.month_duration === selectedDuration)
     : null;
 
+  const averageRevenue = reportData && reportData.total_all_customers > 0
+    ? reportData.total_all_revenue / reportData.total_all_customers
+    : 0;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -193,7 +191,24 @@ export const CustomerTypeReport = () => {
         }
       />
 
-      {loading && <p className="text-sm text-ink-soft" role="status">កំពុងផ្ទុក...</p>}
+      {/* Loading draws the page it is about to become: the figure strip, then
+          the rows of the summary list. No spinner over an empty box. */}
+      {loading && (
+        <div className="space-y-6" role="status" aria-live="polite">
+          <span className="sr-only">កំពុងផ្ទុក...</span>
+          <FigureStrip
+            loading
+            items={[
+              { label: "អតិថិជនសកម្មបច្ចុប្បន្ន", value: "" },
+              { label: "តម្លៃសរុបពីការទិញចុងក្រោយ", value: "" },
+            ]}
+          />
+          <div className="overflow-hidden rounded-lg border border-rule bg-card">
+            <SkeletonRows rows={5} className="px-3 py-2" />
+          </div>
+        </div>
+      )}
+
       {error && (
         <p className="flex items-center gap-2 text-sm text-ink" role="alert">
           <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
@@ -203,17 +218,30 @@ export const CustomerTypeReport = () => {
 
       {reportData && !loading && (
         <>
-          {/* Figures */}
-          <section className="overflow-x-auto rounded-lg border border-rule bg-card">
-            <div className="flex min-w-max divide-x divide-rule">
-              <Figure label="អតិថិជនសកម្មបច្ចុប្បន្ន" value={formatCount(reportData.total_all_customers)} />
-              <Figure label="តម្លៃសរុបពីការទិញចុងក្រោយ" value={formatMoney(reportData.total_all_revenue, { decimals: 2 })} />
-            </div>
-          </section>
+          {/* Figures: one ruled strip, never a grid of same-size stat cards. */}
+          <FigureStrip
+            aria-label="សង្ខេប"
+            items={[
+              {
+                label: "អតិថិជនសកម្មបច្ចុប្បន្ន",
+                value: formatCount(reportData.total_all_customers),
+              },
+              {
+                label: "តម្លៃសរុបពីការទិញចុងក្រោយ",
+                value: formatMoney(reportData.total_all_revenue, { decimals: 2 }),
+                tone: "paid",
+                meta: (
+                  <>
+                    មធ្យម <span className="figure">{formatMoney(averageRevenue, { decimals: 2 })}</span>
+                  </>
+                ),
+              },
+            ]}
+          />
 
-          {/* Duration groups as a marker list */}
+          {/* Duration groups: a plain list of rows, each opening its detail. */}
           <Section title="សង្ខេបតាមប្រភេទ">
-            <ul className="divide-y divide-rule rounded-lg border border-rule bg-card">
+            <ul className="divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card">
               {reportData.groups.map((group: MembershipDurationGroup) => {
                 const active = showDetails && selectedDuration === group.month_duration;
                 return (
@@ -226,23 +254,25 @@ export const CustomerTypeReport = () => {
                         setShowDetails(true);
                       }}
                       className={cn(
-                        "grid w-full grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 px-4 py-2.5 text-left text-ink transition-colors hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink",
+                        "grid w-full grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 px-4 py-2.5 text-left text-ink transition-colors hover:bg-wash/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                         active && "bg-wash"
                       )}
                     >
-                      <span aria-hidden="true" className={cn("marker-dot", active ? "" : "opacity-60")} style={{ ["--marker" as string]: "var(--ink)" }} />
-                      <span className="text-lg font-semibold">{group.month_duration} ខែ</span>
-                      <span className="inline-flex items-baseline gap-2">
+                      <StateDot tone={active ? "ink" : "muted"} />
+                      <span className="text-sm font-semibold">
+                        <span className="figure">{group.month_duration}</span> ខែ
+                      </span>
+                      <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
                         <span className="text-caption text-ink-soft">អតិថិជន</span>
-                        <span className="font-semibold">{formatCount(group.total_customers)}</span>
+                        <span className="figure font-semibold">{formatCount(group.total_customers)}</span>
                       </span>
-                      <span className="inline-flex items-baseline gap-2">
+                      <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
                         <span className="text-caption text-ink-soft">ចំណូល</span>
-                        <span className="font-semibold">{formatMoney(group.total_revenue, { decimals: 2 })}</span>
+                        <span className="figure font-semibold">{formatMoney(group.total_revenue, { decimals: 2 })}</span>
                       </span>
-                      <span className="hidden items-baseline gap-2 sm:inline-flex">
+                      <span className="hidden items-baseline gap-2 whitespace-nowrap sm:inline-flex">
                         <span className="text-caption text-ink-soft">មធ្យម</span>
-                        <span className="font-semibold">
+                        <span className="figure font-semibold">
                           {formatMoney(group.total_customers > 0 ? group.total_revenue / group.total_customers : 0, { decimals: 2 })}
                         </span>
                       </span>
@@ -257,7 +287,11 @@ export const CustomerTypeReport = () => {
           {/* Detailed Customer List */}
           {showDetails && selectedGroup && (
             <Section
-              title={`លម្អិតអតិថិជន ${selectedDuration} ខែ`}
+              title={
+                <>
+                  លម្អិតអតិថិជន <span className="figure">{selectedDuration}</span> ខែ
+                </>
+              }
               aside={
                 <Button onClick={() => setShowDetails(false)} variant="outline" size="sm">
                   <X aria-hidden="true" />
@@ -265,22 +299,25 @@ export const CustomerTypeReport = () => {
                 </Button>
               }
             >
-              {/* Mobile Card View */}
+              {/* Narrow screens read the same rows as cards; the table below
+                  starts at md, which is this page's column priority. */}
               <div className="block space-y-3 md:hidden">
                 {selectedGroup.customers.map((customer: CustomerMembershipDetail) => (
                   <div key={customer.customer_id} className="rounded-lg border border-rule bg-card p-3">
                     <div className="flex items-start justify-between gap-2 border-b border-rule pb-2">
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-ink">{customer.customer_name}</p>
-                        <p className="text-caption text-ink-soft">{customer.customer_code}</p>
+                        <p className="truncate text-sm font-semibold text-ink">{customer.customer_name}</p>
+                        <p className="figure text-caption text-ink-soft">{customer.customer_code}</p>
                       </div>
-                      <span className="text-lg font-semibold text-ink">{formatMoney(customer.price, { decimals: 2 })}</span>
+                      <span className="figure whitespace-nowrap text-sm font-semibold text-ink">
+                        {formatMoney(customer.price, { decimals: 2 })}
+                      </span>
                     </div>
 
                     <dl className="mt-2 grid grid-cols-2 gap-2 text-caption">
                       <div>
                         <dt className="text-ink-soft">លេខទូរស័ព្ទ</dt>
-                        <dd className="font-medium text-ink">{customer.phone}</dd>
+                        <dd className="figure font-medium text-ink">{customer.phone}</dd>
                       </div>
                       <div>
                         <dt className="text-ink-soft">ភេទ</dt>
@@ -292,22 +329,26 @@ export const CustomerTypeReport = () => {
                       </div>
                       <div>
                         <dt className="text-ink-soft">ផុតកំណត់</dt>
-                        <dd className="font-medium text-ink">{formatDate(customer.end_membership_date)}</dd>
+                        <dd className="figure font-medium text-ink">{formatDate(customer.end_membership_date)}</dd>
                       </div>
                       <div className="col-span-2 border-t border-rule pt-2">
                         <dt className="text-ink-soft">កាលបរិច្ឆេទទូទាត់ចុងក្រោយ</dt>
-                        <dd className="font-medium text-ink">{new Date(customer.payment_date).toLocaleDateString('fr-CA')}</dd>
+                        <dd className="figure font-medium text-ink">{new Date(customer.payment_date).toLocaleDateString('fr-CA')}</dd>
                       </div>
                     </dl>
                   </div>
                 ))}
 
                 {/* Mobile Summary */}
-                <div className="flex items-center justify-between rounded-lg border-2 border-ink bg-card p-3">
-                  <span className="font-semibold text-ink">សរុប</span>
+                <div className="flex items-center justify-between rounded-lg border border-rule bg-wash p-3">
+                  <span className="text-sm font-semibold text-ink">សរុប</span>
                   <div className="text-right">
-                    <p className="text-lg font-semibold text-ink">{formatMoney(selectedGroup.total_revenue, { decimals: 2 })}</p>
-                    <p className="text-caption text-ink-soft">{selectedGroup.total_customers} អតិថិជន</p>
+                    <p className="figure whitespace-nowrap text-sm font-semibold text-ink">
+                      {formatMoney(selectedGroup.total_revenue, { decimals: 2 })}
+                    </p>
+                    <p className="text-caption text-ink-soft">
+                      <span className="figure">{formatCount(selectedGroup.total_customers)}</span> អតិថិជន
+                    </p>
                   </div>
                 </div>
               </div>
@@ -317,56 +358,61 @@ export const CustomerTypeReport = () => {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead>លេខកូដ</TableHead>
+                      <TableHead className="hidden lg:table-cell">លេខកូដ</TableHead>
                       <TableHead>ឈ្មោះ</TableHead>
                       <TableHead>លេខទូរស័ព្ទ</TableHead>
-                      <TableHead>ភេទ</TableHead>
+                      <TableHead className="hidden lg:table-cell">ភេទ</TableHead>
                       <TableHead>ប្រភេទ</TableHead>
                       <TableHead className="text-right">តម្លៃចុងក្រោយ</TableHead>
-                      <TableHead>កាលបរិច្ឆេទទូទាត់ចុងក្រោយ</TableHead>
+                      <TableHead className="hidden xl:table-cell">កាលបរិច្ឆេទទូទាត់ចុងក្រោយ</TableHead>
                       <TableHead>ផុតកំណត់</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {selectedGroup.customers.map((customer: CustomerMembershipDetail) => (
                       <TableRow key={customer.customer_id}>
-                        <TableCell className="whitespace-nowrap text-ink-soft">
+                        <TableCell className="figure hidden whitespace-nowrap text-ink-soft lg:table-cell">
                           {customer.customer_code}
                         </TableCell>
                         <TableCell className="whitespace-nowrap font-medium">
                           {customer.customer_name}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="figure whitespace-nowrap">
                           {customer.phone}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="hidden whitespace-nowrap lg:table-cell">
                           {customer.gender}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {customer.promotion}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-semibold">
+                        <TableCell className="figure whitespace-nowrap text-right font-semibold">
                           {formatMoney(customer.price, { decimals: 2 })}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="figure hidden whitespace-nowrap xl:table-cell">
                           {new Date(customer.payment_date).toLocaleDateString('fr-CA')}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="figure whitespace-nowrap">
                           {formatDate(customer.end_membership_date)}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
+                  {/* One footer cell per column, rather than colSpan, so the
+                      total stays under its own column as columns fold away. */}
                   <TableFooter>
                     <TableRow>
-                      <TableCell colSpan={5} className="text-right font-semibold">
-                        សរុប
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
+                      <TableCell className="hidden lg:table-cell" />
+                      <TableCell className="whitespace-nowrap font-semibold">សរុប</TableCell>
+                      <TableCell />
+                      <TableCell className="hidden lg:table-cell" />
+                      <TableCell />
+                      <TableCell className="figure whitespace-nowrap text-right font-semibold">
                         {formatMoney(selectedGroup.total_revenue, { decimals: 2 })}
                       </TableCell>
-                      <TableCell colSpan={2} className="font-semibold">
-                        {selectedGroup.total_customers} អតិថិជន
+                      <TableCell className="hidden xl:table-cell" />
+                      <TableCell className="whitespace-nowrap font-semibold">
+                        <span className="figure">{formatCount(selectedGroup.total_customers)}</span> អតិថិជន
                       </TableCell>
                     </TableRow>
                   </TableFooter>
@@ -377,17 +423,32 @@ export const CustomerTypeReport = () => {
         </>
       )}
 
-      {/* No Data Message */}
+      {/* Searched, but the range holds nothing */}
       {!reportData && hasSearched && !loading && !error && (
-        <p className="rounded-lg border border-dashed border-rule bg-card px-4 py-10 text-center text-sm text-ink-soft">
-          {t("common.noData")}
-        </p>
+        <div className="rounded-lg border border-rule bg-card">
+          <EmptyState
+            icon={Users}
+            title={t("common.noData")}
+            description="បង្ហាញប្រភេទសមាជិកដែលអតិថិជនកំពុងប្រើប្រាស់បច្ចុប្បន្ន (ផ្អែកលើការទិញចុងក្រោយ)"
+          />
+        </div>
       )}
 
+      {/* Nothing asked for yet: name the report and offer the one action. */}
       {!hasSearched && (
-        <p className="rounded-lg border border-dashed border-rule bg-card px-4 py-10 text-center text-sm text-ink-soft">
-          សូមចុចប៊ូតុង "ស្វែងរក" ដើម្បីមើលរបាយការណ៍
-        </p>
+        <div className="rounded-lg border border-rule bg-card">
+          <EmptyState
+            icon={Search}
+            title={t("reports.memberTypes")}
+            description={'សូមចុចប៊ូតុង "ស្វែងរក" ដើម្បីមើលរបាយការណ៍'}
+            action={
+              <Button variant="outline" onClick={handleSearch} disabled={loading}>
+                <Search aria-hidden="true" />
+                ស្វែងរក
+              </Button>
+            }
+          />
+        </div>
       )}
     </div>
   );

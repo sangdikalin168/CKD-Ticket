@@ -22,13 +22,15 @@ export const FruitPaymentTable = (props: any) => {
     const columns = [
         columnHelper.accessor((row) => row.payment_id, {
             id: "ID",
-            cell: (info) => <span className="text-ink-soft">{info.getValue()}</span>,
+            meta: { nowrap: true },
+            cell: (info) => <span className="figure text-ink-soft">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelper.accessor((row) => row.payment_date, {
             id: "ថ្ងៃបង់ប្រាក់",
-            cell: (info) => datetime_format(info.getValue()),
+            meta: { nowrap: true },
+            cell: (info) => <span className="figure">{datetime_format(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
@@ -40,19 +42,22 @@ export const FruitPaymentTable = (props: any) => {
         }),
         columnHelper.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => <span className="font-medium">{formatMoney(info.getValue())}</span>,
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure font-medium">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelper.accessor((row) => row.old_end, {
             id: "Old",
-            cell: (info) => info.getValue(),
+            meta: { nowrap: true, hideBelow: "md" },
+            cell: (info) => <span className="figure">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelper.accessor((row) => row.new_end, {
             id: "New",
-            cell: (info) => info.getValue(),
+            meta: { nowrap: true, hideBelow: "md" },
+            cell: (info) => <span className="figure">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),

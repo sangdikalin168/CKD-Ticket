@@ -1,7 +1,6 @@
-import LoadingPage from "../../../components/LoadingPage/LoadingPage"
 import { useGetCustomerDetailLazyQuery, useGetMemberPaymentLazyQuery } from "../../../generated/graphql";
 import { useDecideHoldRequestV2Mutation, useHoldRequestsV2Query, useProcessHoldV2Mutation } from "../../../generated/holdV2";
-import { FileSpreadsheet, Printer } from "lucide-react";
+import { Columns3, FileSpreadsheet, PauseCircle, Printer, Rows3, type LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Notifications from "../../../components/Notification";
@@ -20,7 +19,12 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { RequestColumns, type RequestCard } from "@/components/ui/RequestColumns";
-import { statusTone } from "@/components/ui/Chip";
+import { Chip, statusTone } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FigureStrip } from "@/components/ui/FigureStrip";
+import { Skeleton, SkeletonRows } from "@/components/ui/skeleton";
+import { formatCount } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import { exportToExcel } from "@/utils/excelExport";
 import { showSuccessToast, showErrorToast } from "@/utils/toast";
 
@@ -69,9 +73,49 @@ const STATUS_LABEL: Record<string, string> = {
     CANCELLED: "បានលុប",
 };
 
-/** Which column of the board a request sits in. */
+/** Which stage column a request sits in. */
 const columnOf = (status: string) =>
     status === "PENDING" ? "requested" : status === "PROCESSED" ? "processed" : "checked";
+
+/** The same rows read two ways: by stage, or as one flat ledger. */
+type RequestView = "columns" | "table";
+
+function ViewToggle({
+    view,
+    onChange,
+    columnsLabel,
+    tableLabel,
+}: {
+    view: RequestView;
+    onChange: (next: RequestView) => void;
+    columnsLabel: string;
+    tableLabel: string;
+}) {
+    const item = (value: RequestView, label: string, Icon: LucideIcon, first: boolean) => (
+        <button
+            type="button"
+            onClick={() => onChange(value)}
+            aria-pressed={view === value}
+            title={label}
+            aria-label={label}
+            className={cn(
+                "inline-flex h-9 w-9 items-center justify-center transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                !first && "border-l border-rule",
+                view === value ? "bg-ink text-chalk" : "text-ink-soft hover:bg-wash"
+            )}
+        >
+            <Icon className="h-4 w-4" aria-hidden="true" />
+        </button>
+    );
+
+    return (
+        <div className="inline-flex overflow-hidden rounded-md border border-rule bg-card" role="group">
+            {item("columns", columnsLabel, Columns3, true)}
+            {item("table", tableLabel, Rows3, false)}
+        </div>
+    );
+}
 
 const HoldRequest = () => {
     const { t } = useTranslation();
@@ -91,6 +135,7 @@ const HoldRequest = () => {
     const [open, setOpen] = useState(false)
     const [open_print, setOpenPrint] = useState(false)
     const [description, setDescription] = useState("")
+    const [view, setView] = useState<RequestView>("columns")
     const [request_info, setRequestInfo] = useState({
         request_id: 0,
         customer_id: 0, customer_name: "", phone: "", end_membership_date: "", reason: "",
@@ -184,6 +229,18 @@ const HoldRequest = () => {
         return [...list].sort((a, b) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime());
     }, [requests, search]);
 
+    // One strip of aggregates over whatever the search left, so the table view
+    // carries the same stage counts the columns show on their headings.
+    const figures = useMemo(() => {
+        const inStage = (key: string) => filtered.filter((row) => columnOf(row.status) === key).length;
+        return [
+            { label: t("common.total"), value: formatCount(filtered.length) },
+            { label: t("requests.requested"), value: formatCount(inStage("requested")) },
+            { label: t("requests.checked"), value: formatCount(inStage("checked")) },
+            { label: t("requests.processed"), value: formatCount(inStage("processed")), tone: "paid" as const },
+        ];
+    }, [filtered, t]);
+
     // What the Excel export writes — the same fields the old table carried.
     const exportColumns: ColumnDef<HoldRequestType>[] = [
         { key: "customer_name", header: "អតិថិជន" },
@@ -241,6 +298,22 @@ const HoldRequest = () => {
         })
     };
 
+    // The next step for one request, shared by the stage cards and the table so
+    // the two views can never offer different actions. Only an APPROVED request
+    // can be processed — the same condition the server enforces, so the button
+    // never offers an action that fails.
+    const rowActions = (row: HoldRequestType) =>
+        row.status === "PENDING" ? (
+            <Button size="sm" variant="outline" onClick={() => openDecision(row)}>
+                {t("requests.decide")}
+            </Button>
+        ) : row.status === "APPROVED" ? (
+            <Button size="sm" onClick={() => openProcess(row)}>
+                <Printer aria-hidden="true" />
+                {t("requests.process")}
+            </Button>
+        ) : null;
+
     const cards: RequestCard[] = filtered.map((row) => ({
         id: row.request_id,
         column: columnOf(row.status),
@@ -254,18 +327,7 @@ const HoldRequest = () => {
         tone: statusTone(row.status),
         toneLabel: STATUS_LABEL[row.status] ?? row.status,
         onClick: () => openDecision(row),
-        // Only an APPROVED request can be processed — same condition the
-        // server enforces, so the button never offers an action that fails.
-        actions: row.status === "PENDING" ? (
-            <Button size="sm" variant="outline" onClick={() => openDecision(row)}>
-                {t("requests.decide")}
-            </Button>
-        ) : row.status === "APPROVED" ? (
-            <Button size="sm" variant="commit" onClick={() => openProcess(row)}>
-                <Printer aria-hidden="true" />
-                {t("requests.process")}
-            </Button>
-        ) : undefined,
+        actions: rowActions(row) ?? undefined,
     }));
 
     return (
@@ -274,6 +336,12 @@ const HoldRequest = () => {
                 titleKey="requests.hold"
                 actions={
                     <>
+                        <ViewToggle
+                            view={view}
+                            onChange={setView}
+                            columnsLabel={t("requests.viewColumns")}
+                            tableLabel={t("requests.viewTable")}
+                        />
                         <Input
                             type="search"
                             placeholder={t("common.searchPlaceholder")}
@@ -290,7 +358,98 @@ const HoldRequest = () => {
                 }
             />
 
-            {!loading ? (
+            <FigureStrip items={figures} loading={loading} className="mb-4" />
+
+            {loading ? (
+                view === "table" ? (
+                    <div className="overflow-hidden rounded-lg border border-rule bg-card" role="status" aria-live="polite">
+                        <div className="h-8 border-b border-rule bg-wash" />
+                        <SkeletonRows rows={6} className="p-1" />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3" role="status" aria-live="polite">
+                        {[0, 1, 2].map((col) => (
+                            <div key={col} className="min-w-0 space-y-2">
+                                <Skeleton className="h-5 w-24" />
+                                {[0, 1, 2].map((i) => (
+                                    <Skeleton key={i} className="h-[5.5rem] rounded-lg" />
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )
+            ) : filtered.length === 0 ? (
+                <div className="rounded-lg border border-rule bg-card">
+                    <EmptyState
+                        icon={PauseCircle}
+                        title={t("requests.empty")}
+                        action={
+                            search ? (
+                                <Button variant="outline" size="sm" onClick={() => setSearch("")}>
+                                    {t("common.clear")}
+                                </Button>
+                            ) : (
+                                <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                                    {t("common.refresh")}
+                                </Button>
+                            )
+                        }
+                    />
+                </div>
+            ) : view === "table" ? (
+                <div className="overflow-hidden rounded-lg border border-rule bg-card">
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[760px] text-caption">
+                            <thead className="border-b border-rule bg-wash text-left text-ink-soft">
+                                <tr>
+                                    <th scope="col" className="px-3 py-1.5 font-medium">{t("common.name")}</th>
+                                    <th scope="col" className="whitespace-nowrap px-3 py-1.5 font-medium">
+                                        {t("common.from")} → {t("common.to")}
+                                    </th>
+                                    <th scope="col" className="hidden px-3 py-1.5 font-medium md:table-cell">{t("common.reason")}</th>
+                                    <th scope="col" className="hidden px-3 py-1.5 font-medium lg:table-cell">{t("requests.requested")}</th>
+                                    <th scope="col" className="px-3 py-1.5 font-medium">{t("common.status")}</th>
+                                    <th scope="col" className="w-px px-3 py-1.5">
+                                        <span className="sr-only">{t("common.actions")}</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-rule/60">
+                                {filtered.map((row) => (
+                                    <tr key={row.request_id} className="leading-[19px] text-ink transition-colors hover:bg-wash/60">
+                                        <td className="whitespace-nowrap px-3 py-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => openDecision(row)}
+                                                className="font-medium text-ink transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            >
+                                                {row.customer_name}
+                                            </button>
+                                            <span className="figure ml-2 text-ink-soft">{row.phone}</span>
+                                        </td>
+                                        <td className="figure whitespace-nowrap px-3 py-1">
+                                            {date_format(row.from_date)} → {date_format(row.to_date)}
+                                        </td>
+                                        <td className="hidden max-w-[16rem] truncate px-3 py-1 md:table-cell" title={row.reason}>
+                                            {row.reason}
+                                        </td>
+                                        <td className="hidden whitespace-nowrap px-3 py-1 lg:table-cell">
+                                            {row.requested_by_name ?? ""}
+                                            <span className="figure ml-2 text-ink-soft">{datetime_format(row.requested_at)}</span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-1">
+                                            <Chip tone={statusTone(row.status)}>{STATUS_LABEL[row.status] ?? row.status}</Chip>
+                                        </td>
+                                        <td className="whitespace-nowrap px-2 py-1">
+                                            <div className="flex items-center justify-end gap-2">{rowActions(row)}</div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ) : (
                 <RequestColumns
                     columns={[
                         { key: "requested", label: t("requests.requested") },
@@ -300,8 +459,6 @@ const HoldRequest = () => {
                     cards={cards}
                     emptyLabel={t("requests.empty")}
                 />
-            ) : (
-                <LoadingPage message={t("common.loading")} />
             )}
 
             <Button
@@ -468,16 +625,16 @@ const HoldRequest = () => {
                         <table className="min-w-full text-caption">
                             <thead className="bg-wash text-left text-ink-soft">
                                 <tr>
-                                    <th scope="col" className="px-2 py-1.5 font-medium">Date</th>
-                                    <th scope="col" className="px-2 py-1.5 font-medium">Item</th>
+                                    <th scope="col" className="px-2 py-1.5 font-medium">{t("common.date")}</th>
+                                    <th scope="col" className="px-2 py-1.5 font-medium">{t("common.description")}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-rule/60">
                                 {
                                     payment?.GetMemberPayment.map((payment, index) => {
                                         return (
-                                            <tr key={index} className="text-left text-ink">
-                                                <td className="whitespace-nowrap px-2 py-[3px]">{date_format(payment.payment_date)}</td>
+                                            <tr key={index} className="text-left text-ink transition-colors hover:bg-wash/60">
+                                                <td className="figure whitespace-nowrap px-2 py-[3px]">{date_format(payment.payment_date)}</td>
                                                 <td className="px-2 py-[3px]">{payment.promotion}</td>
                                             </tr>
                                         )

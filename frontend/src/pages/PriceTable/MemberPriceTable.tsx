@@ -12,9 +12,10 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-line";
-import { Trash2, Pencil, Plus, Image as ImageIcon, X } from "lucide-react";
+import { AlertCircle, Trash2, Pencil, Plus, Image as ImageIcon, Tags, X } from "lucide-react";
 import { toast } from "react-toastify";
-import LoadingPage from "../../components/LoadingPage/LoadingPage";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FacilityDot, FacilityMarks, useFacilityName } from "@/components/ui/FacilityMark";
 import { facilitiesOfServiceType } from "@/lib/facility";
@@ -109,7 +110,7 @@ function fileToResizedDataUrl(file: File, maxSize = 512, quality = 0.72): Promis
   });
 }
 
-/** A selectable choice: outline at rest, ink when chosen. */
+/** A selectable choice: outline at rest, the amber mark when chosen. */
 function Choice({ active, onClick, children, className }: any) {
   return (
     <button
@@ -118,7 +119,7 @@ function Choice({ active, onClick, children, className }: any) {
       aria-pressed={active}
       className={cn(
         "inline-flex h-9 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-wash",
+        active ? "border-amber-deep bg-amber text-ink" : "border-rule bg-card text-ink hover:bg-wash",
         className
       )}
     >
@@ -211,11 +212,16 @@ export const MemberPriceTable = () => {
     const showKey = rows.some((r) => !!r.key_image);
     const svcFacilities = facilitiesOfServiceType(serviceType);
     if (rows.length === 0) return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule bg-card py-12">
-        <p className="text-sm text-ink-soft">មិនទាន់មានការកំណត់</p>
-        <Button variant="outline" size="sm" onClick={openAdd}>
-          <Plus aria-hidden="true" /> បន្ថែម
-        </Button>
+      <div className="rounded-lg border border-rule bg-card">
+        <EmptyState
+          icon={Tags}
+          title="មិនទាន់មានការកំណត់"
+          action={
+            <Button variant="outline" size="sm" onClick={openAdd}>
+              <Plus aria-hidden="true" /> បន្ថែម
+            </Button>
+          }
+        />
       </div>
     );
     return (
@@ -225,9 +231,9 @@ export const MemberPriceTable = () => {
             <TableRow className="hover:bg-transparent">
               <TableHead>ចំនួនខែ</TableHead>
               <TableHead>ក្រុមអាយុ</TableHead>
-              <TableHead>អតិថិជន</TableHead>
-              <TableHead>វេន</TableHead>
-              <TableHead className="text-right">ចំនួនចូល</TableHead>
+              <TableHead className="hidden md:table-cell">អតិថិជន</TableHead>
+              <TableHead className="hidden sm:table-cell">វេន</TableHead>
+              <TableHead className="hidden text-right md:table-cell">ចំនួនចូល</TableHead>
               <TableHead className="text-right">តម្លៃ</TableHead>
               <TableHead>{t("ticket.col.facility")}</TableHead>
               {showKey && <TableHead className="w-16 text-center">{t("prices.key")}</TableHead>}
@@ -238,15 +244,15 @@ export const MemberPriceTable = () => {
             {rows.map((row) => {
               return (
                 <TableRow key={row.id}>
-                  <TableCell className="font-semibold">{row.monthQty} ខែ</TableCell>
+                  <TableCell className="figure whitespace-nowrap font-semibold">{row.monthQty} ខែ</TableCell>
                   <TableCell>
                     <Badge variant="outline">{ageLabel(row.ageGroup)}</Badge>
                   </TableCell>
-                  <TableCell>{custLabel(row.customerType)}</TableCell>
-                  <TableCell className="text-ink-soft">{shiftLabel(row.shift)}</TableCell>
-                  <TableCell className="text-right">{row.entryQty}×</TableCell>
+                  <TableCell className="hidden md:table-cell">{custLabel(row.customerType)}</TableCell>
+                  <TableCell className="hidden text-ink-soft sm:table-cell">{shiftLabel(row.shift)}</TableCell>
+                  <TableCell className="figure hidden whitespace-nowrap text-right md:table-cell">{row.entryQty}×</TableCell>
                   <TableCell className="text-right">
-                    <span className="figure text-lg font-semibold text-ink">{formatMoney(row.price)}</span>
+                    <span className="figure whitespace-nowrap font-semibold text-ink">{formatMoney(row.price)}</span>
                   </TableCell>
                   <TableCell>
                     <FacilityMarks facilities={row.facilities?.length ? row.facilities : svcFacilities} />
@@ -279,8 +285,31 @@ export const MemberPriceTable = () => {
     );
   };
 
-  if (loading) return <LoadingPage message={t("common.loading")} />;
-  if (error) return <div className="p-4 text-void-deep">Error: {error.message}</div>;
+  if (loading)
+    return (
+      <div className="space-y-4" role="status" aria-live="polite">
+        <span className="sr-only">{t("common.loading")}</span>
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-9 w-full max-w-xl" />
+        <div className="space-y-px overflow-hidden rounded-lg border border-rule bg-rule">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 bg-card px-3 py-2">
+              <Skeleton className="h-3.5 w-14" />
+              <Skeleton className="h-3.5 w-12" />
+              <Skeleton className="h-3.5 flex-1" />
+              <Skeleton className="h-3.5 w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  if (error)
+    return (
+      <p className="flex items-center gap-2 p-4 text-sm text-void-deep" role="alert">
+        <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
+        {error.message}
+      </p>
+    );
 
   return (
     <div className="space-y-4">
@@ -308,9 +337,7 @@ export const MemberPriceTable = () => {
                   ))}
                 </span>
                 {marks.length ? marks.map((code) => facilityName(code)).join(" + ") : st.label}
-                {count > 0 && (
-                  <Badge variant="secondary" className="h-5 px-1.5">{count}</Badge>
-                )}
+                {count > 0 && <span className="figure text-caption text-ink-soft">{count}</span>}
               </TabsTrigger>
             );
           })}
@@ -410,7 +437,7 @@ export const MemberPriceTable = () => {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="mp-price">តម្លៃ ($)</Label>
-                <Input id="mp-price" type="number" min="0" step="0.5" value={form.price} onChange={(e) => set("price", e.target.value)} className="font-bold" />
+                <Input id="mp-price" type="number" min="0" step="0.5" value={form.price} onChange={(e) => set("price", e.target.value)} className="figure font-semibold" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="mp-entry">ចំនួនចូល</Label>

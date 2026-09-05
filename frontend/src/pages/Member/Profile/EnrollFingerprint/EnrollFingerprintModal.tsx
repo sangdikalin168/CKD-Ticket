@@ -147,7 +147,7 @@ export function EnrollFingerprintModal({ open, setOpen, customerId, onSaved }: P
         <div className="space-y-5">
           <p className="text-sm text-ink-soft">
             អតិថិជន{" "}
-            <span className="font-semibold text-ink">{customerId ?? "—"}</span>
+            <span className="figure font-semibold text-ink">{customerId ?? "—"}</span>
           </p>
 
           <SampleProgress captured={captured} total={total} />
@@ -168,13 +168,13 @@ export function EnrollFingerprintModal({ open, setOpen, customerId, onSaved }: P
             </Hint>
           )}
           {phase.kind === "saved" && (
-            <div className="flex items-start gap-2 rounded-md border border-rule bg-card px-3 py-2 text-sm text-ink" role="status">
+            <div className="flex items-start gap-2 rounded-md bg-paid-tint px-3 py-2 text-sm text-paid-deep" role="status">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-paid" aria-hidden="true" />
               <span>ស្នាមម្រាមដៃបានរក្សាទុក — អតិថិជននេះអាចចូលដោយម្រាមដៃបាន។</span>
             </div>
           )}
           {phase.kind === "error" && (
-            <div className="flex items-start gap-2 rounded-md border border-void/40 bg-void-tint px-3 py-2 text-sm text-ink" role="alert">
+            <div className="flex items-start gap-2 rounded-md bg-void-tint px-3 py-2 text-sm text-void-deep" role="alert">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-void" aria-hidden="true" />
               <span>{phase.message}</span>
             </div>
@@ -194,25 +194,27 @@ export function EnrollFingerprintModal({ open, setOpen, customerId, onSaved }: P
 /** One dot per sample: grey until the reader has it, green once captured. */
 function SampleProgress({ captured, total }: { captured: number; total: number }) {
   return (
-    <div className="flex items-center justify-center gap-4" aria-label={`${captured} / ${total}`}>
-      {Array.from({ length: total }).map((_, i) => {
-        const filled = i < captured;
-        return (
-          <div
-            key={i}
-            className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-full border transition-colors",
-              filled ? "border-paid bg-paid-tint text-ink" : "border-rule text-ink-soft"
-            )}
-          >
-            <span className="relative">
-              <Fingerprint className="h-6 w-6" aria-hidden="true" />
-              <StateDot tone={filled ? "paid" : "muted"} className="absolute -right-2 -top-1" />
-            </span>
-          </div>
-        );
-      })}
-      <Chip tone={captured >= total ? "paid" : "pending"} className="sr-only">
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex items-center justify-center gap-4" aria-hidden="true">
+        {Array.from({ length: total }).map((_, i) => {
+          const filled = i < captured;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "flex h-14 w-14 items-center justify-center rounded-full border transition-colors",
+                filled ? "border-paid bg-paid-tint text-ink" : "border-rule text-ink-soft"
+              )}
+            >
+              <span className="relative">
+                <Fingerprint className="h-6 w-6" aria-hidden="true" />
+                <StateDot tone={filled ? "paid" : "muted"} className="absolute -right-2 -top-1" />
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <Chip tone={captured >= total ? "paid" : "pending"} mono>
         {captured} / {total}
       </Chip>
     </div>

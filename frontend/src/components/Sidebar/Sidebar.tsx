@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
-import { cn } from "@/lib/utils";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -137,19 +136,6 @@ const MENU: MenuItem[] = [
   },
 ];
 
-/** A quiet dot on the trailing edge of a nav row; ink when the row is the current page. */
-function IndexDot({ active }: { active: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "ml-auto h-2 w-2 shrink-0 rounded-full transition-colors",
-        active ? "bg-ink" : "bg-rule"
-      )}
-    />
-  );
-}
-
 export default function SideBar() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -196,14 +182,13 @@ export default function SideBar() {
 
   return (
     <SidebarRoot collapsible="offcanvas" id="primary-sidebar" aria-label="Primary navigation">
-      <SidebarHeader className="border-b border-rule px-4 pb-3 pt-4">
+      <SidebarHeader className="h-12 justify-center border-b border-rule px-4 py-0">
         <Link
           to="/"
           onClick={handleNavigate}
           className="block rounded-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
         >
           <span className="block text-base font-semibold leading-tight">CKD Ticket</span>
-          <span className="block truncate text-caption text-ink-soft">{t("app.club")}</span>
         </Link>
       </SidebarHeader>
 
@@ -247,7 +232,6 @@ export default function SideBar() {
                                 <SidebarMenuSubButton asChild isActive={active}>
                                   <Link to={subItem.path} onClick={handleNavigate}>
                                     <span className="flex-1 truncate">{t(subItem.nameKey)}</span>
-                                    <IndexDot active={active} />
                                   </Link>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
@@ -266,7 +250,6 @@ export default function SideBar() {
                     <Link to={item.path!} onClick={handleNavigate}>
                       {item.icon}
                       <span className="flex-1 truncate">{t(item.nameKey)}</span>
-                      <IndexDot active={isActiveParent} />
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

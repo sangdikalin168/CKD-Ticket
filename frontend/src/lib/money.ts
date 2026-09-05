@@ -38,11 +38,30 @@ export function formatTime(value: string | Date): string {
   return d.toLocaleTimeString(navigator.language, { hour: "2-digit", minute: "2-digit" });
 }
 
-/** "Thursday 4 September 2026" in the active language, for the page header. */
+/** Khmer numerals, for prose. Compared figures stay in Arabic digits. */
+const KH_DIGITS = "០១២៣៤៥៦៧៨៩";
+const kh = (n: number | string) => String(n).replace(/\d/g, (d) => KH_DIGITS[Number(d)]);
+
+const KH_WEEKDAYS = ["អាទិត្យ", "ច័ន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"];
+const KH_MONTHS = [
+  "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា",
+  "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ",
+];
+
+/**
+ * "ថ្ងៃសៅរ៍ ទី៥ ខែកញ្ញា ឆ្នាំ២០២៦" / "Saturday, 5 September 2026" — the date on
+ * a page header.
+ *
+ * Khmer is written out here rather than handed to `toLocaleDateString('km-KH')`
+ * because Chrome ships without Khmer date patterns and silently falls back to
+ * US English, which put an English date at the top of every Khmer page.
+ */
 export function formatLongDate(lng: string, date: Date = new Date()): string {
-  const locale = lng.startsWith("km") ? "km-KH" : "en-GB";
+  if (lng.startsWith("km")) {
+    return `ថ្ងៃ${KH_WEEKDAYS[date.getDay()]} ទី${kh(date.getDate())} ខែ${KH_MONTHS[date.getMonth()]} ឆ្នាំ${kh(date.getFullYear())}`;
+  }
   try {
-    return date.toLocaleDateString(locale, {
+    return date.toLocaleDateString("en-GB", {
       weekday: "long",
       day: "numeric",
       month: "long",

@@ -9,12 +9,14 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlaskConical, Loader2, RefreshCw } from "lucide-react";
+import { FlaskConical, Printer as PrinterIcon, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Chip } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonRows } from "@/components/ui/skeleton";
 
 interface PrinterList {
   ok: boolean;
@@ -63,6 +65,54 @@ function useBridge(timeoutMs = 6000): { api: Bridge | null; waiting: boolean } {
   }, [api, timeoutMs]);
 
   return { api, waiting };
+}
+
+/** One printer's row: the name, what it is to this PC, and the two actions. */
+function PrinterRow({
+  name,
+  selected,
+  isDefault,
+  busy,
+  onSelect,
+  onTest,
+  selectedLabel,
+  defaultLabel,
+  selectLabel,
+  testLabel,
+}: {
+  name: string;
+  selected: boolean;
+  isDefault: boolean;
+  busy: boolean;
+  onSelect: () => void;
+  onTest: () => void;
+  selectedLabel: string;
+  defaultLabel: string;
+  selectLabel: string;
+  testLabel: string;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-wash/60">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-medium text-ink">{name}</span>
+          {selected && <Chip tone="paid">{selectedLabel}</Chip>}
+        </div>
+        {isDefault && <p className="mt-0.5 text-caption text-ink-soft">{defaultLabel}</p>}
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Button variant="outline" size="sm" disabled={busy} onClick={onTest}>
+          <FlaskConical aria-hidden="true" />
+          {testLabel}
+        </Button>
+        {!selected && (
+          <Button size="sm" disabled={busy} onClick={onSelect}>
+            {selectLabel}
+          </Button>
+        )}
+      </div>
+    </li>
+  );
 }
 
 export default function Printers() {
@@ -122,8 +172,10 @@ export default function Printers() {
     }
   };
 
+  const printers = list?.printers ?? [];
+
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-3xl">
       <PageHeader
         titleKey="settings.printers.title"
         subtitle={t("settings.printers.subtitle")}
@@ -137,55 +189,76 @@ export default function Printers() {
         }
       />
 
+      {/* Still waiting for the desktop host to inject its bridge: say so, and
+          hold the shape of the list rather than spinning over an empty box. */}
       {!api && waiting && (
-        <div className="flex items-center gap-2 rounded-lg border border-dashed border-rule bg-card p-6 text-sm text-ink-soft" role="status">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          {t("settings.printers.connecting")}
+        <div className="overflow-hidden rounded-lg border border-rule bg-card" role="status" aria-live="polite">
+          <p className="border-b border-rule bg-wash px-4 py-2 text-caption text-ink-soft">
+            {t("settings.printers.connecting")}
+          </p>
+          <SkeletonRows rows={3} className="p-2" />
         </div>
       )}
 
       {!api && !waiting && (
-        <div className="rounded-lg border border-dashed border-rule bg-card p-6 text-sm text-ink-soft">
+        <div className="rounded-lg border border-rule bg-card px-4 py-6 text-sm text-ink-soft">
           {t("settings.printers.desktopOnly")}
         </div>
       )}
 
-      {api && list?.ok && (
-        <ul className="divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card">
-          {(list.printers ?? []).length === 0 && (
-            <li className="p-6 text-sm text-ink-soft">{t("settings.printers.none")}</li>
+      {api && loading && (
+        <div className="overflow-hidden rounded-lg border border-rule bg-card" role="status" aria-live="polite">
+          <SkeletonRows rows={4} className="p-2" />
+        </div>
+      )}
+
+      {api && !loading && list && !list.ok && (
+        <div className="rounded-lg border border-rule bg-card">
+          <EmptyState
+            icon={PrinterIcon}
+            title={t("settings.printers.loadError")}
+            description={list.error ?? undefined}
+            action={
+              <Button variant="outline" size="sm" onClick={() => void load()}>
+                {t("settings.printers.refresh")}
+              </Button>
+            }
+          />
+        </div>
+      )}
+
+      {api && !loading && list?.ok && (
+        <div className="overflow-hidden rounded-lg border border-rule bg-card">
+          {printers.length === 0 ? (
+            <EmptyState
+              icon={PrinterIcon}
+              title={t("settings.printers.none")}
+              action={
+                <Button variant="outline" size="sm" onClick={() => void load()}>
+                  {t("settings.printers.refresh")}
+                </Button>
+              }
+            />
+          ) : (
+            <ul className="divide-y divide-rule">
+              {printers.map((name) => (
+                <PrinterRow
+                  key={name}
+                  name={name}
+                  selected={list.configured === name}
+                  isDefault={list.default === name}
+                  busy={busy !== null}
+                  onSelect={() => void select(name)}
+                  onTest={() => void testPrint(name)}
+                  selectedLabel={t("settings.printers.selected")}
+                  defaultLabel={t("settings.printers.default")}
+                  selectLabel={t("settings.printers.select")}
+                  testLabel={t("settings.printers.testPrint")}
+                />
+              ))}
+            </ul>
           )}
-          {(list.printers ?? []).map((name) => {
-            const isSelected = list.configured === name;
-            const isDefault = list.default === name;
-            return (
-              <li key={name} className="flex items-center justify-between gap-4 px-4 py-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="truncate font-semibold text-ink">{name}</span>
-                    <Chip tone={isSelected ? "paid" : "muted"}>
-                      {isSelected ? t("settings.printers.selected") : isDefault ? t("settings.printers.default") : "—"}
-                    </Chip>
-                  </div>
-                  {isSelected && isDefault && (
-                    <div className="text-caption text-ink-soft">{t("settings.printers.default")}</div>
-                  )}
-                </div>
-                <div className="flex shrink-0 gap-2">
-                  <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => void testPrint(name)}>
-                    <FlaskConical aria-hidden="true" />
-                    {t("settings.printers.testPrint")}
-                  </Button>
-                  {!isSelected && (
-                    <Button size="sm" disabled={busy !== null} onClick={() => void select(name)}>
-                      {t("settings.printers.select")}
-                    </Button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        </div>
       )}
     </div>
   );
