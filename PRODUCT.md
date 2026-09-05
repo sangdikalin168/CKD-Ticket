@@ -101,9 +101,12 @@ the owner can reconcile against the drawer.
   served by the API itself. The Docker files, nginx config and `deploy.sh`
   in the repo are a dead path. There is no staging environment. A Cloudflare
   tunnel exposes the app at a public hostname.
-- **Two clients, one API.** The browser SPA and the desktop shell consume the
-  same GraphQL schema, generated into typed hooks; the shell adds printing,
-  fingerprint and update capabilities through `window.electronAPI`.
+- **Two clients, one API.** The browser SPA and the desktop app (the pywebview
+  host in `desktop/`, packaged as `CKD-Ticket.exe`) consume the same GraphQL
+  schema, generated into typed hooks; the desktop app adds printing,
+  fingerprint, camera and self-update through a small bridge that keeps the
+  legacy `window.electronAPI` name so the call sites did not change. Electron
+  itself is gone.
 
 ## Capabilities and Constraints
 
