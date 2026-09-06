@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import IncomeReport from "./pages/Report/IncomeReport";
 import { MemberPriceTable } from "./pages/PriceTable/MemberPriceTable";
+import { CouponPriceTable } from "./pages/PriceTable/CouponPriceTable";
 import { CustomerReport } from "./pages/Report/CustomerReport";
 import CustomerTypeReport from "./pages/Report/CustomerTypeReport";
 import Printers from "./pages/Settings/Printers";
@@ -159,6 +160,7 @@ const router = createBrowserRouter([
       { path: "/ticket", Component: Ticket },
       { path: "/member", Component: Member },
       { path: "/member_price_table", Component: MemberPriceTable },
+      { path: "/coupon_price_table", Component: CouponPriceTable },
       { path: "/hold_request", Component: HoldRequest },
       { path: "/transfer_request", Component: TransferRequest },
       { path: "/income_report", Component: IncomeReport },
