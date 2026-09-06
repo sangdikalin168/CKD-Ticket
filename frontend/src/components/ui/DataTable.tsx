@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, Copy, FileSpreadsheet, Plus, Printer } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { cn } from '../../lib/utils';
-import { Button } from './Button';
-import { Input } from './Input';
+import { Button } from './button';
+import { Input } from './input';
 import { Skeleton } from './skeleton';
 import { ColumnDef, DataTableAction, DataTableProps } from '../../types/datatable';
 import { copyToClipboard, printTable } from '../../utils/dataTableUtils';
@@ -31,12 +31,12 @@ const textAlignment = (align?: ColumnDef<any>['align']) =>
 /** Colour for a row action, in both the desktop table and the mobile cards. */
 const rowActionTone = (variant: DataTableAction['variant']) => {
   if (variant === 'destructive') {
-    return { desktop: 'text-magnet-rejected hover:text-magnet-rejected/70', mobile: 'text-magnet-rejected hover:bg-magnet-rejected/10' };
+    return { desktop: 'text-void hover:text-void/70', mobile: 'text-void hover:bg-void-tint' };
   }
   if (variant === 'success') {
-    return { desktop: 'text-magnet-done hover:text-magnet-done/70', mobile: 'text-magnet-done hover:bg-magnet-done/10' };
+    return { desktop: 'text-paid hover:text-paid/70', mobile: 'text-paid hover:bg-paid-tint' };
   }
-  return { desktop: 'text-ink hover:text-ink/60', mobile: 'text-ink hover:bg-tray' };
+  return { desktop: 'text-ink hover:text-ink/60', mobile: 'text-ink hover:bg-wash' };
 };
 
 function renderCellValue<T extends Record<string, any>>(column: ColumnDef<T>, row: T): ReactNode {
@@ -91,7 +91,7 @@ function TableStatus({ state, message, columns }: { state: TableState; message: 
 
   if (state === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-magnet-rejected" role="alert">
+      <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-void" role="alert">
         <AlertCircle className="h-8 w-8" aria-hidden="true" />
         <p className="text-center text-sm text-ink">{message}</p>
       </div>
@@ -165,7 +165,7 @@ export function DataTable<T extends Record<string, any>>({
   const density = densityToggle ? storedDensity : defaultDensity;
   const tokens = TABLE_DENSITY[density];
   const showZebra = striped && tokens.zebra;
-  const stickyHead = maxBodyHeight ? 'sticky top-0 z-10 bg-tray' : '';
+  const stickyHead = maxBodyHeight ? 'sticky top-0 z-10 bg-wash' : '';
 
   const handleSort = (columnKey: string) => {
     let nextKey: string | null = columnKey;
@@ -467,7 +467,7 @@ export function DataTable<T extends Record<string, any>>({
                 key={rowIndex}
                 onClick={onRowClick && (() => onRowClick(row))}
                 className={cn(
-                  'transition-colors hover:bg-tray/60',
+                  'transition-colors hover:bg-wash/60',
                   tokens.mobileCard,
                   onRowClick && 'cursor-pointer',
                   rowClassName?.(row)
@@ -529,7 +529,7 @@ export function DataTable<T extends Record<string, any>>({
           tableStatusNode
         ) : (
           <table className={cn('min-w-full divide-y', tokens.divider)}>
-            <thead className="bg-tray">
+            <thead className="bg-wash">
               <tr className={tokens.rowGrid}>
                 <th
                   scope="col"
@@ -603,7 +603,7 @@ export function DataTable<T extends Record<string, any>>({
                   onClick={onRowClick && (() => onRowClick(row))}
                   className={cn(
                     tokens.rowGrid,
-                    showZebra && rowIndex % 2 === 0 && 'bg-tray/40',
+                    showZebra && rowIndex % 2 === 0 && 'bg-wash/40',
                     hoverable && cn('transition-colors', tokens.rowHover),
                     onRowClick && 'cursor-pointer',
                     rowClassName?.(row)

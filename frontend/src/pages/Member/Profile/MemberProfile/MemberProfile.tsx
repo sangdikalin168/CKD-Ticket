@@ -40,7 +40,7 @@ import Transfer from "../Transfer/Transfer";
 import WebcamCapture from "../../../../components/WebcamCapture/WebcamCapture";
 import { useMutation } from "@apollo/client";
 import { UPDATE_CUSTOMER_PHOTO } from "../../../../graphql/Customer/UpdateCustomerPhoto";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs-line";
 import {
   Dialog,
@@ -50,8 +50,18 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { Chip, statusTone } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Skeleton, SkeletonRows } from "@/components/ui/skeleton";
 import { EnrollFingerprintModal } from "../EnrollFingerprint/EnrollFingerprintModal";
+
+/** A ledger tab still loading: rows in the table's own shape, never a spinner. */
+const LedgerSkeleton = ({ label }: { label: string }) => (
+  <div className="overflow-hidden rounded-lg border border-rule bg-card" role="status" aria-live="polite">
+    <span className="sr-only">{label}</span>
+    <SkeletonRows rows={5} />
+  </div>
+);
 
 const MemberProfile = ({ ID }: any) => {
   const { t } = useTranslation();
@@ -183,8 +193,31 @@ const MemberProfile = ({ ID }: any) => {
 
   const activeHold = request_data?.GetActiveHoldRequestV2?.[0];
 
+  // A skeleton shaped like the profile — the identity card, then the ledger —
+  // so nothing reflows when the record lands.
   if (loading_fruit_payment && loading_member_detail && loading_trainning_payment && loading_payment)
-    return <p className="text-sm text-ink-soft">{t("common.loading")}</p>;
+    return (
+      <div className="space-y-4" role="status" aria-live="polite">
+        <span className="sr-only">{t("common.loading")}</span>
+        <Skeleton className="h-8 w-28" />
+        <div className="rounded-lg border border-rule bg-card">
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
+            <Skeleton className="h-24 w-24 shrink-0 rounded-lg" />
+            <div className="min-w-0 flex-1 space-y-3">
+              <Skeleton className="h-6 w-52" />
+              <Skeleton className="h-4 w-full max-w-md" />
+              <Skeleton className="h-8 w-56" />
+            </div>
+          </div>
+          <div className="border-t border-rule bg-wash px-4 py-3">
+            <Skeleton className="h-8 w-full max-w-lg" />
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-lg border border-rule bg-card">
+          <SkeletonRows rows={6} />
+        </div>
+      </div>
+    );
 
   return (
     <div className="space-y-4">
@@ -198,12 +231,12 @@ const MemberProfile = ({ ID }: any) => {
         ថយក្រោយ
       </Button>
 
-      {/* ── The member's strip on the board: photo, name, magnets, then the marker tray ── */}
-      <section className="rounded-xl border border-rule bg-card">
+      {/* ── Identity card: photo, name, state chips, then the actions bar ── */}
+      <section className="rounded-lg border border-rule bg-card">
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
           <button
             type="button"
-            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-rule bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-rule bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={() => setOpenPreview(true)}
             aria-label="រូបភាព"
           >
@@ -220,7 +253,7 @@ const MemberProfile = ({ ID }: any) => {
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="truncate text-heading font-black leading-tight text-ink">{details?.customer_name}</h1>
+              <h1 className="truncate text-xl font-semibold leading-tight text-ink">{details?.customer_name}</h1>
               <Button
                 type="button"
                 variant="ghost"
@@ -231,23 +264,23 @@ const MemberProfile = ({ ID }: any) => {
               >
                 <Pencil aria-hidden="true" />
               </Button>
-              <MagnetChip tone={isActive ? "done" : "rejected"} size="md">
+              <Chip tone={isActive ? "paid" : "void"}>
                 {isActive ? "មានសុពលភាព" : "ផុតសុពលភាព"}
-              </MagnetChip>
-              <MagnetChip tone={details?.fingerprint ? "done" : "off"} size="md">
+              </Chip>
+              <Chip tone={details?.fingerprint ? "paid" : "muted"}>
                 {details?.fingerprint ? "មានម្រាមដៃ" : "គ្មានម្រាមដៃ"}
-              </MagnetChip>
+              </Chip>
               {activeHold && (
-                <MagnetChip tone={activeHold.status === "APPROVED" ? "info" : "pending"} size="md">
+                <Chip tone={statusTone(activeHold.status)}>
                   {activeHold.status === "APPROVED" ? "ច្បាប់បានឯកភាព" : "កំពុងសុំច្បាប់"}
-                </MagnetChip>
+                </Chip>
               )}
             </div>
 
             <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-sm text-ink">
               <div className="flex items-center gap-1.5">
                 <dt className="flex items-center gap-1 text-ink-soft"><Hash className="h-4 w-4" aria-hidden="true" />ID</dt>
-                <dd className="font-medium">{ID}</dd>
+                <dd className="figure font-medium">{ID}</dd>
               </div>
               <div className="flex items-center gap-1.5">
                 <dt className="flex items-center gap-1 text-ink-soft"><Phone className="h-4 w-4" aria-hidden="true" />ទូរស័ព្ទ</dt>
@@ -255,7 +288,7 @@ const MemberProfile = ({ ID }: any) => {
               </div>
               <div className="flex items-center gap-1.5">
                 <dt className="flex items-center gap-1 text-ink-soft"><CalendarDays className="h-4 w-4" aria-hidden="true" />ផុតថ្ងៃ</dt>
-                <dd className="font-medium">{details?.end_membership_date || "—"}</dd>
+                <dd className="figure font-medium">{details?.end_membership_date || "—"}</dd>
               </div>
               <div className="flex items-center gap-1.5">
                 <dt className="flex items-center gap-1 text-ink-soft"><Clock className="h-4 w-4" aria-hidden="true" />វេន</dt>
@@ -273,7 +306,7 @@ const MemberProfile = ({ ID }: any) => {
                 <Camera aria-hidden="true" />
                 ថតរូប
               </Button>
-              <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-rule bg-card px-2.5 text-sm font-medium text-ink transition-colors hover:bg-tray focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+              <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-rule bg-card px-2.5 text-sm font-medium text-ink transition-colors hover:bg-wash focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 បញ្ចូលរូប
                 <input type="file" className="sr-only" accept="image/*" onChange={handleFileUpload} />
@@ -282,9 +315,9 @@ const MemberProfile = ({ ID }: any) => {
           </div>
         </div>
 
-        {/* Marker tray: everything that can be sold to or done for this member */}
-        <div className="marker-rule mx-4" />
-        <div className="flex flex-wrap items-center gap-2 rounded-b-xl bg-tray px-4 py-3">
+        {/* Actions bar: everything that can be sold to or done for this member.
+            One hairline separates it from the identity block above. */}
+        <div className="flex flex-wrap items-center gap-2 rounded-b-lg border-t border-rule bg-wash px-4 py-3">
           <Button type="button" size="sm" variant="outline" onClick={() => setOpenMember(true)}>
             <RefreshCw aria-hidden="true" />
             សមាជិក
@@ -345,19 +378,30 @@ const MemberProfile = ({ ID }: any) => {
           {!loading_payment ? (
             <MemberPayment member_payment={member_payment?.GetMemberPayment} />
           ) : (
-            <p className="text-sm text-ink-soft">{t("common.loading")}</p>
+            <LedgerSkeleton label={t("common.loading")} />
           )}
         </TabsContent>
 
         <TabsContent value="coupon">
-          <p className="py-8 text-center text-sm text-ink-soft">គ្មានទិន្នន័យ</p>
+          <div className="rounded-lg border border-rule bg-card">
+            <EmptyState
+              icon={Ticket}
+              title="គ្មានទិន្នន័យ"
+              action={
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsOpenCoupon(true)}>
+                  <Ticket aria-hidden="true" />
+                  គ៉ូប៉ុន
+                </Button>
+              }
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="training">
           {!loading_trainning_payment ? (
             <TrainningPayment trainning_payment={trainning_payment} />
           ) : (
-            <p className="text-sm text-ink-soft">{t("common.loading")}</p>
+            <LedgerSkeleton label={t("common.loading")} />
           )}
         </TabsContent>
 
@@ -365,7 +409,7 @@ const MemberProfile = ({ ID }: any) => {
           {!loading_fruit_payment ? (
             <FruitPaymentTable fruit_payment={fruit_payment} />
           ) : (
-            <p className="text-sm text-ink-soft">{t("common.loading")}</p>
+            <LedgerSkeleton label={t("common.loading")} />
           )}
         </TabsContent>
       </Tabs>
@@ -479,7 +523,7 @@ const MemberProfile = ({ ID }: any) => {
                 alt={details?.customer_name || "Profile Preview"}
               />
             ) : (
-              <div className="flex h-64 items-center justify-center rounded-lg bg-tray">
+              <div className="flex h-64 items-center justify-center rounded-lg bg-wash">
                 <UserRound className="h-24 w-24 text-ink-soft" aria-hidden="true" />
               </div>
             )}

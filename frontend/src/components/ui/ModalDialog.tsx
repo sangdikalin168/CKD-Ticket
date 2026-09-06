@@ -1,7 +1,7 @@
 import React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from './button';
 import { cn } from '../../lib/utils';
 import { useOverlay } from './OverlayStack';
 
@@ -76,13 +76,13 @@ export const Dialog: React.FC<DialogProps> = ({
             aria-describedby={undefined}
             onEscapeKeyDown={(e) => { if (!isTopmost) e.preventDefault(); }}
             className={cn(
-              'bg-card rounded-xl shadow-overlay border border-rule w-full flex flex-col focus:outline-none',
+              'bg-card rounded-lg shadow-overlay border border-rule w-full flex flex-col focus:outline-none',
               maxWidthClasses[maxWidth]
             )}
             style={{ maxHeight: 'calc(100dvh - 16px)' }}
           >
-            <div className="flex justify-between items-center p-3 sm:p-4 md:p-6 border-b-2 border-ink shrink-0">
-              <DialogPrimitive.Title className="text-title font-black text-ink">
+            <div className="flex justify-between items-center p-3 sm:p-4 md:p-6 border-b border-rule shrink-0">
+              <DialogPrimitive.Title className="text-lg font-semibold text-ink">
                 {title}
               </DialogPrimitive.Title>
               <DialogPrimitive.Close
@@ -130,10 +130,13 @@ export interface ConfirmDialogProps {
   hideCancel?: boolean;
 }
 
+// A confirmation is a decision, not a state: only `danger` earns a colour of
+// its own (the void mark, shared with every destructive control). Warning and
+// info confirm in ink, the way POS's ConfirmDialog does.
 const confirmButtonVariant = {
   danger: 'destructive',
-  warning: 'warning',
-  info: 'info',
+  warning: 'default',
+  info: 'default',
 } as const;
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -168,9 +171,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         >
           <DialogPrimitive.Content
             onEscapeKeyDown={(e) => { if (!isTopmost) e.preventDefault(); }}
-            className="bg-card p-6 rounded-xl shadow-overlay border border-rule max-w-md w-full mx-4 focus:outline-none"
+            className="bg-card p-6 rounded-lg shadow-overlay border border-rule max-w-md w-full mx-4 focus:outline-none"
           >
-            <DialogPrimitive.Title className="text-title font-black text-ink mb-4">
+            <DialogPrimitive.Title className="text-lg font-semibold text-ink mb-4">
               {title ?? 'បញ្ជាក់សកម្មភាព'}
             </DialogPrimitive.Title>
             <DialogPrimitive.Description className="text-muted-foreground mb-6">

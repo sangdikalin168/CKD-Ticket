@@ -4,16 +4,16 @@ import { gql, useQuery } from "@apollo/client";
 import { useCreateCustomerPaymentMutation } from "../../../../generated/graphql";
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Tags } from "lucide-react";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { DateInput } from "@/components/ui/DateInput";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { FacilityMarks } from "@/components/board/FacilityMark";
-import { facilityOfSet } from "@/lib/facility";
+import { FacilityMarks } from "@/components/ui/FacilityMark";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +54,7 @@ const GET_ALL_PRICES = gql`
   }
 `;
 
-/** A filter written on the board: outline at rest, ink when chosen. */
+/** One option in a filter: outline at rest, the amber mark when chosen. */
 const Choice = ({ active, onClick, children }: any) => (
   <button
     type="button"
@@ -62,7 +62,7 @@ const Choice = ({ active, onClick, children }: any) => (
     aria-pressed={active}
     className={cn(
       "inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray"
+      active ? "border-ink bg-ink text-chalk" : "border-rule bg-card text-ink hover:bg-wash"
     )}
   >
     {children}
@@ -143,7 +143,6 @@ export const RenewForm = (props: any) => {
               </div>
             </div>
 
-            <div className="marker-rule" />
 
             {/* Price list */}
             {loading ? (
@@ -151,33 +150,45 @@ export const RenewForm = (props: any) => {
                 {[1,2,3,4].map(i => <Skeleton key={i} className="h-12 rounded-lg" />)}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="py-10 text-center text-sm text-ink-soft">
-                គ្មានតម្លៃត្រូវនឹងការជ្រើស
+              <div className="rounded-lg border border-rule bg-card">
+                <EmptyState
+                  icon={Tags}
+                  title="គ្មានតម្លៃត្រូវនឹងការជ្រើស"
+                  action={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setAge("Adult"); setShift("Full"); setMonthQty(null); }}
+                    >
+                      ទាំងអស់
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <div className="overflow-hidden rounded-lg border border-rule">
-                <div className={cn("grid items-center gap-4 bg-tray px-4 py-1.5 text-caption text-ink-soft", showKey ? "grid-cols-[2.5rem_1fr_auto_4rem_5rem]" : "grid-cols-[1fr_auto_4rem_5rem]")}>
+                <div className={cn("grid items-center gap-4 bg-wash px-4 py-1.5 text-caption text-ink-soft", showKey ? "grid-cols-[2.5rem_1fr_auto_4rem_5rem]" : "grid-cols-[1fr_auto_4rem_5rem]")}>
                   {showKey && <span>{t("prices.key")}</span>}
                   <span>{t("prices.promotion")}</span>
-                  <span className="text-center">{t("board.facility")}</span>
+                  <span className="text-center">{t("ticket.col.facility")}</span>
                   <span className="text-right">ខែ</span>
                   <span className="text-right">តម្លៃ</span>
                 </div>
                 <ul className="divide-y divide-rule">
                   {filtered.map((p) => {
-                    const meta = facilityOfSet(p.facilities);
                     return (
                       <li key={p.id}>
                         <button
                           type="button"
                           onClick={() => setSelectedPrice(p)}
-                          className={cn("grid w-full items-center gap-4 bg-card px-4 py-2.5 text-left transition-colors hover:bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink", showKey ? "grid-cols-[2.5rem_1fr_auto_4rem_5rem]" : "grid-cols-[1fr_auto_4rem_5rem]")}
+                          className={cn("grid w-full items-center gap-4 bg-card px-4 py-2.5 text-left transition-colors hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink", showKey ? "grid-cols-[2.5rem_1fr_auto_4rem_5rem]" : "grid-cols-[1fr_auto_4rem_5rem]")}
                         >
                           {showKey && (
                             <span>
                               {p.key_image
                                 ? <img src={p.key_image} alt={t("prices.key")} className="h-8 w-8 rounded border border-rule object-cover" />
-                                : <span className="block h-8 w-8 rounded bg-tray" />
+                                : <span className="block h-8 w-8 rounded bg-wash" />
                               }
                             </span>
                           )}
@@ -186,10 +197,10 @@ export const RenewForm = (props: any) => {
                             <span className="block text-caption text-ink-soft">{ageLabel(p.ageGroup)} · {shiftLabel(p.shift)}</span>
                           </span>
                           <span className="justify-self-center">
-                            <FacilityMarks facilities={p.facilities} names={false} size={12} />
+                            <FacilityMarks facilities={p.facilities} names={false} />
                           </span>
-                          <span className="text-right text-sm font-semibold text-ink">{p.monthQty}ខែ</span>
-                          <span className={cn("text-right text-title font-black", meta.text)}>{formatMoney(p.price)}</span>
+                          <span className="figure whitespace-nowrap text-right text-sm font-semibold text-ink">{p.monthQty}ខែ</span>
+                          <span className="figure whitespace-nowrap text-right text-lg font-semibold text-ink">{formatMoney(p.price)}</span>
                         </button>
                       </li>
                     );
@@ -217,7 +228,6 @@ export const RenewForm = (props: any) => {
 
 const ConfirmModal = (props: any) => {
   const { price: selectedPrice, old_end } = props;
-  const meta = facilityOfSet(selectedPrice.facilities);
 
   const getRenewalDate = (effectiveDate: Date, month_qty: number) => {
     const today = new Date();
@@ -302,20 +312,19 @@ const ConfirmModal = (props: any) => {
       {/* Hidden print button */}
       <button className="hidden" ref={buttonRef} type="button" onClick={handlePrint} />
 
-      {/* The chosen price, pinned like a tile */}
-      <div className="relative flex items-center gap-4 overflow-hidden rounded-xl border border-rule bg-card p-4">
-        <span aria-hidden="true" className={cn("absolute inset-x-0 top-0 h-[3px]", meta.bg)} />
+      {/* The chosen price */}
+      <div className="flex items-center gap-4 rounded-lg border border-rule bg-card p-4">
         {selectedPrice.key_image && (
           <img src={selectedPrice.key_image} alt="key" className="h-14 w-14 rounded-lg border border-rule object-cover" />
         )}
         <div className="min-w-0 flex-1">
-          <div className={cn("text-price font-black leading-none", meta.text)}>{formatMoney(selectedPrice.price)}</div>
+          <div className="figure text-2xl font-semibold leading-none text-ink">{formatMoney(selectedPrice.price)}</div>
           <div className="mt-1 text-sm text-ink">
             {selectedPrice.description}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 text-caption text-ink-soft">
-            <span>{selectedPrice.monthQty}ខែ · {shiftLabel(selectedPrice.shift)} · {ageLabel(selectedPrice.ageGroup)}</span>
-            <FacilityMarks facilities={selectedPrice.facilities} size={10} textClassName="text-ink-soft" />
+            <span><span className="figure">{selectedPrice.monthQty}ខែ</span> · {shiftLabel(selectedPrice.shift)} · {ageLabel(selectedPrice.ageGroup)}</span>
+            <FacilityMarks facilities={selectedPrice.facilities} textClassName="text-ink-soft" />
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={props.onBack}>
@@ -328,11 +337,11 @@ const ConfirmModal = (props: any) => {
       <dl className="grid grid-cols-2 gap-3">
         <div className="rounded-lg border border-rule p-3">
           <dt className="text-caption text-ink-soft">សុពលភាពចាស់</dt>
-          <dd className="text-title font-black text-ink">{old_end || "—"}</dd>
+          <dd className="figure text-lg font-semibold text-ink">{old_end || "—"}</dd>
         </div>
         <div className="rounded-lg border border-rule p-3">
           <dt className="text-caption text-ink-soft">សុពលភាពថ្មី</dt>
-          <dd className={cn("text-title font-black", meta.text)}>{date_format(renewalDate)}</dd>
+          <dd className="figure text-lg font-semibold text-ink">{date_format(renewalDate)}</dd>
         </div>
       </dl>
 
@@ -349,7 +358,7 @@ const ConfirmModal = (props: any) => {
           />
         </div>
         <span className="text-sm text-ink-soft">→</span>
-        <span className="text-sm font-semibold text-ink">{date_format(renewalDate)}</span>
+        <span className="figure text-sm font-semibold text-ink">{date_format(renewalDate)}</span>
       </div>
 
       <DialogFooter>

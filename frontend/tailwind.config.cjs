@@ -1,10 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 
-// Every colour is an HSL triplet custom property (see src/index.css) so the
-// `/alpha` modifier works on all of them: `bg-swim/10`, `text-ink-soft`, ...
-const token = (name) => `hsl(var(--${name}) / <alpha-value>)`;
+// Neutrals are HSL triplets, the accent and the four marks are RGB triplets —
+// the same split CKD-POS uses, so both codebases hold the same numbers. Either
+// form takes the `/alpha` modifier: `bg-wash/60`, `bg-amber/10`.
+const hsl = (name) => `hsl(var(--${name}) / <alpha-value>)`;
+const rgb = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 
 module.exports = {
+  // Class-gated, and no element ever carries the class: the app is light-only.
+  // Left in place deliberately — dropping it makes Tailwind fall back to
+  // `media`, which would let the surviving `dark:` utilities fire on a laptop
+  // whose OS is set to dark.
   darkMode: ["class"],
   content: [
     "./index.html",
@@ -24,88 +30,105 @@ module.exports = {
         // The compact ledger step. lineHeight 1.6: Khmer stacks subscripts
         // (coeng) and below-vowels, which crowd the next line at 1.4.
         caption: ['0.75rem', { lineHeight: '1.6', letterSpacing: '0.02em' }],
-        // Board type: titles and headings in marker weight (900), prices on tiles.
-        title: ['1.125rem', { lineHeight: '1.4' }],
-        heading: ['1.5rem', { lineHeight: '1.2' }],
-        price: ['1.875rem', { lineHeight: '1.1' }],
       },
       colors: {
-        // Board world
-        board: token("board"),
-        "board-grid": token("board-grid"),
-        tray: token("tray"),
-        rule: token("rule"),
-        ink: token("ink"),
-        "ink-soft": token("ink-soft"),
-        swim: token("swim"),
-        gym: token("gym"),
-        steam: token("steam"),
-        combo: token("combo"),
-        magnet: {
-          done: token("magnet-done"),
-          pending: token("magnet-pending"),
-          rejected: token("magnet-rejected"),
-          info: token("magnet-info"),
-          off: token("magnet-off"),
+        // Surfaces and ink
+        paper: hsl("paper"),
+        chalk: hsl("chalk"),
+        wash: hsl("wash"),
+        rule: hsl("rule"),
+        floor: "var(--floor)",
+        ink: {
+          DEFAULT: hsl("ink"),
+          deep: hsl("ink-deep"),
+          soft: hsl("ink-soft"),
         },
-        amber: token("amber"),
-        "amber-deep": token("amber-deep"),
+        // `text-ink-soft` and `text-ink-deep` read better at the call site than
+        // the nested form, so both spellings resolve.
+        "ink-soft": hsl("ink-soft"),
+        "ink-deep": hsl("ink-deep"),
 
-        // shadcn names (mapped onto the board tokens in index.css)
+        // Facilities — a quiet dot beside a name, nothing more.
+        swim: hsl("swim"),
+        gym: hsl("gym"),
+        steam: hsl("steam"),
+        combo: hsl("combo"),
+
+        // The one accent: the committing action and a selected option.
+        amber: {
+          DEFAULT: rgb("amber"),
+          deep: rgb("amber-deep"),
+          tint: rgb("amber-tint"),
+        },
+        "amber-deep": rgb("amber-deep"),
+        "amber-tint": rgb("amber-tint"),
+
+        // The four marks: record state. `tint` grounds a chip, `deep` is the
+        // text on that tint, the bare value is an icon or a hairline.
+        paid: {
+          DEFAULT: rgb("paid"),
+          tint: rgb("paid-tint"),
+          deep: rgb("paid-deep"),
+        },
+        pending: {
+          DEFAULT: rgb("pending"),
+          tint: rgb("pending-tint"),
+          deep: rgb("pending-deep"),
+        },
+        void: {
+          DEFAULT: rgb("void"),
+          tint: rgb("void-tint"),
+          deep: rgb("void-deep"),
+        },
+        notice: {
+          DEFAULT: rgb("notice"),
+          tint: rgb("notice-tint"),
+          deep: rgb("notice-deep"),
+        },
+
+        // shadcn names (mapped onto the palette in index.css)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: token("primary"),
-          foreground: token("primary-foreground"),
+          DEFAULT: hsl("primary"),
+          foreground: hsl("primary-foreground"),
         },
         secondary: {
-          DEFAULT: token("secondary"),
-          foreground: token("secondary-foreground"),
+          DEFAULT: hsl("secondary"),
+          foreground: hsl("secondary-foreground"),
         },
         destructive: {
-          DEFAULT: token("destructive"),
-          foreground: token("destructive-foreground"),
-        },
-        warning: {
-          DEFAULT: token("warning"),
-          foreground: token("warning-foreground"),
-        },
-        info: {
-          DEFAULT: token("info"),
-          foreground: token("info-foreground"),
-        },
-        success: {
-          DEFAULT: token("success"),
-          foreground: token("success-foreground"),
+          DEFAULT: hsl("destructive"),
+          foreground: hsl("destructive-foreground"),
         },
         sidebar: {
-          DEFAULT: token("sidebar-background"),
-          foreground: token("sidebar-foreground"),
-          primary: token("sidebar-primary"),
-          "primary-foreground": token("sidebar-primary-foreground"),
-          accent: token("sidebar-accent"),
-          "accent-foreground": token("sidebar-accent-foreground"),
-          border: token("sidebar-border"),
-          ring: token("sidebar-ring"),
+          DEFAULT: hsl("sidebar-background"),
+          foreground: hsl("sidebar-foreground"),
+          primary: hsl("sidebar-primary"),
+          "primary-foreground": hsl("sidebar-primary-foreground"),
+          accent: hsl("sidebar-accent"),
+          "accent-foreground": hsl("sidebar-accent-foreground"),
+          border: hsl("sidebar-border"),
+          ring: hsl("sidebar-ring"),
         },
         muted: {
-          DEFAULT: token("muted"),
-          foreground: token("muted-foreground"),
+          DEFAULT: hsl("muted"),
+          foreground: hsl("muted-foreground"),
         },
         accent: {
-          DEFAULT: token("accent"),
-          foreground: token("accent-foreground"),
+          DEFAULT: hsl("accent"),
+          foreground: hsl("accent-foreground"),
         },
         popover: {
-          DEFAULT: token("popover"),
-          foreground: token("popover-foreground"),
+          DEFAULT: hsl("popover"),
+          foreground: hsl("popover-foreground"),
         },
         card: {
-          DEFAULT: token("card"),
-          foreground: token("card-foreground"),
+          DEFAULT: hsl("card"),
+          foreground: hsl("card-foreground"),
         },
       },
       borderRadius: {
@@ -114,11 +137,7 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        // A magnet on the board: real offset, soft blur.
-        magnet: "0 2px 4px rgb(0 0 0 / 0.25)",
-        // A card lifted off the board (hovered tile, dragged request).
-        lift: "0 4px 10px rgb(0 0 0 / 0.14)",
-        // Floating panels: dialogs, menus.
+        // Flat at rest. Shadow means one thing: this is floating above the page.
         overlay: "0 12px 32px rgb(0 0 0 / 0.12)",
       },
       keyframes: {
@@ -130,34 +149,10 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        // Progress-bar sheen (LoadingOverlay).
-        shimmer: {
-          from: { transform: "translateX(-100%)" },
-          to: { transform: "translateX(100%)" },
-        },
-        // A marker stroke drawing left to right across a tile.
-        "board-stroke": {
-          from: { transform: "scaleX(0)" },
-          to: { transform: "scaleX(1)" },
-        },
-        // The one authored motion: a new line writing itself onto today's board.
-        "board-line-in": {
-          from: { opacity: "0", transform: "translateY(-8px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        // A request card arriving in its next column.
-        "board-card-in": {
-          from: { opacity: "0", transform: "translateX(-12px)" },
-          to: { opacity: "1", transform: "translateX(0)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        shimmer: "shimmer 1.4s linear infinite",
-        "board-stroke": "board-stroke 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
-        "board-line-in": "board-line-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
-        "board-card-in": "board-card-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },

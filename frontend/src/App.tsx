@@ -26,22 +26,21 @@ import { MemberPriceTable } from "./pages/PriceTable/MemberPriceTable";
 import { CustomerReport } from "./pages/Report/CustomerReport";
 import CustomerTypeReport from "./pages/Report/CustomerTypeReport";
 import Printers from "./pages/Settings/Printers";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { BoardSection } from "@/components/board/BoardSection";
-import { ActionTile } from "@/components/board/ActionTile";
-import { Button } from "@/components/ui/Button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
+import { Button } from "@/components/ui/button";
+import { FigureStrip } from "@/components/ui/FigureStrip";
 import { useTodayFigures } from "./hooks/useTodayFigures";
 import { formatCount, formatMoney } from "./lib/money";
+import { canReachPath, currentRole } from "./lib/access";
 
 function NoMatch() {
   const { t } = useTranslation();
   return (
-    <main className="board-grid grid min-h-screen place-items-center px-6 py-24">
-      <div className="w-full max-w-md rounded-xl border border-rule bg-card p-8 text-center">
-        <p className="text-price font-black leading-none text-ink">404</p>
-        <div className="marker-rule mx-auto mt-4 w-16" />
-        <h1 className="mt-4 text-heading font-black text-ink">{t("notFound.title")}</h1>
+    <main className="grid min-h-screen place-items-center bg-floor px-6 py-24">
+      <div className="w-full max-w-md rounded-lg border border-rule bg-card p-8 text-center">
+        <p className="figure text-2xl font-semibold leading-none text-ink-soft">404</p>
+        <h1 className="mt-3 text-xl font-semibold text-ink">{t("notFound.title")}</h1>
         <p className="mt-2 text-sm text-ink-soft">{t("notFound.body")}</p>
         <Button asChild className="mt-6">
           <a href="/">{t("notFound.home")}</a>
@@ -51,73 +50,87 @@ function NoMatch() {
   )
 }
 
-/** A figure on the ledger strip: the label written beside the number, not under it. */
-function Figure({ label, value, loading }: { label: string; value: string; loading: boolean }) {
-  return (
-    <div className="flex min-w-0 items-baseline gap-3 px-4 py-3">
-      <span className="truncate text-caption text-ink-soft">{label}</span>
-      {loading ? (
-        <Skeleton className="h-6 w-16" />
-      ) : (
-        <span className="text-heading font-black leading-none text-ink">{value}</span>
-      )}
-    </div>
-  );
-}
-
 function Dashboard() {
   const { t } = useTranslation();
-  const role = localStorage.getItem("role");
+  // Normalized, not the raw stored string — see lib/access.ts. The same
+  // MENU table the sidebar reads decides which links below are real, so an
+  // unresolved role (the sidebar's "role not recognized" dead end) never
+  // shows a Checker or a stale session a working-looking link the server
+  // would refuse.
+  const role = currentRole();
   const displayName = localStorage.getItem("display_name");
   const figures = useTodayFigures();
+
+  // Either piece can be missing (a stale or incomplete session — see
+  // Sidebar.tsx) and the greeting must not print "Welcome, ·" around a gap:
+  // join only what is actually present, and fall back to a bare greeting
+  // when neither is.
+  const identity = [displayName, role].map((v) => v?.trim()).filter(Boolean).join(" · ");
+  const welcome = identity ? t("dashboard.welcome", { value: identity }) : t("dashboard.welcomeGeneric");
 
   const reports = [
     { to: "/income_report", title: t("dashboard.reports.income.title"), description: t("dashboard.reports.income.description") },
     { to: "/customer_report", title: t("dashboard.reports.customer.title"), description: t("dashboard.reports.customer.description") },
     { to: "/customer_type_report", title: t("dashboard.reports.type.title"), description: t("dashboard.reports.type.description") },
-  ];
+  ].filter((r) => canReachPath(role, r.to));
+
+  const quickActions = [
+    { to: "/ticket", icon: TicketIcon, label: t("menu.sellTicket") },
+    { to: "/member", icon: Users, label: t("menu.member") },
+    { to: "/hold_request", icon: PauseCircle, label: t("menu.holdRequest") },
+    { to: "/transfer_request", icon: ArrowLeftRight, label: t("dashboard.transfer") },
+    { to: "/income_report", icon: BarChart3, label: t("menu.incomeReport") },
+  ].filter((a) => canReachPath(role, a.to));
 
   return (
     <div className="space-y-6">
-      <BoardHeader
-        titleKey="board.title"
-        subtitle={t("dashboard.welcome", { name: displayName, role })}
+      <PageHeader
+        titleKey="dashboard.title"
+        subtitle={welcome}
       />
 
-      {/* Today's figures: one ledger strip, figures beside their labels. */}
-      <section aria-label={t("board.figures")} className="overflow-x-auto rounded-lg border border-rule bg-card">
-        <div className="flex min-w-max divide-x divide-rule">
-          <Figure label={t("dashboard.today.tickets")} value={formatCount(figures.ticketsToday)} loading={figures.loading} />
-          <Figure label={t("dashboard.today.members")} value={formatCount(figures.members)} loading={figures.loading} />
-          <Figure label={t("dashboard.today.income")} value={formatMoney(figures.incomeToday)} loading={figures.loading} />
-        </div>
-      </section>
+      {/* Today's figures: one ruled strip, never a grid of same-size cards. */}
+      <FigureStrip
+        aria-label={t("dashboard.figures")}
+        loading={figures.loading}
+        items={[
+          { label: t("dashboard.today.tickets"), value: formatCount(figures.ticketsToday) },
+          { label: t("dashboard.today.members"), value: formatCount(figures.members) },
+          { label: t("dashboard.today.income"), value: formatMoney(figures.incomeToday) },
+        ]}
+      />
 
-      <BoardSection title={t("board.quickActions")}>
-        <div className="flex flex-wrap gap-3">
-          <ActionTile to="/ticket" icon={<TicketIcon />} label={t("menu.sellTicket")} />
-          <ActionTile to="/member" icon={<Users />} label={t("menu.member")} />
-          <ActionTile to="/hold_request" icon={<PauseCircle />} label={t("menu.holdRequest")} />
-          <ActionTile to="/transfer_request" icon={<ArrowLeftRight />} label={t("dashboard.transfer")} />
-          {role === "Admin" && (
-            <ActionTile to="/income_report" icon={<BarChart3 />} label={t("menu.incomeReport")} />
-          )}
-        </div>
-      </BoardSection>
+      {/* Quick actions: a row of ordinary secondary buttons, not tiles.
+          Hidden, not empty, when the role reaches none of them — an
+          unresolved role gets no working-looking links here, only the
+          sidebar's "role not recognized" dead end. */}
+      {quickActions.length > 0 && (
+        <Section title={t("dashboard.quickActions")}>
+          <div className="flex flex-wrap gap-2">
+            {quickActions.map((a) => (
+              <Button key={a.to} asChild variant="outline">
+                <Link to={a.to}>
+                  <a.icon aria-hidden="true" />
+                  {a.label}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </Section>
+      )}
 
-      {/* Reports as a marker list — Admin only */}
-      {role === "Admin" && (
-        <BoardSection title={t("board.reports")}>
-          <ul className="divide-y divide-rule rounded-lg border border-rule bg-card">
+      {/* Reports — same MENU access as the sidebar's report group (Admin only) */}
+      {reports.length > 0 && (
+        <Section title={t("dashboard.reportsTitle")}>
+          <ul className="divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card">
             {reports.map((r) => (
               <li key={r.to}>
                 <Link
                   to={r.to}
-                  className="flex items-center gap-3 px-4 py-2.5 text-ink transition-colors hover:bg-tray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
+                  className="flex items-center gap-3 px-4 py-2.5 text-ink transition-colors hover:bg-wash/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                 >
-                  <span aria-hidden="true" className="marker-dot" style={{ ["--marker" as string]: "var(--ink)" }} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold">{r.title}</span>
+                    <span className="block text-sm font-medium">{r.title}</span>
                     <span className="block text-caption text-ink-soft">{r.description}</span>
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-ink-soft" aria-hidden="true" />
@@ -125,7 +138,7 @@ function Dashboard() {
               </li>
             ))}
           </ul>
-        </BoardSection>
+        </Section>
       )}
 
       <p className="text-caption text-ink-soft">{t("dashboard.info.body")}</p>
@@ -190,12 +203,12 @@ function Layout() {
     <SidebarProvider
       open={expanded}
       onOpenChange={setExpanded}
-      className="min-h-screen bg-board"
+      className="min-h-screen bg-floor"
     >
       <SideBar />
-      <SidebarInset className="board-grid min-w-0">
+      <SidebarInset className="min-w-0 bg-floor">
         <NavBar />
-        <div className="p-4">
+        <div className="p-3 md:p-4">
           <Outlet />
         </div>
       </SidebarInset>

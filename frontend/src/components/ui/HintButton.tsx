@@ -50,7 +50,7 @@ export const HintButton: React.FC<HintButtonProps> = ({ label, children, align =
         onClick={() => setOpen(v => !v)}
         aria-label={label}
         aria-expanded={open}
-        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-info hover:text-info/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-info/40 transition-colors"
+        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-notice hover:text-notice/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-notice/40 transition-colors"
       >
         <InformationCircleIcon className="w-4 h-4" />
       </button>

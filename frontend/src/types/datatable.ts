@@ -35,7 +35,7 @@ export interface ColumnDef<T> {
 export interface DataTableAction {
   label: string;
   onClick: () => void;
-  variant?: 'default' | 'outline' | 'destructive' | 'ghost' | 'success';
+  variant?: 'default' | 'outline' | 'destructive' | 'ghost' | 'paid';
   icon?: ReactNode;
 }
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
 
 const CreateMember = ({ setShow, onSubmit }: any) => {
@@ -61,7 +61,8 @@ const CreateMember = ({ setShow, onSubmit }: any) => {
                 </div>
             </div>
 
-            {/* The photo is taken on the member's own board once the record exists. */}
+            {/* The photo and fingerprint are taken on the member's own page, once the
+                record exists. */}
             <p className="text-caption text-ink-soft">
                 រូបថត និងម្រាមដៃ ថតនៅទំព័រសមាជិកបន្ទាប់ពីរក្សាទុក។
             </p>

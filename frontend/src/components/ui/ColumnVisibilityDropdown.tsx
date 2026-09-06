@@ -60,7 +60,7 @@ export function ColumnVisibilityDropdown({
         title={t('ui.columns.showOrHide')}
         aria-expanded={open}
         className={cn(
-          'inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-md border border-rule bg-card px-3 text-sm font-medium text-ink ring-offset-background transition-colors hover:bg-tray focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+          'inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-md border border-rule bg-card px-3 text-sm font-medium text-ink ring-offset-background transition-colors hover:bg-wash focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
           triggerClassName
         )}
       >
@@ -106,11 +106,11 @@ export function ColumnVisibilityDropdown({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => toggle(column.key)}
-                  className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-ink hover:bg-tray"
+                  className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-ink hover:bg-wash"
                 >
                   <div
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
-                      isVisible ? 'border-ink bg-ink text-white' : 'border-rule'
+ isVisible ? 'border-ink bg-ink text-chalk' : 'border-rule'
                     }`}
                   >
                     {isVisible && <Check className="h-3 w-3" />}

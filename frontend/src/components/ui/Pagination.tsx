@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { Button } from './Button';
+import { Button } from './button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { TABLE_DENSITY } from './tableDensity';
 import type { PageInfo, TableDensity } from '../../types/datatable';
@@ -122,7 +122,7 @@ export function Pagination({
           <div className="flex items-center gap-1">
             <button type="button" onClick={() => onPageChange(page - 1)} disabled={!pageInfo.has_previous}
               aria-label={t('ui.dataTable.previousPage')}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-soft hover:bg-tray hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-soft hover:bg-wash hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <ChevronLeft className="size-4" aria-hidden="true" />
             </button>
             {getPageNumbers(page, pages).map((p, idx) => p === '…' ? (
@@ -132,14 +132,14 @@ export function Pagination({
                 aria-current={page === p ? 'page' : undefined}
                 className={cn(
                   'inline-flex items-center justify-center min-w-[36px] h-9 px-2 rounded-md text-sm font-medium transition-colors',
-                  page === p ? 'bg-ink text-white' : 'text-ink hover:bg-tray'
+                  page === p ? 'bg-ink text-white' : 'text-ink hover:bg-wash'
                 )}>
                 {p}
               </button>
             ))}
             <button type="button" onClick={() => onPageChange(page + 1)} disabled={!pageInfo.has_next}
               aria-label={t('ui.dataTable.nextPage')}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-soft hover:bg-tray hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-soft hover:bg-wash hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <ChevronRight className="size-4" aria-hidden="true" />
             </button>
           </div>

@@ -4,12 +4,12 @@ import {
   useGetCouponCardLazyQuery,
 } from "../../../../generated/graphql";
 import { useReactToPrint } from "react-to-print";
-import { Search } from "lucide-react";
+import { AlertCircle, Search } from "lucide-react";
 import { CouponInvoice } from "../../../../components/ComponentToPrint/CouponInvoice";
 import { TypeOptions, toast } from "react-toastify";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/money";
 
 const notify = (
@@ -157,13 +157,20 @@ export const CouponPayment = (props: any) => {
           </form>
 
           {loading ? (
-            <p className="text-sm text-ink-soft">Loading...</p>
+            /* Shaped like the card that is about to arrive, so nothing jumps. */
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-rule bg-wash p-4" role="status" aria-live="polite">
+              <div className="min-w-0 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-7 w-20" />
+              </div>
+              <Skeleton className="h-11 w-20" />
+            </div>
           ) : data ? (
             card ? (
-              <div className="flex items-center justify-between gap-4 rounded-lg border border-rule bg-tray p-4">
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-rule bg-wash p-4">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">{card.card_name}</p>
-                  <p className="text-price font-black leading-none text-ink">{formatMoney(card.price)}</p>
+                  <p className="figure text-2xl font-semibold leading-none text-ink">{formatMoney(card.price)}</p>
                 </div>
                 <Button
                   disabled={btn_sell_status}
@@ -176,7 +183,10 @@ export const CouponPayment = (props: any) => {
                 </Button>
               </div>
             ) : (
-              <MagnetChip tone="rejected" size="md">Coupon Not Found</MagnetChip>
+              <p className="flex items-center gap-2 text-sm text-void-deep" role="alert">
+                <AlertCircle className="h-4 w-4 shrink-0 text-void" aria-hidden="true" />
+                Coupon Not Found
+              </p>
             )
           ) : null}
 

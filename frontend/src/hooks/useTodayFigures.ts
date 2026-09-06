@@ -3,13 +3,13 @@ import { useGetCustomersCountQuery } from "../generated/graphql";
 import { todayIso } from "../lib/money";
 
 /**
- * Today's figures for the board: tickets sold, members on the books, and the
- * day's income across every kind of sale. Built on the same report queries
- * the income report uses (userId 0 = every seller), so the dashboard strip and
- * the end-of-day report derive from the same rows.
+ * Today's figures for the dashboard: tickets sold, members on the books, and
+ * the day's income across every kind of sale. Built on the same report
+ * queries the income report uses (userId 0 = every seller), so the dashboard
+ * strip and the end-of-day report derive from the same rows.
  */
 const TODAY_FIGURES = gql`
-  query BoardTodayFigures($dateFrom: String!, $dateTo: String!, $userId: Float!) {
+  query DashboardTodayFigures($dateFrom: String!, $dateTo: String!, $userId: Float!) {
     GetTicketPayment(dateFrom: $dateFrom, dateTo: $dateTo, userId: $userId) {
       price
       qty

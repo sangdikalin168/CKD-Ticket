@@ -3,10 +3,10 @@ import { Search } from "lucide-react";
 import Modal from "../../../../components/Modal/Modal";
 import Notifications from "../../../../components/Notification";
 import { useCreateTransferRequestMutation, useGetCustomerDetailLazyQuery } from "../../../../generated/graphql";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { MagnetChip } from "@/components/board/MagnetChip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Chip } from "@/components/ui/Chip";
 
 const date_format = (date_time: string | Date) => {
     const date = new Date(date_time);
@@ -136,26 +136,26 @@ const Transfer = ({ open, setOpen, sender_data }: any) => {
                             {/* Sender */}
                             <div className="rounded-lg border border-rule p-3">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-black text-ink">អ្នកផ្ទេរ</p>
-                                    <MagnetChip tone="rejected">−{senderRemain}ថ្ងៃ</MagnetChip>
+                                    <p className="text-sm font-semibold text-ink">អ្នកផ្ទេរ</p>
+                                    <Chip tone="void" mono>−{senderRemain}ថ្ងៃ</Chip>
                                 </div>
                                 <p className="mt-1 truncate text-sm text-ink">{sender_data?.customer_name}</p>
                                 <dl className="mt-2 space-y-1 text-caption text-ink">
-                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពចាស់</dt><dd>{sender_data.end_membership_date} ({senderRemain}ថ្ងៃ)</dd></div>
-                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពថ្មី</dt><dd className="font-semibold">{calculateNewEndDate(sender_data.end_membership_date, -senderRemain)}</dd></div>
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពចាស់</dt><dd className="figure whitespace-nowrap">{sender_data.end_membership_date} ({senderRemain}ថ្ងៃ)</dd></div>
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពថ្មី</dt><dd className="figure whitespace-nowrap font-semibold">{calculateNewEndDate(sender_data.end_membership_date, -senderRemain)}</dd></div>
                                 </dl>
                             </div>
 
                             {/* Receiver */}
                             <div className="rounded-lg border border-rule p-3">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-black text-ink">អ្នកទទួល</p>
-                                    <MagnetChip tone="done">+{senderRemain}ថ្ងៃ</MagnetChip>
+                                    <p className="text-sm font-semibold text-ink">អ្នកទទួល</p>
+                                    <Chip tone="paid" mono>+{senderRemain}ថ្ងៃ</Chip>
                                 </div>
                                 <p className="mt-1 truncate text-sm text-ink">{receiver?.customer_name} · {receiver?.phone}</p>
                                 <dl className="mt-2 space-y-1 text-caption text-ink">
-                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពចាស់</dt><dd>{receiver?.end_membership_date} ({countDaysBetweenDates(new Date(), new Date(receiver?.end_membership_date))}ថ្ងៃ)</dd></div>
-                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពថ្មី</dt><dd className="font-semibold">{ReceiverNewEnd()}</dd></div>
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពចាស់</dt><dd className="figure whitespace-nowrap">{receiver?.end_membership_date} ({countDaysBetweenDates(new Date(), new Date(receiver?.end_membership_date))}ថ្ងៃ)</dd></div>
+                                    <div className="flex justify-between gap-2"><dt className="text-ink-soft">សុពលភាពថ្មី</dt><dd className="figure whitespace-nowrap font-semibold">{ReceiverNewEnd()}</dd></div>
                                 </dl>
                             </div>
                         </div>

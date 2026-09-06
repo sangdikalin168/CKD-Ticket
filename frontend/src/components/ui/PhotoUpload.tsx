@@ -1,23 +1,19 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useConfirmDialog } from './ModalDialog';
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
 
 interface PhotoUploadProps {
   currentPhotoUrl?: string;
   onPhotoSelected: (file: File | null) => void;
-  employeeId?: string;
+  /** Used only to name a captured webcam photo, e.g. `photo_<id>_<timestamp>.jpg`. */
+  id?: string;
   enableWebcam?: boolean; // Option to show/hide webcam
-  employeeDbId?: number; // Database ID for deleting photo
 }
 
 export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   currentPhotoUrl,
   onPhotoSelected,
-  employeeId,
+  id,
   enableWebcam = false, // Default: hide webcam
-  employeeDbId,
 }) => {
   const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl || null);
@@ -26,9 +22,6 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Confirmation dialog hook
-  const confirmDialog = useConfirmDialog();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -57,7 +50,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: 'user' },
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setWebcamStream(stream);
@@ -90,16 +83,16 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
         canvas.toBlob((blob) => {
           if (blob) {
-            const file = new File([blob], `photo_${employeeId || 'temp'}_${Date.now()}.jpg`, {
+            const file = new File([blob], `photo_${id || 'temp'}_${Date.now()}.jpg`, {
               type: 'image/jpeg',
             });
-            
+
             const reader = new FileReader();
             reader.onloadend = () => {
               setPreviewUrl(reader.result as string);
             };
             reader.readAsDataURL(file);
-            
+
             onPhotoSelected(file);
             stopWebcam();
           }
@@ -108,35 +101,13 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     }
   };
 
-  const clearPhoto = async () => {
-    // If there's a current photo URL (already uploaded), delete it from backend
-    if (currentPhotoUrl && employeeDbId) {
-      const confirmed = await confirmDialog.confirm({
-        title: t('ui.photoUpload.deletePhoto'),
-        message: t('ui.photoUpload.deleteConfirm'),
-        confirmText: t('common.delete'),
-        cancelText: t('common.cancel'),
-        variant: 'danger',
-      });
-      
-      if (!confirmed) return;
-      
-      try {
-        const response = await fetch(`${API_BASE_URL}/employees/${employeeDbId}/photo`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          console.error('Failed to delete photo from server');
-          // Continue anyway to clear local state
-        }
-      } catch (error) {
-        console.error('Error deleting photo:', error);
-        // Continue anyway to clear local state
-      }
+  const clearPhoto = () => {
+    // Confirm before discarding a photo that was already uploaded — callers
+    // are responsible for actually deleting it from storage on their side.
+    if (currentPhotoUrl && !window.confirm(t('ui.photoUpload.deleteConfirm'))) {
+      return;
     }
-    
+
     setPreviewUrl(null);
     onPhotoSelected(null);
     if (fileInputRef.current) {
@@ -231,9 +202,6 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       <p className="text-xs text-muted-foreground">
         {t('ui.photoUpload.acceptedFormats')}
       </p>
-
-      {/* Confirmation Dialog */}
-      <confirmDialog.ConfirmDialog />
     </div>
   );
 };

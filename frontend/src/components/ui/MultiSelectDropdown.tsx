@@ -131,7 +131,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             {open && (
                 <div
                     onPointerDown={(e) => e.stopPropagation()}
-                    className="absolute z-50 mt-1.5 w-full min-w-[260px] rounded-xl border border-border bg-popover shadow-xl animate-in fade-in-0 zoom-in-95"
+                    className="absolute z-50 mt-1.5 w-full min-w-[260px] rounded-lg border border-border bg-popover shadow-overlay animate-in fade-in-0 zoom-in-95"
                 >
                     {/* Search */}
                     {options.length >= searchThreshold && (
@@ -186,14 +186,14 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => toggle(option.value)}
                                         className={`flex w-full items-center gap-3 px-3 py-2.5 text-sm cursor-pointer transition-colors ${
-                                            isSelected
+ isSelected
                                                 ? "bg-primary/10 text-foreground font-medium hover:bg-primary/15"
                                                 : "text-foreground hover:bg-accent hover:text-accent-foreground"
                                         }`}
                                     >
                                         <div
                                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-                                                isSelected
+ isSelected
                                                     ? "border-primary bg-primary text-primary-foreground"
                                                     : "border-input bg-background"
                                             }`}

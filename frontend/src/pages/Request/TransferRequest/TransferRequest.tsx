@@ -1,15 +1,14 @@
 import type { ColumnDef } from '@/types/datatable';
-import LoadingPage from '../../../components/LoadingPage/LoadingPage';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApprovalStatus, useApproveTransferRequestMutation, useCheckTransferRequestMutation, useCreateTransferMutation, useTransferRequestsQuery } from '../../../generated/graphql';
 import Notifications from '../../../components/Notification';
-import { FileSpreadsheet, Printer } from 'lucide-react';
+import { ArrowLeftRight, Columns3, FileSpreadsheet, Printer, Rows3, type LucideIcon } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { TransferInvoice } from '../../../components/ComponentToPrint/TransferInvoice';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
@@ -17,9 +16,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { BoardHeader } from '@/components/board/BoardHeader';
-import { RequestColumns, type RequestCard } from '@/components/board/RequestColumns';
-import { MagnetChip, statusTone, type MagnetTone } from '@/components/board/MagnetChip';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { RequestColumns, type RequestCard } from '@/components/ui/RequestColumns';
+import { Chip, statusTone, type ChipTone } from '@/components/ui/Chip';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { FigureStrip } from '@/components/ui/FigureStrip';
+import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
+import { formatCount } from '@/lib/money';
+import { currentRole, hasRole } from '@/lib/access';
+import { cn } from '@/lib/utils';
 import { exportToExcel } from '@/utils/excelExport';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
@@ -69,18 +74,58 @@ const DECISION_LABEL: Record<string, string> = {
     Rejected: "បដិសេធ",
 };
 
-/** Which column of the board a transfer sits in. */
+/** Which stage column a transfer sits in. */
 const columnOf = (r: TransferRequest) =>
     r.processed_by != null ? "processed" : r.checker_status === "Pending" ? "requested" : "checked";
 
-/** The card's headline magnet: the furthest the request has got. */
-const overallTone = (r: TransferRequest): { tone: MagnetTone; label: string } => {
-    if (r.processed_by != null) return { tone: "done", label: "ដំណើរការរួច" };
-    if (r.checker_status === "Rejected" || r.approver_status === "Rejected") return { tone: "rejected", label: "បដិសេធ" };
-    if (r.checker_status === "Approved" && r.approver_status === "Approved") return { tone: "info", label: "រង់ចាំដំណើរការ" };
+/** The card's headline state: the furthest the request has got. */
+const overallTone = (r: TransferRequest): { tone: ChipTone; label: string } => {
+    if (r.processed_by != null) return { tone: "paid", label: "ដំណើរការរួច" };
+    if (r.checker_status === "Rejected" || r.approver_status === "Rejected") return { tone: "void", label: "បដិសេធ" };
+    if (r.checker_status === "Approved" && r.approver_status === "Approved") return { tone: "notice", label: "រង់ចាំដំណើរការ" };
     if (r.checker_status === "Approved") return { tone: "pending", label: "រង់ចាំសម្រេច" };
     return { tone: "pending", label: "រង់ចាំពិនិត្យ" };
 };
+
+/** The same rows read two ways: by stage, or as one flat ledger. */
+type RequestView = "columns" | "table";
+
+function ViewToggle({
+    view,
+    onChange,
+    columnsLabel,
+    tableLabel,
+}: {
+    view: RequestView;
+    onChange: (next: RequestView) => void;
+    columnsLabel: string;
+    tableLabel: string;
+}) {
+    const item = (value: RequestView, label: string, Icon: LucideIcon, first: boolean) => (
+        <button
+            type="button"
+            onClick={() => onChange(value)}
+            aria-pressed={view === value}
+            title={label}
+            aria-label={label}
+            className={cn(
+                "inline-flex h-9 w-9 items-center justify-center transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                !first && "border-l border-rule",
+                view === value ? "bg-ink text-chalk" : "text-ink-soft hover:bg-wash"
+            )}
+        >
+            <Icon className="h-4 w-4" aria-hidden="true" />
+        </button>
+    );
+
+    return (
+        <div className="inline-flex overflow-hidden rounded-md border border-rule bg-card" role="group">
+            {item("columns", columnsLabel, Columns3, true)}
+            {item("table", tableLabel, Rows3, false)}
+        </div>
+    );
+}
 
 const TransferRequest = () => {
     const { t } = useTranslation();
@@ -134,9 +179,12 @@ const TransferRequest = () => {
     }
 
     const HandleCheckerApprove = async () => {
-        //TODO: Check Permission
-        const userRole = localStorage.getItem("role");
-        if (userRole === "Admin" || userRole === "Checker") {
+        // Mirrors the server's own check (Transfer.ts requireRole(["Admin",
+        // "Checker"])) — a UI convenience so a Checker isn't invited into a
+        // dialog the mutation will reject; normalized so a stray case or
+        // whitespace difference in the stored role can't hide this button
+        // from a real Checker.
+        if (hasRole(currentRole(), ["Admin", "Checker"])) {
             // Clear the previous request's comment — the input is controlled, so
             // stale text can no longer be submitted invisibly.
             setDescription("")
@@ -147,9 +195,8 @@ const TransferRequest = () => {
     }
 
     const CheckApproverRole = async () => {
-        //TODO: Check Permission
-        const userRole = localStorage.getItem("role");
-        if (userRole === "Admin") {
+        // Mirrors the server's own check (Transfer.ts requireAdmin).
+        if (hasRole(currentRole(), ["Admin"])) {
             setDescription("")
             setOpenApprover(true)
             return;
@@ -167,6 +214,7 @@ const TransferRequest = () => {
     const [request_id, setRequestID] = useState(0)
     const [description, setDescription] = useState("")
     const [open_print, setOpenPrint] = useState(false)
+    const [view, setView] = useState<RequestView>("columns")
     const buttonRef = useRef<HTMLButtonElement>(null);
     const InvoiceRef = useRef<HTMLDivElement>(null);
     // Synchronous re-entry guard: state alone can't stop a double-click that
@@ -181,7 +229,7 @@ const TransferRequest = () => {
         [data]
     );
 
-    // The board only reports the search term; filter here, newest first.
+    // The header only reports the search term; filter here, newest first.
     const filtered_requests = useMemo(() => {
         const term = search.trim().toLowerCase();
         const list = term
@@ -200,6 +248,18 @@ const TransferRequest = () => {
             : requests;
         return [...list].sort((a, b) => new Date(b.request_date).getTime() - new Date(a.request_date).getTime());
     }, [requests, search]);
+
+    // One strip of aggregates over whatever the search left, so the table view
+    // carries the same stage counts the columns show on their headings.
+    const figures = useMemo(() => {
+        const inStage = (key: string) => filtered_requests.filter((row) => columnOf(row) === key).length;
+        return [
+            { label: t("common.total"), value: formatCount(filtered_requests.length) },
+            { label: t("requests.requested"), value: formatCount(inStage("requested")) },
+            { label: t("requests.checked"), value: formatCount(inStage("checked")) },
+            { label: t("requests.processed"), value: formatCount(inStage("processed")), tone: "paid" as const },
+        ];
+    }, [filtered_requests, t]);
 
     // What the Excel export writes — the same fields the old table carried.
     const exportColumns: ColumnDef<TransferRequest>[] = [
@@ -361,9 +421,40 @@ const TransferRequest = () => {
         })
     };
 
+    /** Can this request still be turned into a transfer? Both decisions in, not
+     *  processed yet — the same condition the server enforces. */
+    const canProcess = (row: TransferRequest) =>
+        row.checker_status === "Approved" && row.approver_status === "Approved" && row.processed_by == null;
+
+    // The next step for one request, shared by the stage cards and the table so
+    // the two views can never offer different actions.
+    const rowActions = (row: TransferRequest) => {
+        const processable = canProcess(row);
+        if (row.checker_status !== "Pending" && row.approver_status !== "Pending" && !processable) return null;
+        return (
+            <>
+                {row.checker_status === "Pending" && (
+                    <Button size="sm" variant="outline" onClick={() => { HandleCheckerApprove(); setRequestID(row.request_id) }}>
+                        {t("requests.checker")}
+                    </Button>
+                )}
+                {row.approver_status === "Pending" && (
+                    <Button size="sm" variant="outline" onClick={() => { CheckApproverRole(); setRequestID(row.request_id) }}>
+                        {t("requests.decide")}
+                    </Button>
+                )}
+                {processable && (
+                    <Button size="sm" onClick={() => openProcess(row)}>
+                        <Printer aria-hidden="true" />
+                        {t("requests.process")}
+                    </Button>
+                )}
+            </>
+        );
+    };
+
     const cards: RequestCard[] = filtered_requests.map((row) => {
         const overall = overallTone(row);
-        const canProcess = row.checker_status === "Approved" && row.approver_status === "Approved" && row.processed_by == null;
         return {
             id: row.request_id,
             column: columnOf(row),
@@ -372,45 +463,36 @@ const TransferRequest = () => {
             lines: [row.reason, row.processed_name ? `${t("requests.processed")}: ${row.processed_name}` : null].filter(Boolean) as string[],
             tone: overall.tone,
             toneLabel: overall.label,
-            extra: (
+            // The two stage chips are dropped once a request is processed: by
+            // then the headline chip already says so, and repeating "checker
+            // approved / approver approved" underneath put three identical
+            // green chips on every card in the longest column.
+            extra: row.processed_by != null ? undefined : (
                 <>
-                    <MagnetChip tone={statusTone(row.checker_status)} className="text-ink-soft">
-                        {t("requests.checker")}: <span className="text-ink" title={row.checker_comment || undefined}>{DECISION_LABEL[row.checker_status] ?? row.checker_status}</span>
-                    </MagnetChip>
-                    <MagnetChip tone={statusTone(row.approver_status)} className="text-ink-soft">
-                        {t("requests.approver")}: <span className="text-ink" title={row.approver_comment || undefined}>{DECISION_LABEL[row.approver_status] ?? row.approver_status}</span>
-                    </MagnetChip>
+                    <Chip tone={statusTone(row.checker_status)} title={row.checker_comment || undefined}>
+                        {t("requests.checker")} · {DECISION_LABEL[row.checker_status] ?? row.checker_status}
+                    </Chip>
+                    <Chip tone={statusTone(row.approver_status)} title={row.approver_comment || undefined}>
+                        {t("requests.approver")} · {DECISION_LABEL[row.approver_status] ?? row.approver_status}
+                    </Chip>
                 </>
             ),
-            actions: (row.checker_status === "Pending" || row.approver_status === "Pending" || canProcess) ? (
-                <>
-                    {row.checker_status === "Pending" && (
-                        <Button size="sm" variant="outline" onClick={() => { HandleCheckerApprove(); setRequestID(row.request_id) }}>
-                            {t("requests.checker")}
-                        </Button>
-                    )}
-                    {row.approver_status === "Pending" && (
-                        <Button size="sm" variant="outline" onClick={() => { CheckApproverRole(); setRequestID(row.request_id) }}>
-                            {t("requests.decide")}
-                        </Button>
-                    )}
-                    {canProcess && (
-                        <Button size="sm" variant="commit" onClick={() => openProcess(row)}>
-                            <Printer aria-hidden="true" />
-                            {t("requests.process")}
-                        </Button>
-                    )}
-                </>
-            ) : undefined,
+            actions: rowActions(row) ?? undefined,
         };
     });
 
     return (
         <>
-            <BoardHeader
+            <PageHeader
                 titleKey="requests.transfer"
                 actions={
                     <>
+                        <ViewToggle
+                            view={view}
+                            onChange={setView}
+                            columnsLabel={t("requests.viewColumns")}
+                            tableLabel={t("requests.viewTable")}
+                        />
                         <Input
                             type="search"
                             placeholder={t("common.searchPlaceholder")}
@@ -427,7 +509,105 @@ const TransferRequest = () => {
                 }
             />
 
-            {!loading ? (
+            <FigureStrip items={figures} loading={loading} className="mb-4" />
+
+            {loading ? (
+                view === "table" ? (
+                    <div className="overflow-hidden rounded-lg border border-rule bg-card" role="status" aria-live="polite">
+                        <div className="h-8 border-b border-rule bg-wash" />
+                        <SkeletonRows rows={6} className="p-1" />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3" role="status" aria-live="polite">
+                        {[0, 1, 2].map((col) => (
+                            <div key={col} className="min-w-0 space-y-2">
+                                <Skeleton className="h-5 w-24" />
+                                {[0, 1, 2].map((i) => (
+                                    <Skeleton key={i} className="h-[6.5rem] rounded-lg" />
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )
+            ) : filtered_requests.length === 0 ? (
+                <div className="rounded-lg border border-rule bg-card">
+                    <EmptyState
+                        icon={ArrowLeftRight}
+                        title={t("requests.empty")}
+                        action={
+                            search ? (
+                                <Button variant="outline" size="sm" onClick={() => setSearch("")}>
+                                    {t("common.clear")}
+                                </Button>
+                            ) : (
+                                <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                                    {t("common.refresh")}
+                                </Button>
+                            )
+                        }
+                    />
+                </div>
+            ) : view === "table" ? (
+                <div className="overflow-hidden rounded-lg border border-rule bg-card">
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[860px] text-caption">
+                            <thead className="border-b border-rule bg-wash text-left text-ink-soft">
+                                <tr>
+                                    <th scope="col" className="px-3 py-1.5 text-right font-medium">#</th>
+                                    <th scope="col" className="whitespace-nowrap px-3 py-1.5 font-medium">
+                                        {t("common.from")} → {t("common.to")}
+                                    </th>
+                                    <th scope="col" className="hidden px-3 py-1.5 font-medium md:table-cell">{t("requests.requested")}</th>
+                                    <th scope="col" className="hidden px-3 py-1.5 font-medium sm:table-cell">{t("requests.checker")}</th>
+                                    <th scope="col" className="hidden px-3 py-1.5 font-medium sm:table-cell">{t("requests.approver")}</th>
+                                    <th scope="col" className="px-3 py-1.5 font-medium">{t("common.status")}</th>
+                                    <th scope="col" className="w-px px-3 py-1.5">
+                                        <span className="sr-only">{t("common.actions")}</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-rule/60">
+                                {filtered_requests.map((row) => {
+                                    const overall = overallTone(row);
+                                    return (
+                                        <tr key={row.request_id} className="leading-[19px] text-ink transition-colors hover:bg-wash/60">
+                                            <td className="figure whitespace-nowrap px-3 py-1 text-right text-ink-soft">{row.request_id}</td>
+                                            <td className="px-3 py-1">
+                                                <span className="whitespace-nowrap font-medium">
+                                                    {row.sender_name} → {row.receiver_name}
+                                                </span>
+                                                {row.reason && (
+                                                    <span className="ml-2 text-ink-soft" title={row.reason}>· {row.reason}</span>
+                                                )}
+                                            </td>
+                                            <td className="hidden whitespace-nowrap px-3 py-1 md:table-cell">
+                                                {row.display_name}
+                                                <span className="figure ml-2 text-ink-soft">{datetime_format(row.request_date)}</span>
+                                            </td>
+                                            <td className="hidden whitespace-nowrap px-3 py-1 sm:table-cell">
+                                                <Chip tone={statusTone(row.checker_status)} title={row.checker_comment || undefined}>
+                                                    {DECISION_LABEL[row.checker_status] ?? row.checker_status}
+                                                </Chip>
+                                            </td>
+                                            <td className="hidden whitespace-nowrap px-3 py-1 sm:table-cell">
+                                                <Chip tone={statusTone(row.approver_status)} title={row.approver_comment || undefined}>
+                                                    {DECISION_LABEL[row.approver_status] ?? row.approver_status}
+                                                </Chip>
+                                            </td>
+                                            <td className="whitespace-nowrap px-3 py-1">
+                                                <Chip tone={overall.tone}>{overall.label}</Chip>
+                                            </td>
+                                            <td className="whitespace-nowrap px-2 py-1">
+                                                <div className="flex items-center justify-end gap-2">{rowActions(row)}</div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ) : (
                 <RequestColumns
                     columns={[
                         { key: "requested", label: t("requests.requested") },
@@ -437,8 +617,6 @@ const TransferRequest = () => {
                     cards={cards}
                     emptyLabel={t("requests.empty")}
                 />
-            ) : (
-                <LoadingPage message={t("common.loading")} />
             )}
 
             <Button
@@ -497,7 +675,7 @@ const TransferRequest = () => {
                         </Button>
                         <Button
                             type="button"
-                            variant="success"
+                            variant="paid"
                             disabled={checker_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
@@ -573,7 +751,7 @@ const TransferRequest = () => {
                         </Button>
                         <Button
                             type="button"
-                            variant="success"
+                            variant="paid"
                             disabled={approver_saving}
                             onClick={async () => {
                                 //TODO: Update To Checked
@@ -611,7 +789,7 @@ const TransferRequest = () => {
                     <DialogHeader>
                         <DialogTitle>វិក្កយបត្រ</DialogTitle>
                     </DialogHeader>
-                    <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+                    <div className="overflow-x-auto rounded-lg border border-rule bg-wash p-3">
                         <TransferInvoice
                             ref={InvoiceRef}
                             invoice_detail={invoice_detail}

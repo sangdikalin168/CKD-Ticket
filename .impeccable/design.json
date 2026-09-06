@@ -1,333 +1,508 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-05T01:41:05Z",
+  "generatedAt": "2026-09-06T03:55:09.707Z",
   "title": "Design System: CKD Ticket",
   "extensions": {
     "colorMeta": {
-      "board": {
-        "role": "neutral",
-        "displayName": "Board",
-        "canonical": "#FFFFFF",
+      "amber": {
+        "role": "primary",
+        "displayName": "The Family Mark",
+        "canonical": "rgb(217 123 42)",
         "tonalRamp": [
-          "hsl(0 0% 15%)",
-          "hsl(0 0% 25%)",
-          "hsl(0 0% 35%)",
-          "hsl(0 0% 45%)",
-          "hsl(0 0% 55%)",
-          "hsl(0 0% 65%)",
-          "hsl(0 0% 75%)",
-          "hsl(0 0% 95%)"
+          "#41240c",
+          "#6c3c13",
+          "#97551b",
+          "#c36d23",
+          "#dc863c",
+          "#e4a168",
+          "#f0c9a8",
+          "#fbf2e9"
         ]
       },
-      "board-grid": {
-        "role": "neutral",
-        "displayName": "Board Grid",
-        "canonical": "#EEF1F4",
+      "amber-deep": {
+        "role": "primary",
+        "displayName": "Family Mark Deep",
+        "canonical": "rgb(196 109 34)",
         "tonalRamp": [
-          "hsl(210 21.4% 15%)",
-          "hsl(210 21.4% 25%)",
-          "hsl(210 21.4% 35%)",
-          "hsl(210 21.4% 45%)",
-          "hsl(210 21.4% 55%)",
-          "hsl(210 21.4% 65%)",
-          "hsl(210 21.4% 75%)",
-          "hsl(210 21.4% 95%)"
+          "#41240b",
+          "#6d3c13",
+          "#98551a",
+          "#c46d22",
+          "#dd863b",
+          "#e5a167",
+          "#f0c9a8",
+          "#fbf2e9"
         ]
       },
-      "tray": {
-        "role": "neutral",
-        "displayName": "Tray",
-        "canonical": "#F4F6F8",
+      "amber-tint": {
+        "role": "primary",
+        "displayName": "Family Mark Tint",
+        "canonical": "rgb(253 246 238)",
         "tonalRamp": [
-          "hsl(210 22.2% 15%)",
-          "hsl(210 22.2% 25%)",
-          "hsl(210 22.2% 35%)",
-          "hsl(210 22.2% 45%)",
-          "hsl(210 22.2% 55%)",
-          "hsl(210 22.2% 65%)",
-          "hsl(210 22.2% 75%)",
-          "hsl(210 22.2% 95%)"
+          "#442808",
+          "#72430d",
+          "#a05e13",
+          "#cd7918",
+          "#e79232",
+          "#ecaa5f",
+          "#f4cfa4",
+          "#fcf3e8"
+        ]
+      },
+      "paid": {
+        "role": "secondary",
+        "displayName": "Paid",
+        "canonical": "rgb(5 150 105)",
+        "tonalRamp": [
+          "#022C22",
+          "#064E3B",
+          "#065F46",
+          "#047857",
+          "#059669",
+          "#10B981",
+          "#6EE7B7",
+          "#ECFDF5"
+        ]
+      },
+      "paid-tint": {
+        "role": "secondary",
+        "displayName": "Paid Tint",
+        "canonical": "rgb(236 253 245)",
+        "tonalRamp": [
+          "#074528",
+          "#0c7343",
+          "#11a25d",
+          "#16d078",
+          "#2fe992",
+          "#5deeaa",
+          "#a3f5ce",
+          "#e8fdf3"
+        ]
+      },
+      "paid-deep": {
+        "role": "secondary",
+        "displayName": "Paid Deep",
+        "canonical": "rgb(4 120 87)",
+        "tonalRamp": [
+          "#024a36",
+          "#047b59",
+          "#06ad7d",
+          "#07dea1",
+          "#21f8bb",
+          "#52f9ca",
+          "#9cfce1",
+          "#e6fef7"
+        ]
+      },
+      "pending": {
+        "role": "secondary",
+        "displayName": "Pending",
+        "canonical": "rgb(217 119 6)",
+        "tonalRamp": [
+          "#451A03",
+          "#78350F",
+          "#92400E",
+          "#B45309",
+          "#D97706",
+          "#F59E0B",
+          "#FCD34D",
+          "#FFFBEB"
+        ]
+      },
+      "pending-tint": {
+        "role": "secondary",
+        "displayName": "Pending Tint",
+        "canonical": "rgb(255 251 235)",
+        "tonalRamp": [
+          "#4d3d00",
+          "#806600",
+          "#b38f00",
+          "#e6b800",
+          "#ffd11a",
+          "#ffdb4d",
+          "#ffeb99",
+          "#fffae5"
+        ]
+      },
+      "pending-deep": {
+        "role": "secondary",
+        "displayName": "Pending Deep",
+        "canonical": "rgb(180 83 9)",
+        "tonalRamp": [
+          "#492204",
+          "#793806",
+          "#aa4e08",
+          "#db650b",
+          "#f47e24",
+          "#f79b55",
+          "#fac69e",
+          "#fef1e7"
+        ]
+      },
+      "void": {
+        "role": "secondary",
+        "displayName": "Void",
+        "canonical": "rgb(220 38 38)",
+        "tonalRamp": [
+          "#450A0A",
+          "#7F1D1D",
+          "#991B1B",
+          "#B91C1C",
+          "#DC2626",
+          "#EF4444",
+          "#FCA5A5",
+          "#FEF2F2"
+        ]
+      },
+      "void-tint": {
+        "role": "secondary",
+        "displayName": "Void Tint",
+        "canonical": "rgb(254 242 242)",
+        "tonalRamp": [
+          "#470505",
+          "#760909",
+          "#a60d0d",
+          "#d51010",
+          "#ef2a2a",
+          "#f25959",
+          "#f8a0a0",
+          "#fde7e7"
+        ]
+      },
+      "void-deep": {
+        "role": "secondary",
+        "displayName": "Void Deep",
+        "canonical": "rgb(185 28 28)",
+        "tonalRamp": [
+          "#420a0a",
+          "#6f1111",
+          "#9b1717",
+          "#c71e1e",
+          "#e13838",
+          "#e86464",
+          "#f2a6a6",
+          "#fce9e9"
+        ]
+      },
+      "notice": {
+        "role": "secondary",
+        "displayName": "Notice",
+        "canonical": "rgb(37 99 235)",
+        "tonalRamp": [
+          "#172554",
+          "#1E3A8A",
+          "#1E40AF",
+          "#1D4ED8",
+          "#2563EB",
+          "#3B82F6",
+          "#93C5FD",
+          "#EFF6FF"
+        ]
+      },
+      "notice-tint": {
+        "role": "secondary",
+        "displayName": "Notice Tint",
+        "canonical": "rgb(239 246 255)",
+        "tonalRamp": [
+          "#00214d",
+          "#003880",
+          "#004eb3",
+          "#0064e6",
+          "#1a7eff",
+          "#4d9bff",
+          "#99c6ff",
+          "#e5f1ff"
+        ]
+      },
+      "notice-deep": {
+        "role": "secondary",
+        "displayName": "Notice Deep",
+        "canonical": "rgb(29 78 216)",
+        "tonalRamp": [
+          "#091843",
+          "#0f2970",
+          "#15399d",
+          "#1b49ca",
+          "#3563e4",
+          "#6285ea",
+          "#a5b9f3",
+          "#e9eefc"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "hsl(222.2 47.4% 11.2%)",
+        "tonalRamp": [
+          "#020617",
+          "#0f172a",
+          "#1e293b",
+          "#334155",
+          "#475569",
+          "#64748b",
+          "#cbd5e1",
+          "#f8fafc"
+        ]
+      },
+      "ink-deep": {
+        "role": "neutral",
+        "displayName": "Ink Deep",
+        "canonical": "hsl(222.2 84% 4.9%)",
+        "tonalRamp": [
+          "#020617",
+          "#0b1220",
+          "#0f172a",
+          "#1e293b",
+          "#475569",
+          "#94a3b8",
+          "#e2e8f0",
+          "#ffffff"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Ink Soft",
+        "canonical": "hsl(215 16% 38%)",
+        "tonalRamp": [
+          "#20252c",
+          "#363e4a",
+          "#4b5768",
+          "#607085",
+          "#7a899f",
+          "#97a3b4",
+          "#c4cbd4",
+          "#f0f2f4"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "hsl(0 0% 100%)",
+        "tonalRamp": [
+          "#0f172a",
+          "#1e293b",
+          "#334155",
+          "#64748b",
+          "#94a3b8",
+          "#cbd5e1",
+          "#e2e8f0",
+          "#ffffff"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "hsl(210 40% 98%)",
+        "tonalRamp": [
+          "#1e293b",
+          "#334155",
+          "#475569",
+          "#64748b",
+          "#94a3b8",
+          "#cbd5e1",
+          "#e2e8f0",
+          "#f8fafc"
+        ]
+      },
+      "wash": {
+        "role": "neutral",
+        "displayName": "Wash",
+        "canonical": "hsl(210 40% 96.1%)",
+        "tonalRamp": [
+          "#0f172a",
+          "#1e293b",
+          "#334155",
+          "#475569",
+          "#94a3b8",
+          "#cbd5e1",
+          "#e2e8f0",
+          "#f1f5f9"
         ]
       },
       "rule": {
         "role": "neutral",
-        "displayName": "Rule",
-        "canonical": "#D9DEE3",
+        "displayName": "Hairline",
+        "canonical": "hsl(214.3 31.8% 91.4%)",
         "tonalRamp": [
-          "hsl(210 15.2% 15%)",
-          "hsl(210 15.2% 25%)",
-          "hsl(210 15.2% 35%)",
-          "hsl(210 15.2% 45%)",
-          "hsl(210 15.2% 55%)",
-          "hsl(210 15.2% 65%)",
-          "hsl(210 15.2% 75%)",
-          "hsl(210 15.2% 95%)"
+          "#0f172a",
+          "#1e293b",
+          "#334155",
+          "#64748b",
+          "#94a3b8",
+          "#cbd5e1",
+          "#e2e8f0",
+          "#f1f5f9"
         ]
       },
-      "ink": {
-        "role": "primary",
-        "displayName": "Ink",
-        "canonical": "#1F2328",
+      "floor": {
+        "role": "neutral",
+        "displayName": "Floor",
+        "canonical": "#F5F6F8",
         "tonalRamp": [
-          "hsl(213.3 12.7% 15%)",
-          "hsl(213.3 12.7% 25%)",
-          "hsl(213.3 12.7% 35%)",
-          "hsl(213.3 12.7% 45%)",
-          "hsl(213.3 12.7% 55%)",
-          "hsl(213.3 12.7% 65%)",
-          "hsl(213.3 12.7% 75%)",
-          "hsl(213.3 12.7% 95%)"
-        ]
-      },
-      "ink-soft": {
-        "role": "primary",
-        "displayName": "Soft Ink",
-        "canonical": "hsl(215 16% 38%)",
-        "tonalRamp": [
-          "hsl(215 16% 15%)",
-          "hsl(215 16% 25%)",
-          "hsl(215 16% 35%)",
-          "hsl(215 16% 45%)",
-          "hsl(215 16% 55%)",
-          "hsl(215 16% 65%)",
-          "hsl(215 16% 75%)",
-          "hsl(215 16% 95%)"
+          "#20242d",
+          "#353c4b",
+          "#4a5469",
+          "#5f6c87",
+          "#7886a0",
+          "#96a1b5",
+          "#c3c9d5",
+          "#f0f2f4"
         ]
       },
       "swim": {
-        "role": "tertiary",
-        "displayName": "Swim Blue",
-        "canonical": "#1F5AE0",
+        "role": "facility",
+        "displayName": "Swim",
+        "canonical": "hsl(222 76% 50%)",
         "tonalRamp": [
-          "hsl(221.7 75.7% 15%)",
-          "hsl(221.7 75.7% 25%)",
-          "hsl(221.7 75.7% 35%)",
-          "hsl(221.7 75.7% 45%)",
-          "hsl(221.7 75.7% 55%)",
-          "hsl(221.7 75.7% 65%)",
-          "hsl(221.7 75.7% 75%)",
-          "hsl(221.7 75.7% 95%)"
+          "#091b43",
+          "#102d70",
+          "#163f9d",
+          "#1c51ca",
+          "#356be3",
+          "#628ce9",
+          "#a5bdf3",
+          "#e9effc"
         ]
       },
       "gym": {
-        "role": "tertiary",
-        "displayName": "Gym Green",
-        "canonical": "#12A150",
+        "role": "facility",
+        "displayName": "Gym",
+        "canonical": "hsl(146 80% 35%)",
         "tonalRamp": [
-          "hsl(146 79.9% 15%)",
-          "hsl(146 79.9% 25%)",
-          "hsl(146 79.9% 35%)",
-          "hsl(146 79.9% 45%)",
-          "hsl(146 79.9% 55%)",
-          "hsl(146 79.9% 65%)",
-          "hsl(146 79.9% 75%)",
-          "hsl(146 79.9% 95%)"
+          "#084522",
+          "#0d7339",
+          "#12a150",
+          "#17ce67",
+          "#31e880",
+          "#5eed9c",
+          "#a3f5c7",
+          "#e8fcf1"
         ]
       },
       "steam": {
-        "role": "tertiary",
-        "displayName": "Steam Orange",
-        "canonical": "#F0620E",
+        "role": "facility",
+        "displayName": "Steam",
+        "canonical": "hsl(22 89% 50%)",
         "tonalRamp": [
-          "hsl(22.3 89% 15%)",
-          "hsl(22.3 89% 25%)",
-          "hsl(22.3 89% 35%)",
-          "hsl(22.3 89% 45%)",
-          "hsl(22.3 89% 55%)",
-          "hsl(22.3 89% 65%)",
-          "hsl(22.3 89% 75%)",
-          "hsl(22.3 89% 95%)"
+          "#481e04",
+          "#783107",
+          "#a9450a",
+          "#d9590d",
+          "#f27226",
+          "#f59156",
+          "#f9c09f",
+          "#feefe7"
         ]
       },
       "combo": {
-        "role": "tertiary",
-        "displayName": "Combo Purple",
-        "canonical": "#7A3FE4",
+        "role": "facility",
+        "displayName": "Combo",
+        "canonical": "hsl(261 75% 57%)",
         "tonalRamp": [
-          "hsl(261.5 75.3% 15%)",
-          "hsl(261.5 75.3% 25%)",
-          "hsl(261.5 75.3% 35%)",
-          "hsl(261.5 75.3% 45%)",
-          "hsl(261.5 75.3% 55%)",
-          "hsl(261.5 75.3% 65%)",
-          "hsl(261.5 75.3% 75%)",
-          "hsl(261.5 75.3% 95%)"
-        ]
-      },
-      "magnet-done": {
-        "role": "secondary",
-        "displayName": "Done",
-        "canonical": "#16A34A",
-        "tonalRamp": [
-          "hsl(142.1 76.2% 15%)",
-          "hsl(142.1 76.2% 25%)",
-          "hsl(142.1 76.2% 35%)",
-          "hsl(142.1 76.2% 45%)",
-          "hsl(142.1 76.2% 55%)",
-          "hsl(142.1 76.2% 65%)",
-          "hsl(142.1 76.2% 75%)",
-          "hsl(142.1 76.2% 95%)"
-        ]
-      },
-      "magnet-pending": {
-        "role": "secondary",
-        "displayName": "Pending",
-        "canonical": "#F5C518",
-        "tonalRamp": [
-          "hsl(47 91.7% 15%)",
-          "hsl(47 91.7% 25%)",
-          "hsl(47 91.7% 35%)",
-          "hsl(47 91.7% 45%)",
-          "hsl(47 91.7% 55%)",
-          "hsl(47 91.7% 65%)",
-          "hsl(47 91.7% 75%)",
-          "hsl(47 91.7% 95%)"
-        ]
-      },
-      "magnet-rejected": {
-        "role": "secondary",
-        "displayName": "Rejected",
-        "canonical": "#DC2626",
-        "tonalRamp": [
-          "hsl(0 72.2% 15%)",
-          "hsl(0 72.2% 25%)",
-          "hsl(0 72.2% 35%)",
-          "hsl(0 72.2% 45%)",
-          "hsl(0 72.2% 55%)",
-          "hsl(0 72.2% 65%)",
-          "hsl(0 72.2% 75%)",
-          "hsl(0 72.2% 95%)"
-        ]
-      },
-      "magnet-info": {
-        "role": "secondary",
-        "displayName": "Info",
-        "canonical": "#2563EB",
-        "tonalRamp": [
-          "hsl(221.2 83.2% 15%)",
-          "hsl(221.2 83.2% 25%)",
-          "hsl(221.2 83.2% 35%)",
-          "hsl(221.2 83.2% 45%)",
-          "hsl(221.2 83.2% 55%)",
-          "hsl(221.2 83.2% 65%)",
-          "hsl(221.2 83.2% 75%)",
-          "hsl(221.2 83.2% 95%)"
-        ]
-      },
-      "magnet-off": {
-        "role": "secondary",
-        "displayName": "Off",
-        "canonical": "#9CA3AF",
-        "tonalRamp": [
-          "hsl(217.9 10.6% 15%)",
-          "hsl(217.9 10.6% 25%)",
-          "hsl(217.9 10.6% 35%)",
-          "hsl(217.9 10.6% 45%)",
-          "hsl(217.9 10.6% 55%)",
-          "hsl(217.9 10.6% 65%)",
-          "hsl(217.9 10.6% 75%)",
-          "hsl(217.9 10.6% 95%)"
-        ]
-      },
-      "amber": {
-        "role": "tertiary",
-        "displayName": "Amber",
-        "canonical": "#D97B2A",
-        "tonalRamp": [
-          "hsl(27.8 69.7% 15%)",
-          "hsl(27.8 69.7% 25%)",
-          "hsl(27.8 69.7% 35%)",
-          "hsl(27.8 69.7% 45%)",
-          "hsl(27.8 69.7% 55%)",
-          "hsl(27.8 69.7% 65%)",
-          "hsl(27.8 69.7% 75%)",
-          "hsl(27.8 69.7% 95%)"
-        ]
-      },
-      "amber-deep": {
-        "role": "tertiary",
-        "displayName": "Amber Deep",
-        "canonical": "#C46D22",
-        "tonalRamp": [
-          "hsl(27.8 70.4% 15%)",
-          "hsl(27.8 70.4% 25%)",
-          "hsl(27.8 70.4% 35%)",
-          "hsl(27.8 70.4% 45%)",
-          "hsl(27.8 70.4% 55%)",
-          "hsl(27.8 70.4% 65%)",
-          "hsl(27.8 70.4% 75%)",
-          "hsl(27.8 70.4% 95%)"
+          "#1e0943",
+          "#321070",
+          "#46169c",
+          "#5a1cc9",
+          "#7436e3",
+          "#9363e9",
+          "#c1a6f2",
+          "#f0e9fc"
         ]
       }
     },
     "typographyMeta": {
-      "heading": {
-        "displayName": "Heading",
-        "purpose": "A board section's title, in marker weight."
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The page header's title line — bilingual, Khmer first, then \" · English\" in soft ink only when the two differ."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Card and dialog headings, and the club's name on a printed slip."
-      },
-      "price": {
-        "displayName": "Price",
-        "purpose": "The figure on a price tile, in its facility's marker hue — the one place black weight leaves a heading."
+        "purpose": "A Section heading and a dialog title."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Table cells, form values, descriptions — the register voice."
+        "purpose": "Form fields, prose, button labels, card copy — carries most of the interface."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Buttons, inputs, navigation items, tabs."
+        "purpose": "Emphasis text that isn't a heading — a price card's product name."
       },
       "caption": {
         "displayName": "Caption",
-        "purpose": "Compact column headers, chip labels and eyebrows, at 1.6 line height so Khmer subscripts clear the line beneath."
+        "purpose": "Metadata, chip text, table cells, the page header's date line. Line height 1.6 for Khmer."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Not a size but a treatment: any number a person compares to another number, via Roboto's own tabular figures with a slashed zero, never a separate mono face."
       }
     },
     "shadows": [
       {
-        "name": "Magnet",
-        "value": "0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18)",
-        "purpose": "The state disc at 22/14/10px. The only object in the system allowed to look physical, because a magnet on a board is."
+        "name": "overlay",
+        "value": "0 12px 32px rgb(0 0 0 / 0.12)",
+        "purpose": "The dialog panel — the one thing in the system that floats above an inert page."
       },
       {
-        "name": "Header",
-        "value": "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)",
-        "purpose": "The sticky navbar only — it genuinely floats over scrolling content."
+        "name": "scrim-dialog",
+        "value": "background: rgb(0 0 0 / 0.5)",
+        "purpose": "The dialog overlay, darkening the page behind it."
       },
       {
-        "name": "Overlay",
-        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-        "purpose": "Dialogs over a scrim, dropdowns, the language menu."
+        "name": "tab-active",
+        "value": "0 1px 2px rgb(0 0 0 / 0.12)",
+        "purpose": "The active tab on a boxed TabsList, lifting it off the tray."
+      },
+      {
+        "name": "sidebar-active",
+        "value": "0 1px 2px rgb(0 0 0 / 0.10)",
+        "purpose": "The active sidebar menu item's ground."
+      },
+      {
+        "name": "sidebar-outline",
+        "value": "0 0 0 1px hsl(var(--sidebar-border))",
+        "purpose": "The sidebar's outline button variant, a hairline drawn as a shadow so it doesn't shift layout on hover."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2px solid hsl(222.2 84% 4.9%); outline-offset: 2px",
+        "purpose": "The one focus ring in the system, keyboard-only via :focus-visible."
       }
     ],
     "motion": [
       {
-        "name": "register-line-in",
-        "value": "200ms ease-out",
-        "purpose": "A sale writing itself onto today's board — the system's one authored moment."
+        "name": "fade-in",
+        "value": "opacity 0 → 1 over 200ms ease-out",
+        "purpose": "Dialog and dropdown entrance scrims."
       },
       {
-        "name": "dialog-in / dialog-out",
-        "value": "fade + zoom 95% + slide, 200ms (Radix data-state)",
-        "purpose": "Dialogs, dropdowns and the mobile sidebar sheet."
+        "name": "slide-up",
+        "value": "opacity 0 → 1 with translateY(8px) scale(0.98) → none, 200ms ease-out",
+        "purpose": "The dialog panel's rise."
       },
       {
-        "name": "accordion-down / accordion-up",
-        "value": "0.2s ease-out",
-        "purpose": "Disclosure."
+        "name": "shimmer",
+        "value": "translateX(-100%) → translateX(100%) over 1.6s, infinite",
+        "purpose": "The skeleton sweep while data loads."
       },
       {
-        "name": "spin / shimmer",
-        "value": "spin 1s linear infinite; shimmer sweep",
-        "purpose": "Loading only."
+        "name": "state-colors",
+        "value": "transition: color, background-color, border-color 150-200ms",
+        "purpose": "Every hover, press and selection change on buttons, rows and chips. Ground shifts, never a lift."
       },
       {
-        "name": "transition-colors",
-        "value": "color, background-color, border-color 150ms cubic-bezier(0.4, 0, 0.2, 1)",
-        "purpose": "The default for every state change; controls change colour, they do not move."
+        "name": "sidebar-width",
+        "value": "width 200ms ease-linear",
+        "purpose": "The sidebar expanding and collapsing between its full and icon-rail widths."
+      },
+      {
+        "name": "collapsible-chevron",
+        "value": "transform 200ms, rotate 180deg when open",
+        "purpose": "A sidebar group's disclosure chevron."
+      },
+      {
+        "name": "picker-indicator",
+        "value": "opacity 0.55 → 1 over 150ms ease",
+        "purpose": "The native date field's calendar glyph waking on hover."
       }
     ],
     "breakpoints": [
@@ -352,198 +527,164 @@
         "value": "1536px"
       },
       {
-        "name": "reference",
-        "value": "1366×768 laptop"
+        "name": "container-max",
+        "value": "1400px"
       }
     ]
   },
   "components": [
     {
-      "name": "Price Tile",
-      "kind": "custom",
-      "refersTo": "price-tile",
-      "description": "The sale unit: a 160×112 board card with a 3px facility stripe, the facility dots, the name clamped to two lines, and the price in marker weight. Tapping sells and prints.",
-      "html": "<button class=\"ds-tile\" type=\"button\"><span class=\"ds-tile__stripe\"><i style=\"background:#1F5AE0\"></i></span><span class=\"ds-tile__dots\"><i style=\"background:#1F5AE0\"></i></span><span class=\"ds-tile__name\">ហែលទឹក · Swimming</span><span class=\"ds-tile__price\" style=\"color:#1F5AE0\">$3</span><span class=\"ds-tile__meta\">ចូល ១ ដង</span></button><button class=\"ds-tile\" type=\"button\"><span class=\"ds-tile__stripe\"><i style=\"background:#1F5AE0\"></i><i style=\"background:#12A150\"></i><i style=\"background:#F0620E\"></i></span><span class=\"ds-tile__dots\"><i style=\"background:#1F5AE0\"></i><i style=\"background:#12A150;margin-left:-4px\"></i><i style=\"background:#F0620E;margin-left:-4px\"></i></span><span class=\"ds-tile__name\">ហែលទឹក + ហាត់ប្រាណ + ចំហុយ</span><span class=\"ds-tile__price\" style=\"color:#7A3FE4\">$4.50</span><span class=\"ds-tile__meta\">ចូល ១ ដង</span></button>",
-      "css": ".ds-tile { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; width: 160px; min-height: 112px; margin: 4px; padding: 0.75rem; border: 1px solid #D9DEE3; border-radius: 0.75rem; background: #FFFFFF; color: #1F2328; text-align: left; cursor: pointer; font-family: Roboto, Nokora, sans-serif; }\n.ds-tile__stripe { position: absolute; inset: 0 0 auto 0; display: flex; height: 3px; overflow: hidden; border-radius: 0.75rem 0.75rem 0 0; }\n.ds-tile__stripe i { flex: 1; }\n.ds-tile__dots { position: absolute; right: 0.75rem; top: 0.75rem; display: inline-flex; mix-blend-mode: multiply; }\n.ds-tile__dots i { width: 10px; height: 10px; border-radius: 9999px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.15); }\n.ds-tile__name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 0.5rem; font-size: 0.875rem; font-weight: 500; }\n.ds-tile__price { margin-top: auto; font-size: 1.875rem; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }\n.ds-tile__meta { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; color: hsl(215 16% 38%); }\n.ds-tile:hover { border-color: hsl(215 16% 38% / 0.4); }\n.ds-tile:active { transform: scale(0.98); }\n.ds-tile:focus-visible { outline: 2px solid #1F2328; outline-offset: 2px; }"
-    },
-    {
-      "name": "Magnet Chip",
-      "kind": "chip",
-      "refersTo": "magnet-chip",
-      "description": "A record's state: a physical-looking disc beside an ink label. This replaces the tinted status pill entirely.",
-      "html": "<span class=\"ds-chip\"><i class=\"ds-magnet\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #16A34A\"></i>បានដំណើរការ · Processed</span><span class=\"ds-chip\"><i class=\"ds-magnet\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #F5C518\"></i>រង់ចាំ · Pending</span><span class=\"ds-chip\"><i class=\"ds-magnet\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #DC2626\"></i>បដិសេធ · Rejected</span>",
-      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 1rem; font-family: Roboto, Nokora, sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; color: #1F2328; }\n.ds-magnet { display: inline-block; width: 22px; height: 22px; border-radius: 9999px; box-shadow: 0 2px 4px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.18); }"
-    },
-    {
       "name": "Commit Button",
       "kind": "button",
       "refersTo": "button-commit",
-      "description": "The action that takes money or settles a request: amber ground with INK lettering, because white on amber fails at 3.1:1 and ink passes at 5.1:1. Hover draws a second marker stroke under it.",
-      "html": "<button class=\"ds-btn ds-btn--commit\" type=\"button\">លក់ · Sell</button> <button class=\"ds-btn ds-btn--commit-outline\" type=\"button\">បោះពុម្ពម្តងទៀត · Print again</button> <button class=\"ds-btn ds-btn--default\" type=\"button\">រក្សាទុក · Save</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 0 0.75rem; border-radius: 0.375rem; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25; cursor: pointer; transition: background-color .15s, color .15s, box-shadow .15s; border: none; margin-right: 0.5rem; }\n.ds-btn--default { background: #1F2328; color: #FFFFFF; }\n.ds-btn--default:hover { background: rgb(31 35 40 / 0.9); }\n.ds-btn--commit { background: #D97B2A; color: #1F2328; font-weight: 600; }\n.ds-btn--commit:hover { box-shadow: inset 0 -3px 0 #C46D22; }\n.ds-btn--commit:active { background: #C46D22; }\n.ds-btn--commit-outline { border: 1px solid #C46D22; background: rgb(217 123 42 / 0.1); color: #1F2328; }\n.ds-btn--commit-outline:hover { background: rgb(217 123 42 / 0.25); }\n.ds-btn:focus-visible { outline: 2px solid #1F2328; outline-offset: 2px; }"
+      "description": "The one committing action on a screen — Sell, Approve and process, Sign in. Amber ground, ink label, at most one per surface.",
+      "html": "<button class=\"ds-btn-commit\">Sell ticket</button>",
+      "css": ".ds-btn-commit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 12px; background: #D97B2A; color: #0F172A; border: none; border-radius: 6px; font-family: Roboto, Nokora, sans-serif; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background-color 150ms, box-shadow 150ms; } .ds-btn-commit:hover { box-shadow: inset 0 -3px 0 #C46D22; } .ds-btn-commit:active { background: #C46D22; } .ds-btn-commit:focus-visible { outline: 2px solid #020817; outline-offset: 2px; } .ds-btn-commit:disabled { background: #F1F5F9; color: #515E70; box-shadow: none; cursor: not-allowed; }"
     },
     {
-      "name": "Board Header",
+      "name": "Price Card",
+      "kind": "card",
+      "refersTo": "price-card",
+      "description": "One sellable price: facility name in ink, entitlement in caption, price as a 24px tabular ink figure. The whole card is the tap target; no button nests inside it.",
+      "html": "<button class=\"ds-price-card\"><span class=\"ds-price-card__head\"><span class=\"ds-price-card__title\">Swimming</span></span><span class=\"ds-price-card__caption\">One entry</span><span class=\"ds-price-card__price\">$3</span></button>",
+      "css": ".ds-price-card { display: flex; flex-direction: column; width: 200px; padding: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; text-align: left; cursor: pointer; font-family: Roboto, Nokora, sans-serif; transition: background-color 150ms; } .ds-price-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; } .ds-price-card__title { font-size: 14px; font-weight: 500; line-height: 1.25; color: #0F172A; } .ds-price-card__caption { margin-top: 2px; font-size: 12px; line-height: 1.6; letter-spacing: 0.02em; color: #515E70; } .ds-price-card__price { margin-top: 8px; font-size: 24px; font-weight: 600; line-height: 1; color: #0F172A; font-variant-numeric: tabular-nums slashed-zero; font-feature-settings: 'tnum' 1, 'zero' 1; } .ds-price-card:hover { background: rgba(241, 245, 249, 0.7); } .ds-price-card:active { background: #F1F5F9; } .ds-price-card:focus-visible { outline: 2px solid #020817; outline-offset: 2px; }"
+    },
+    {
+      "name": "State Chip",
+      "kind": "chip",
+      "refersTo": "chip-paid",
+      "description": "The one badge in the system, ported from CKD POS with the same four tones. A tint ground with the mark's deep text step, fully round, caption type.",
+      "html": "<span class=\"ds-chip ds-chip--paid\">Paid</span> <span class=\"ds-chip ds-chip--pending\">Pending</span> <span class=\"ds-chip ds-chip--void\">Rejected</span> <span class=\"ds-chip ds-chip--notice\">Info</span> <span class=\"ds-chip ds-chip--muted\">Age 12+</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 9999px; font-family: Roboto, Nokora, sans-serif; font-size: 12px; font-weight: 500; line-height: 1.6; letter-spacing: 0.02em; white-space: nowrap; } .ds-chip--paid { background: #ECFDF5; color: #047857; } .ds-chip--pending { background: #FFFBEB; color: #B45309; } .ds-chip--void { background: #FEF2F2; color: #B91C1C; } .ds-chip--notice { background: #EFF6FF; color: #1D4ED8; } .ds-chip--muted { background: #F1F5F9; color: #515E70; }"
+    },
+    {
+      "name": "Data Table",
       "kind": "custom",
-      "refersTo": "nav-item",
-      "description": "Every surface opens with the same masthead: the club and the date on one baseline, the title beneath, closed by a 2px ink rule.",
-      "html": "<header class=\"ds-board-header\"><div class=\"ds-board-header__top\"><span>មិង ហួរ ក្លឹបហាត់ប្រាណ &amp; អាងហែលទឹក</span><span class=\"ds-board-header__date\">FRIDAY, SEPTEMBER 4, 2026</span></div><h1 class=\"ds-board-header__title\">លក់សំបុត្រ · Sell Tickets</h1><p class=\"ds-board-header__sub\">ចុចតម្លៃដើម្បីលក់ និងបោះពុម្ព</p></header>",
-      "css": ".ds-board-header { padding-bottom: 0.75rem; border-bottom: 2px solid #1F2328; font-family: Roboto, Nokora, sans-serif; color: #1F2328; }\n.ds-board-header__top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; color: hsl(215 16% 38%); }\n.ds-board-header__date { text-transform: uppercase; }\n.ds-board-header__title { margin: 0.25rem 0 0; font-size: 1.5rem; font-weight: 900; line-height: 1.2; }\n.ds-board-header__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: hsl(215 16% 38%); }"
+      "refersTo": "table-header",
+      "description": "The counter's spine at the compact ledger density: a wash header band in sentence case (Khmer has no capitals), hairline rows, tabular figures, a wash hover.",
+      "html": "<div class=\"ds-table\"><table><thead><tr><th class=\"ds-table__num\">No</th><th>Product</th><th>Status</th><th class=\"ds-table__right\">Price</th></tr></thead><tbody><tr><td class=\"ds-table__num ds-figure\">1</td><td>Swimming — 1 entry</td><td><span class=\"ds-chip ds-chip--paid\">Paid</span></td><td class=\"ds-table__right ds-figure\">$3</td></tr><tr><td class=\"ds-table__num ds-figure\">2</td><td>Gym + Steam — 1 entry</td><td><span class=\"ds-chip ds-chip--paid\">Paid</span></td><td class=\"ds-table__right ds-figure\">$5</td></tr></tbody></table></div>",
+      "css": ".ds-table { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; } .ds-table table { width: 100%; border-collapse: collapse; font-family: Roboto, Nokora, sans-serif; } .ds-table thead { background: #F1F5F9; } .ds-table th { padding: 4px 8px; text-align: left; font-size: 12px; font-weight: 500; line-height: 1.6; letter-spacing: 0.02em; text-transform: none; color: #515E70; border-bottom: 1px solid #E2E8F0; } .ds-table td { padding: 3px 8px; font-size: 12px; line-height: 19px; color: #0F172A; white-space: nowrap; } .ds-table tbody tr { border-top: 1px solid rgba(226, 232, 240, 0.6); transition: background-color 150ms; } .ds-table tbody tr:first-child { border-top: none; } .ds-table tbody tr:hover { background: rgba(241, 245, 249, 0.6); } .ds-table__num { width: 40px; color: #515E70; } .ds-table__right { text-align: right; } .ds-table .ds-figure { font-variant-numeric: tabular-nums slashed-zero; font-feature-settings: 'tnum' 1, 'zero' 1; } .ds-table .ds-chip { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500; } .ds-table .ds-chip--paid { background: #ECFDF5; color: #047857; }"
     },
     {
-      "name": "Data Table (compact ledger)",
-      "kind": "table",
-      "refersTo": "table-header-cell",
-      "description": "The compact density: caption headers on the tray, 3px row padding at 17px leading, vertical hairlines, tabular figures, and magnet chips in the status column.",
-      "html": "<table class=\"ds-table\"><thead><tr><th>ម៉ោង</th><th>អតិថិជន</th><th>សេវា</th><th class=\"ds-num\">តម្លៃ</th><th>ស្ថានភាព</th></tr></thead><tbody><tr><td class=\"ds-num\">09:12</td><td>ចាន់ ដារ៉ា</td><td><i class=\"ds-dot\" style=\"background:#1F5AE0\"></i> ហែលទឹក</td><td class=\"ds-num\">$3.00</td><td><i class=\"ds-magnet-sm\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #16A34A\"></i></td></tr><tr><td class=\"ds-num\">09:15</td><td>សុខ ពិសី</td><td><i class=\"ds-dot\" style=\"background:#12A150\"></i> ហាត់ប្រាណ</td><td class=\"ds-num\">$2.00</td><td><i class=\"ds-magnet-sm\" style=\"background:radial-gradient(circle at 35% 30%, rgb(255 255 255 / .6), rgb(255 255 255 / 0) 48%), #F5C518\"></i></td></tr></tbody></table>",
-      "css": ".ds-table { width: 100%; max-width: 560px; border-collapse: separate; border-spacing: 0; border: 1px solid #D9DEE3; border-radius: 0.5rem; overflow: hidden; background: #FFFFFF; color: #1F2328; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; }\n.ds-table th { padding: 0.375rem 0.75rem; background: #F4F6F8; color: hsl(215 16% 38%); text-align: left; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6; }\n.ds-table td { padding: 3px 0.75rem; line-height: 17px; border-top: 1px solid #D9DEE3; white-space: nowrap; }\n.ds-table td + td, .ds-table th + th { border-left: 1px solid rgb(217 222 227 / 0.6); }\n.ds-table tbody tr:hover td { background: #F4F6F8; }\n.ds-table .ds-num { text-align: right; font-variant-numeric: tabular-nums; }\n.ds-dot { display: inline-block; width: 10px; height: 10px; border-radius: 9999px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25); vertical-align: middle; }\n.ds-magnet-sm { display: inline-block; width: 14px; height: 14px; border-radius: 9999px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.15); }"
+      "name": "Figure Strip",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Ported verbatim from CKD POS: one white bar ruled into cells by hairline gaps, each holding a tabular figure on the same baseline as its label. Replaces a grid of stat cards.",
+      "html": "<dl class=\"ds-strip\"><div class=\"ds-strip__cell\"><div class=\"ds-strip__line\"><dd class=\"ds-strip__value\">12</dd><dt class=\"ds-strip__label\">Tickets today</dt></div></div><div class=\"ds-strip__cell\"><div class=\"ds-strip__line\"><dd class=\"ds-strip__value\">3,688</dd><dt class=\"ds-strip__label\">Members</dt></div></div><div class=\"ds-strip__cell\"><div class=\"ds-strip__line\"><dd class=\"ds-strip__value\">$46</dd><dt class=\"ds-strip__label\">Income today</dt></div></div></dl>",
+      "css": ".ds-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 0; overflow: hidden; background: #E2E8F0; border: 1px solid #E2E8F0; border-radius: 8px; font-family: Roboto, Nokora, sans-serif; } .ds-strip__cell { min-width: 0; padding: 12px 16px; background: #FFFFFF; } .ds-strip__line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; } .ds-strip__value { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.2; color: #0F172A; font-variant-numeric: tabular-nums slashed-zero; font-feature-settings: 'tnum' 1, 'zero' 1; } .ds-strip__label { font-size: 14px; color: #515E70; }"
     },
     {
-      "name": "Sidebar Nav Item",
+      "name": "Empty State",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Ported from CKD POS: a round wash plate with a drawn icon, the missing thing named, one line of caption, and the action that fills it — never a bare 'no data' sentence.",
+      "html": "<div class=\"ds-empty\"><div class=\"ds-empty__plate\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20.91 8.84 8.56 21.19a4 4 0 0 1-5.66 0v0a4 4 0 0 1 0-5.66L15.24 3.18\"/></svg></div><p class=\"ds-empty__title\">No requests waiting</p><p class=\"ds-empty__body\">Hold and transfer requests will appear here once a member asks for one.</p><a class=\"ds-empty__action\" href=\"#\">New request<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/><polyline points=\"12 5 19 12 12 19\"/></svg></a></div>",
+      "css": ".ds-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; font-family: Roboto, Nokora, sans-serif; } .ds-empty__plate { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 12px; background: #F1F5F9; color: #515E70; border-radius: 9999px; } .ds-empty__title { margin: 0; font-size: 14px; font-weight: 500; color: #0F172A; } .ds-empty__body { margin: 4px 0 0; max-width: 20rem; font-size: 12px; line-height: 1.6; letter-spacing: 0.02em; color: #515E70; } .ds-empty__action { display: inline-flex; align-items: center; gap: 6px; height: 36px; margin-top: 16px; padding: 0 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #E2E8F0; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; transition: background-color 150ms; } .ds-empty__action:hover { background: #F1F5F9; } .ds-empty__action:focus-visible { outline: 2px solid #020817; outline-offset: 2px; } .ds-empty__action svg { color: #515E70; }"
+    },
+    {
+      "name": "Sidebar Item",
       "kind": "nav",
-      "refersTo": "nav-item",
-      "description": "The board's index on the marker tray: a dot that turns ink when active, the active item on a white chip, no accent bar.",
-      "html": "<nav class=\"ds-side\"><div class=\"ds-side__group\">ម៉ឺនុយ</div><a class=\"ds-side__item ds-side__item--active\" href=\"#\"><i class=\"ds-side__dot\"></i>លក់សំបុត្រ</a><a class=\"ds-side__item\" href=\"#\"><i class=\"ds-side__dot ds-side__dot--off\"></i>សមាជិក</a></nav>",
-      "css": ".ds-side { display: flex; flex-direction: column; gap: 2px; width: 220px; padding: 0.5rem; background: #F4F6F8; border-right: 1px solid #D9DEE3; font-family: Roboto, Nokora, sans-serif; }\n.ds-side__group { padding: 0.5rem 0.75rem 0.25rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: hsl(215 16% 38%); }\n.ds-side__item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #1F2328; text-decoration: none; }\n.ds-side__item--active { background: #FFFFFF; }\n.ds-side__item:hover { background: rgb(255 255 255 / 0.6); }\n.ds-side__dot { width: 8px; height: 8px; border-radius: 9999px; background: #1F2328; }\n.ds-side__dot--off { background: #9CA3AF; }"
+      "refersTo": "card",
+      "description": "One row of the primary sidebar: an icon, a label, and (when a group) a disclosure chevron. The active row takes the wash ground with bold ink text — never the amber accent.",
+      "html": "<ul class=\"ds-sidebar\"><li class=\"ds-sidebar__item ds-sidebar__item--active\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 9h18M9 21V9\"/></svg><span>Sell ticket</span></li><li class=\"ds-sidebar__item\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2\"/></svg><span>Members</span></li></ul>",
+      "css": ".ds-sidebar { display: flex; flex-direction: column; gap: 4px; width: 220px; padding: 8px; margin: 0; list-style: none; background: #FFFFFF; font-family: Roboto, Nokora, sans-serif; } .ds-sidebar__item { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px; border-radius: 6px; font-size: 14px; color: #0F172A; cursor: pointer; transition: background-color 150ms; } .ds-sidebar__item:hover { background: #F1F5F9; } .ds-sidebar__item--active { background: #F1F5F9; font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.10); }"
     },
     {
-      "name": "Printed Slip",
+      "name": "Dialog",
       "kind": "custom",
-      "refersTo": "print-slip",
-      "description": "The one component that is not the board: 405px of paper with a 2px black frame, the club's Khmer name, a QR, and the date in the only colour on the sheet.",
-      "html": "<div class=\"ds-slip\"><div class=\"ds-slip__shop\">មិង ហួរ ក្លឹបហាត់ប្រាណ &amp; អាងហែលទឹក</div><div class=\"ds-slip__branch\">(សាខាចំការដូង)</div><div class=\"ds-slip__qr\"></div><div class=\"ds-slip__code\">TKT-8F3A2C</div><div class=\"ds-slip__date\">04/09/2026 09:12</div><div class=\"ds-slip__row\"><span>អ្នកលក់: Sokha</span><span>$3.00</span></div><hr class=\"ds-slip__rule\" /><div class=\"ds-slip__row\"><span>កន្សែង / កូនសោ:</span><span>________</span></div><div class=\"ds-slip__thanks\">សូមអរគុណ!</div></div>",
-      "css": ".ds-slip { width: 405px; padding: 1rem; border: 2px solid #000000; background: #FFFFFF; color: #000000; font-family: Roboto, Nokora, sans-serif; font-size: 0.875rem; line-height: 1.5; text-align: center; }\n.ds-slip__shop { font-size: 1.125rem; font-weight: 900; line-height: 1.4; }\n.ds-slip__branch { margin-bottom: 0.5rem; }\n.ds-slip__qr { width: 150px; height: 150px; margin: 0.5rem auto; background: repeating-conic-gradient(#000 0 25%, #fff 0 50%) 0 0 / 20px 20px; }\n.ds-slip__code { font-weight: 700; letter-spacing: 0.08em; }\n.ds-slip__date { color: #DC2626; margin-bottom: 0.5rem; }\n.ds-slip__row { display: flex; justify-content: space-between; text-align: left; }\n.ds-slip__rule { height: 2px; border: none; background: #000000; margin: 0.5rem 0; }\n.ds-slip__thanks { margin-top: 0.5rem; font-weight: 700; }"
+      "refersTo": "card",
+      "description": "A white panel centred over a 50%-black scrim: 8px corners, the one overlay shadow, a hairline separating the header from the body, entering on a 200ms fade-and-rise.",
+      "html": "<div class=\"ds-dialog-stage\"><div class=\"ds-dialog-scrim\"></div><div class=\"ds-dialog\"><div class=\"ds-dialog__head\"><h2>Approve transfer</h2><button class=\"ds-dialog__close\" aria-label=\"Close\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button></div><div class=\"ds-dialog__body\">Move this membership to the new member's account.</div></div></div>",
+      "css": ".ds-dialog-stage { position: relative; display: flex; align-items: center; justify-content: center; width: 380px; height: 220px; overflow: hidden; border-radius: 8px; background: #F5F6F8; } .ds-dialog-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); } .ds-dialog { position: relative; width: 320px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12); font-family: Roboto, Nokora, sans-serif; animation: ds-dialog-rise 200ms ease-out; } @keyframes ds-dialog-rise { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } } .ds-dialog__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 0 24px 12px; margin: 16px 24px 0; border-bottom: 1px solid #E2E8F0; } .ds-dialog__head h2 { margin: 0 0 12px; font-size: 18px; font-weight: 600; line-height: 1.375; color: #0F172A; } .ds-dialog__close { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-top: -4px; background: none; border: none; color: #515E70; cursor: pointer; } .ds-dialog__close:hover { color: #0F172A; } .ds-dialog__body { padding: 16px 24px 24px; font-size: 14px; color: #515E70; }"
     }
   ],
   "narrative": {
-    "northStar": "The Gym Whiteboard",
-    "overview": "The counter runs on the board behind the desk. Prices are written up in marker, grouped in columns by facility; today's sales are written down underneath as they happen; and every record that is waiting on someone carries a magnet. The interface is that board made electronic — a white field with a faint printed grid, marker-hued headings, thick marker rules between sections, and one amber marker reserved for the action that takes money.\n\nThe colour system is the board's own logic. Four marker hues name the four things the club sells access to — blue for swimming, green for the gym, orange for the steam room, purple for a combination — and they appear as a stripe across the top of a price tile, as a dot beside a name, and nowhere else. Five magnets name the state of a record: done, pending, rejected, informational, and off. Those two systems, plus amber for a commitment, are the entire saturated palette; everything else is ink on board with one hairline.\n\nThe scale is a counter's, not a showroom's. The reference screen is a 1366×768 laptop with a queue at the desk, so controls are 36px, the content pane pads at 12px, and tables run at a compact ledger density tuned line by line for Khmer. Secondary text is deliberately darker than a stock theme would set it, and the caption step carries extra line height, because Khmer stacks subscript consonants that crowd the line beneath. Both faces are bundled with the app; the counter never waits on a network to render a price.",
+    "northStar": "The Clean Counter, Shared",
+    "overview": "CKD Ticket is not its own visual world. It is the second application built to the same convention as CKD POS, sharing that system's floor (`#F5F6F8`), its cool white surfaces, its one hairline, its amber family mark, and its four semantic marks — the same numbers, defined in the same variable names, in both codebases. Where the till sells food across a counter, this app sells entry, memberships and coupons across a different counter for the same club; the owner asked, twice, that they read as one company's software rather than two designers' opinions, and the token layer is the mechanism that makes that literal rather than aspirational. A future agent extending either app inherits this system by default; a deliberate divergence is a decision to record here, not a shortcut to take silently.\n\nThis is the app's second visual identity. Its first attempt — a \"Gym Whiteboard\" of chalk-board surfaces, marker-weight type and four hue-coded magnets — was built, reviewed, and rejected outright; every trace of it (the board grid, the magnet vocabulary, `components/board/`) has been deleted from the codebase, and none of it is recorded below. What replaced it is conventional admin software played straight: a page header, a filter row, cards, a table. The craft is in the execution, not the invention — legible Khmer at counter distance, one committing action per screen, and a data table dense enough to hold a full day's sales above the fold on a 1366×768 laptop.\n\nTwo adjustments separate this build from its sibling, and both are Khmer-legibility commitments rather than taste: `--ink-soft` sits at 38% lightness here, darker than POS's 46.9% annotation, because Khmer's thinner strokes and stacked diacritics need the extra contrast to hold 4.5:1 at caption size; and the compact table's line height is 1.6 rather than a Latin-tuned 1.4, so a stacked Khmer consonant cluster doesn't crowd the row beneath it. Both are noted at their point of use below, not treated as a second design language.",
     "keyCharacteristics": [
-      "A white board with a printed 24px grid, ruled off in 2px marker between sections.",
-      "Four marker hues for facilities, five magnets for record state, one amber for the commitment.",
-      "Marker weight is real weight: headings and prices are set at 900.",
-      "Compact by design — 36px controls, 12px page padding, a ledger table density.",
-      "Khmer-tuned contrast and line height, on screen and on the printed slip.",
-      "Light-only, laptop-first, with the printed slip as its own paper world."
+      "Shares `--floor`, the amber pair and the four semantic marks with CKD POS byte-for-byte — one design system, two codebases",
+      "Paper-white surfaces on the same cool grey floor, separated by a single 1px hairline",
+      "One accent (amber `rgb(217 123 42)`) confined to the committing action, lettered in ink because white fails contrast on this ground",
+      "Facilities demoted from a colour system to a quiet 8px dot beside a name; the price itself is always ink",
+      "Four semantic marks — paid, pending, void, notice — one chip, one set of tones, matching POS's",
+      "Roboto + Nokora, bundled locally; every comparable figure is tabular with a slashed zero",
+      "`--ink-soft` held at 38% lightness and the caption line height at 1.6, both tuned for Khmer where POS's Latin-tuned values would fall short",
+      "36px controls, a 48px header, compact ledger tables — one density step down from POS's touch-first 40px/56px, because this is a seated laptop counter, not a standing tablet"
     ],
     "rules": [
       {
-        "name": "The Facility Rule",
-        "body": "Blue, green, orange and purple mean swimming, gym, steam and combination — on a tile, a price row, a chip, a report column. They are never chosen per page for variety, and they are defined exactly once, in `frontend/src/lib/facility.ts`. A page that declares its own facility palette is a defect; there were three such copies before this system existed.",
+        "name": "The Amber Confinement Rule",
+        "body": "Amber marks one thing: the committing action, or a selected option standing in for one (the busy price card, mid-sale). It carries ink lettering, not white — white measures 3.1:1 on this amber and fails the contrast floor; ink measures 5.8:1. Disabled amber is never a faded amber; it is the wash ground with soft-ink text, because a faded accent under a pale label is unreadable exactly when the seller is deciding whether they can take the money. Audit test: point at any amber pixel and name the sale or approval it commits; if you can't, it's wrong.",
         "section": "colors"
       },
       {
-        "name": "The Two Systems Rule",
-        "body": "A marker hue says what something *is*; a magnet says what state it is *in*. They never swap jobs. A record's status is never coloured with a facility hue, and a facility is never represented by a magnet colour.",
+        "name": "The Quiet Facility Rule",
+        "body": "A facility is a name with an 8px dot beside it, drawn from `lib/facility.ts`, and nothing more. It does not stripe a card, ground a tile, or colour a price — a swim ticket's price is ink, exactly like a gym ticket's, because gym's green and steam's orange do not clear 4.5:1 against white and a system that let facility colour carry the figure would be quietly inaccessible on its two most common products. The dot exists so a queue of prices reads left-to-right by colour before anyone reads the label; it stops there.",
         "section": "colors"
       },
       {
-        "name": "The Ink Text Rule",
-        "body": "Gym green and steam orange do not clear 4.5:1 on white, so no sentence, label or table cell is ever set in a marker hue. Marker colour lives in dots, stripes and the large price figure; the words stay ink.",
+        "name": "The Ink-Soft-at-38 Rule",
+        "body": "`--ink-soft` is fixed at 38% lightness in this app, not the 46.9% CKD POS uses for the equivalent role. Khmer's thinner strokes and stacked diacritics read this system's secondary text at caption size constantly — a page header's date line, a table's row-number column, a chip's muted tone — and POS's lighter value would land at 4.6:1 where this one holds 6.58:1. This is the one deliberate divergence in the shared neutral ramp, made once in `index.css` rather than overridden per component.",
         "section": "colors"
       },
       {
-        "name": "The One Amber Rule",
-        "body": "Amber marks the committing action and nothing else — never a heading, a border for emphasis, a chip, or an answer to \"this looks plain\". It is also the only place in the product where a colour carries ink lettering rather than white, and that is deliberate: the contrast floor decides the lettering, not the convention.",
-        "section": "colors"
-      },
-      {
-        "name": "The Legible Khmer Rule",
-        "body": "Soft ink stays at 38% lightness. Lightening it back toward a stock theme's default for Latin taste breaks Khmer at caption size.",
-        "section": "colors"
-      },
-      {
-        "name": "The Caption Floor Rule",
-        "body": "`text-caption` at 0.75rem is the smallest type on screen. Arbitrary `text-[Npx]` sizes are drift; the printed slips are the sole exception, because they are paper calibrated to a thermal raster rather than to this ramp.",
+        "name": "The Figure Rule",
+        "body": "Any number a person compares to another number — a price, a count, a time, a page number — carries the `.figure` utility: `font-variant-numeric: tabular-nums slashed-zero` plus the matching `font-feature-settings`. CKD POS routes the same category of number through JetBrains Mono; this app deliberately does not. A generic monospace gives a decimal point a full character cell, so `$1.50` renders as `$1 . 50` at display size — tried and rejected here. Roboto's own tabular figures with a slashed zero give the column alignment the treatment exists for, without a third bundled face and its network-free-fonts cost.",
         "section": "typography"
       },
       {
-        "name": "The Marker Weight Rule",
-        "body": "Weight 900 belongs to headings and to the price on a tile. It is the system's way of writing in marker, and spending it anywhere else makes the board shout.",
+        "name": "The Caption-at-1.6 Rule",
+        "body": "The `caption` type step sets its line height at 1.6, not a Latin-tuned 1.4. Khmer stacks a subscript consonant (coeng) and below-vowels beneath the baseline; at 1.4 those marks crowd the descenders of the line below. The system's compact table cells go further still, to a hand-tuned 19px, for the same reason.",
         "section": "typography"
       },
       {
-        "name": "The Tabular Figures Rule",
-        "body": "Money, counts, dates in a column and ticket codes are set with tabular numerals, and money is formatted through one helper (`frontend/src/lib/money.ts`) rather than per page.",
+        "name": "The Khmer-First Header Rule",
+        "body": "`PageHeader` renders a page's title in Khmer first, with the English name following after \"·\" in soft ink only when the two strings actually differ. The counter reads Khmer; the owner reads either; nothing here defaults to English and demotes Khmer to a subtitle.",
         "section": "typography"
       },
       {
-        "name": "The Bundled Face Rule",
-        "body": "Both faces ship with the application. A new face must be added to `@fontsource` and bundled, never referenced from a CDN, and must prove it sits with Nokora in a compact table row and on the printed slip.",
-        "section": "typography"
-      },
-      {
-        "name": "The Laptop Rule",
-        "body": "Design at 1366×768. A component that only works at 1920 is wrong here.",
-        "section": "layout"
-      },
-      {
-        "name": "The Board Header Rule",
-        "body": "Every surface opens with the same header block and closes it with a 2px ink rule. It is a masthead, not an eyebrow: the club name and the date share a baseline, and the page title sits on the row below.",
-        "section": "layout"
-      },
-      {
-        "name": "The Register Above The Fold Rule",
-        "body": "On the sale surface, today's board must begin within the first viewport at the reference size. Tile columns give up height for it.",
-        "section": "layout"
-      },
-      {
-        "name": "The Two Densities Rule",
-        "body": "A table is comfortable or compact, chosen once in the density module, never adjusted per cell.",
-        "section": "layout"
-      },
-      {
-        "name": "The Flat Board Rule",
-        "body": "If it is a surface, it has no shadow — cards and tables take `border border-rule`. If it is an object on the board, it may. The magnet is the only object.",
+        "name": "The Flat-At-Rest Rule",
+        "body": "Shadow means \"this is floating above the page and the page beneath it is inert.\" Nothing at rest carries one; the dialog is the only surface that does.",
         "section": "elevation"
       },
       {
-        "name": "The Marker Stroke Rule",
-        "body": "A thick line is a marker stroke and means a section boundary or a product's identity. Nothing else gets one; there is no accent border on a card.",
-        "section": "shapes"
-      },
-      {
-        "name": "The Radius Ladder Rule",
-        "body": "Controls 6px, tables and dialogs 8px, tiles and cards 12px, magnets and chips full. A container never rounds tighter than the control inside it.",
-        "section": "shapes"
-      },
-      {
-        "name": "The Confirming Motion Rule",
-        "body": "No entrance animation on a table row or a price tile, no attention-seeking loop, no bouncy easing. This is an eight-hour tool with a queue in front of it.",
+        "name": "The One Chip Rule",
+        "body": "Record state renders through `Chip` with one of the four tones, or through `StateDot` when a label would repeat itself. No screen hand-rolls a badge with its own padding, radius or colour pair.",
         "section": "components"
       },
       {
-        "name": "The Declared Keyframe Rule",
-        "body": "An animation class must have a keyframe behind it. Several classes in this codebase once animated nothing at all; a class without a declared keyframe is a defect, and keyframes live in `tailwind.config.cjs` or `index.css`, never inside a page.",
+        "name": "The One Table Rule",
+        "body": "Every list of records — sales, prices, requests, reports — renders through `DataTable`. A page does not lay out its own `<table>` with its own header styling.",
+        "section": "components"
+      },
+      {
+        "name": "The One Access Table Rule",
+        "body": "`lib/access.ts` is the only place a role's reach is decided. The sidebar's visible menu, the dashboard's quick actions and report links, and any future admin-only control all call `visibleMenu` or `canReachPath` against the same `MENU` table, so the menu and the rest of the app cannot disagree about what a role may do. An unresolved role (missing, blank, a retired name like \"Kiosk\") resolves to `null` and reaches nothing, rather than guessing.",
+        "section": "components"
+      },
+      {
+        "name": "The Paper Slip Rule",
+        "body": "The printed slip (`components/ComponentToPrint/`) is paper, not screen: it sets its own explicit `Roboto, Nokora` font stack, and its layout is drawn in literal black-on-white — `text-black`, `border-black`, `bg-black` — rather than through `ink`, `rule`, `paper` or any other screen token. A thermal printer needs true black rules that won't fade and a fixed font declaration independent of whatever the screen's token layer does next; the slip is deliberately not wired to this system so that a future token change here can never silently soften a receipt.",
         "section": "components"
       }
     ],
     "dos": [
-      "take facility colour from `lib/facility.ts` and nowhere else, and let a combination tile show its stripes side by side.",
-      "say what state a record is in with a magnet, and what a product is with a marker hue.",
-      "keep controls at 36px and page padding at 12px; this is a laptop tool.",
-      "put ink lettering on amber, and reserve amber for the one committing action on a surface.",
-      "set a product name, a label and a table cell in ink, whatever colour its facility is.",
-      "open every surface with the board header and close the block with a 2px ink rule.",
-      "keep today's board inside the first viewport on the sale surface, even at the cost of visible tiles.",
-      "name a panel's scope when the figures beside it and the rows beneath it come from different queries.",
-      "set money through the shared formatter and every compared figure in tabular numerals.",
-      "keep soft ink at 38% and the caption step at 1.6 line height, and check a Khmer header before calling a table done.",
-      "keep the printed slip black on white with square corners and 2px rules."
+      "Do treat CKD POS's token names as the shared contract — `--floor`, `--amber`, `--paid`/`--pending`/`--void`/`--notice` and their tint/deep steps carry the same numbers in both apps. Extend the pair together when a value must change.",
+      "Do confine amber to the one committing action on a screen, lettered in ink.",
+      "Do put a facility's identity through `lib/facility.ts` — a dot and a name — and keep prices in ink regardless of facility.",
+      "Do route every state through `Chip`/`StateDot` and every record list through `DataTable`.",
+      "Do mark every comparable number with `.figure`.",
+      "Do keep `--ink-soft` at 38% and the caption line height at 1.6 in this app; they are Khmer-legibility floors, not stylistic choices to relax.",
+      "Do read and write role access exclusively through `lib/access.ts`."
     ],
     "donts": [
-      "declare a facility palette inside a page.",
-      "set text in gym green or steam orange; they do not clear 4.5:1 on white.",
-      "put white lettering on amber.",
-      "use amber for a heading, a chip, a border or a background.",
-      "use the black weight anywhere but a heading and a tile price.",
-      "add a shadow to a card or a table shell. The magnet and the sticky navbar are the only things that lift.",
-      "put a thick or coloured border on a card; the 2px section rule and the 3px tile stripe are the only heavy lines.",
-      "use an arbitrary `text-[Npx]` size on screen; the printed slip is the only exception.",
-      "ship an animation class with no keyframe behind it, or declare a keyframe inside a page.",
-      "let a table wrap or shrink its figures on narrow screens; drop columns by priority or stack the row.",
-      "design for dark mode. The board is light-only and the stray `.dark` rule that once contradicted the tokens has been removed.",
-      "add a fifth icon library. Lucide is the direction of travel; a file being touched moves toward it."
+      "Don't stripe a card, a column, or a price with a facility colour. The dot names it; the ink prices it.",
+      "Don't put a white or chalk label on the amber ground — the label is ink, and disabled amber is wash-on-soft-ink, never a fade.",
+      "Don't invent a fifth state colour, or route a comparable number through anything but `.figure`.",
+      "Don't wire the printed slip to screen tokens; it stays literal black-on-white with its own explicit font stack.",
+      "Don't put a shadow on anything at rest — only the dialog floats.",
+      "Don't reintroduce a board, a magnet, a marker weight, or any other trace of the app's first (\"Gym Whiteboard\") identity; it was reviewed and rejected, and nothing about it is a fallback.",
+      "Don't diverge from CKD POS's shared tokens without recording why here and in POS's own DESIGN.md — the two are meant to read as one company's software, and a silent drift defeats the point of sharing the layer at all."
     ]
   }
 }

@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
+import { Receipt, Users } from "lucide-react";
 
-import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import { DateInput } from "@/components/ui/DateInput";
-import { Label } from "@/components/ui/Label";
+import { Label } from "@/components/ui/label";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/types/datatable";
-import { BoardHeader } from "@/components/board/BoardHeader";
-import { BoardSection } from "@/components/board/BoardSection";
-import { formatMoney } from "@/lib/money";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FigureStrip } from "@/components/ui/FigureStrip";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
+import { formatCount, formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const GET_TICKETPAYMENT = gql`
@@ -103,11 +105,34 @@ type DetailRow = {
   promotion: string;
 };
 
+// Money and counts are right-aligned, tabular and never wrap: a column of
+// figures is read down its decimal point, not across a wrapped line.
 const incomeColumns: ColumnDef<IncomeRow>[] = [
   { key: "item", header: "ទំនិញ", sortable: true },
-  { key: "qty", header: "ចំនួន", sortable: true, align: "right" },
-  { key: "price", header: "តម្លៃ", sortable: true, align: "right", render: (row) => formatMoney(row.price) },
-  { key: "total", header: "សរុប", sortable: true, align: "right", render: (row) => <span className="font-semibold">{formatMoney(row.total)}</span> },
+  {
+    key: "qty",
+    header: "ចំនួន",
+    sortable: true,
+    align: "right",
+    className: "figure whitespace-nowrap",
+    render: (row) => formatCount(row.qty),
+  },
+  {
+    key: "price",
+    header: "តម្លៃ",
+    sortable: true,
+    align: "right",
+    className: "figure whitespace-nowrap",
+    render: (row) => formatMoney(row.price),
+  },
+  {
+    key: "total",
+    header: "សរុប",
+    sortable: true,
+    align: "right",
+    className: "figure whitespace-nowrap",
+    render: (row) => <span className="font-semibold">{formatMoney(row.total)}</span>,
+  },
 ];
 
 const memberDetailColumns: ColumnDef<DetailRow>[] = [
@@ -117,8 +142,11 @@ const memberDetailColumns: ColumnDef<DetailRow>[] = [
 
 type DetailKind = "member" | "coupon" | "training";
 
-/** A seller written on the board: outline at rest, ink when chosen. */
-function SellerChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+/**
+ * One option in a filter row: an ordinary outline control at rest, the amber
+ * mark with ink lettering when it is the chosen one.
+ */
+function FilterToggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -126,7 +154,7 @@ function SellerChip({ active, onClick, children }: { active: boolean; onClick: (
       aria-pressed={active}
       className={cn(
         "inline-flex h-9 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        active ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray"
+        active ? "border-ink bg-ink text-chalk" : "border-rule bg-card text-ink hover:bg-wash"
       )}
     >
       {children}
@@ -340,9 +368,16 @@ function IncomeReport() {
   const detailTitle =
     detail === "member" ? "សមាជិក" : detail === "coupon" ? "គូប៉ុន" : detail === "training" ? "ហ្វឹកហាត់" : "";
 
+  // The strip carries two figures and the scope they were counted over.
+  const totalQty = data.reduce((n, row) => n + Number(row.qty ?? 0), 0);
+  const activeSellerName =
+    activeSeller === 0
+      ? t("common.all")
+      : (seller as any[]).find((s) => parseInt(s.user_id) === activeSeller)?.display_name ?? "";
+
   return (
     <div className="space-y-6">
-      <BoardHeader
+      <PageHeader
         titleKey="reports.income"
         subtitle={`${selectedDateFrom} → ${selectedDateTo}`}
         actions={
@@ -369,86 +404,103 @@ function IncomeReport() {
         }
       />
 
-      {!loading ? (
-        <>
-          {/* Sellers */}
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="ជ្រើសរើសអ្នកលក់">
-            <span className="mr-1 text-caption text-ink-soft">អ្នកលក់</span>
-            <SellerChip active={activeSeller === 0} onClick={() => CombineData(0)}>
-              {t("common.all")}
-            </SellerChip>
-            {seller.map((s: any) => (
-              <SellerChip
-                key={s.user_id}
-                active={activeSeller === parseInt(s.user_id)}
-                onClick={() => CombineData(parseInt(s.user_id))}
-              >
-                {s.display_name}
-              </SellerChip>
-            ))}
-          </div>
-
-          {/* The ledger and its total */}
-          <BoardSection
-            title="ចំណូល"
-            aside={
-              <span className="inline-flex items-baseline gap-2">
-                <span className="text-caption text-ink-soft">{t("common.total")}</span>
-                <span className="text-heading font-black leading-none text-ink">{formatMoney(total)}</span>
-              </span>
-            }
+      {/* Sellers. The filter row stays put while the figures reload, so a slow
+          query never takes the controls off the page. */}
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="ជ្រើសរើសអ្នកលក់">
+        <span className="mr-1 text-caption text-ink-soft">អ្នកលក់</span>
+        <FilterToggle active={activeSeller === 0} onClick={() => CombineData(0)}>
+          {t("common.all")}
+        </FilterToggle>
+        {seller.map((s: any) => (
+          <FilterToggle
+            key={s.user_id}
+            active={activeSeller === parseInt(s.user_id)}
+            onClick={() => CombineData(parseInt(s.user_id))}
           >
-            <DataTable<IncomeRow>
-              data={data}
-              columns={incomeColumns}
-              currentPage={1}
-              pageSize={data.length || 1}
-              onPageChange={() => { /* un-paginated */ }}
-              onPageSizeChange={() => { /* un-paginated */ }}
-              searchable={false}
-              exportable={false}
-              printable={false}
-              densityToggle={false}
-              defaultDensity="compact"
+            {s.display_name}
+          </FilterToggle>
+        ))}
+      </div>
+
+      {/* The takings for the range: one ruled strip, never a grid of cards. */}
+      <FigureStrip
+        aria-label="ចំណូល"
+        loading={loading}
+        items={[
+          { label: t("common.total"), value: formatMoney(total), tone: "paid", meta: activeSellerName },
+          { label: "ចំនួន", value: formatCount(totalQty) },
+        ]}
+      />
+
+      {/* The ledger. DataTable draws skeleton rows in its own shape while the
+          four payment queries land, so nothing reflows when they do. */}
+      <Section title="ចំណូល">
+        <DataTable<IncomeRow>
+          data={data}
+          columns={incomeColumns}
+          loading={loading}
+          currentPage={1}
+          pageSize={data.length || 1}
+          onPageChange={() => { /* un-paginated */ }}
+          onPageSizeChange={() => { /* un-paginated */ }}
+          searchable={false}
+          exportable={false}
+          printable={false}
+          densityToggle={false}
+          defaultDensity="compact"
+          emptyState={
+            <EmptyState
+              icon={Receipt}
+              title={t("common.noData")}
+              description={`${selectedDateFrom} → ${selectedDateTo}`}
             />
-          </BoardSection>
+          }
+        />
+      </Section>
 
-          {/* Detail ledgers: who bought what in the range */}
-          <BoardSection
-            title="លម្អិត"
-            aside={
-              <div className="flex flex-wrap gap-2" role="group" aria-label="លម្អិត">
-                <SellerChip active={detail === "member"} onClick={() => showDetail("member")}>សមាជិក</SellerChip>
-                <SellerChip active={detail === "coupon"} onClick={() => showDetail("coupon")}>គូប៉ុន</SellerChip>
-                <SellerChip active={detail === "training"} onClick={() => showDetail("training")}>ហ្វឹកហាត់</SellerChip>
-              </div>
-            }
-          >
-            {detail ? (
-              <DataTable<DetailRow>
-                data={detailRows}
-                columns={memberDetailColumns}
-                currentPage={1}
-                pageSize={detailRows.length || 1}
-                onPageChange={() => { /* un-paginated */ }}
-                onPageSizeChange={() => { /* un-paginated */ }}
-                searchable={false}
-                exportable={false}
-                printable={false}
-                densityToggle={false}
-                defaultDensity="compact"
-                emptyMessage={`${detailTitle}: ${t("common.noData")}`}
+      {/* Detail ledgers: who bought what in the range */}
+      <Section
+        title="លម្អិត"
+        aside={
+          <div className="flex flex-wrap gap-2" role="group" aria-label="លម្អិត">
+            <FilterToggle active={detail === "member"} onClick={() => showDetail("member")}>សមាជិក</FilterToggle>
+            <FilterToggle active={detail === "coupon"} onClick={() => showDetail("coupon")}>គូប៉ុន</FilterToggle>
+            <FilterToggle active={detail === "training"} onClick={() => showDetail("training")}>ហ្វឹកហាត់</FilterToggle>
+          </div>
+        }
+      >
+        {detail ? (
+          <DataTable<DetailRow>
+            data={detailRows}
+            columns={memberDetailColumns}
+            currentPage={1}
+            pageSize={detailRows.length || 1}
+            onPageChange={() => { /* un-paginated */ }}
+            onPageSizeChange={() => { /* un-paginated */ }}
+            searchable={false}
+            exportable={false}
+            printable={false}
+            densityToggle={false}
+            defaultDensity="compact"
+            emptyMessage={`${detailTitle}: ${t("common.noData")}`}
+            emptyState={
+              <EmptyState
+                icon={Users}
+                title={detailTitle}
+                description={`${selectedDateFrom} → ${selectedDateTo}`}
               />
-            ) : (
-              <p className="rounded-lg border border-dashed border-rule bg-card px-4 py-6 text-center text-sm text-ink-soft">
-                ជ្រើសរើស សមាជិក / គូប៉ុន / ហ្វឹកហាត់ ដើម្បីមើលអ្នកទិញក្នុងចន្លោះថ្ងៃនេះ
-              </p>
-            )}
-          </BoardSection>
-        </>
-      ) : (
-        <LoadingPage message={t("common.loading")} />
-      )}
+            }
+          />
+        ) : (
+          <div className="rounded-lg border border-rule bg-card">
+            <EmptyState
+              icon={Users}
+              title="លម្អិត"
+              description="ជ្រើសរើស សមាជិក / គូប៉ុន / ហ្វឹកហាត់ ដើម្បីមើលអ្នកទិញក្នុងចន្លោះថ្ងៃនេះ"
+            />
+          </div>
+        )}
+      </Section>
     </div>
   );
 }

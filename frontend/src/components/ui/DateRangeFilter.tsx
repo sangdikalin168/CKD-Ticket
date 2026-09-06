@@ -280,7 +280,7 @@ export function DateRangeFilter({
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className={`flex w-full items-center gap-2 px-3 py-2 border border-input rounded-xl text-sm bg-card text-foreground hover:border-ring/60 hover:bg-accent/40 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${showLabel ? 'h-10' : 'h-14'}`}
+        className={`flex w-full items-center gap-2 px-3 py-2 border border-input rounded-md text-sm bg-card text-foreground hover:border-ring/60 hover:bg-accent/40 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${showLabel ? 'h-10' : 'h-14'}`}
       >
         <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
         <span className="flex-1 text-left truncate font-medium">{displayLabel}</span>
@@ -289,7 +289,7 @@ export function DateRangeFilter({
 
       {/* Dropdown panel */}
       {open && (
-        <div className={`absolute z-50 top-full mt-1.5 ${align === 'right' ? 'right-0' : 'left-0'} bg-popover border border-border rounded-xl shadow-xl flex overflow-hidden animate-in fade-in-0 zoom-in-95`}>
+        <div className={`absolute z-50 top-full mt-1.5 ${align === 'right' ? 'right-0' : 'left-0'} bg-popover border border-border rounded-lg shadow-overlay flex overflow-hidden animate-in fade-in-0 zoom-in-95`}>
 
           {/* Left: Quick presets */}
           <div className="flex flex-col gap-0.5 p-3 border-r border-border min-w-[130px]">
@@ -302,7 +302,7 @@ export function DateRangeFilter({
                 type="button"
                 onClick={() => applyPreset(opt.value)}
                 className={`text-left px-3 py-1.5 text-sm rounded-lg transition-colors ${preset === opt.value
-                  ? 'bg-primary text-primary-foreground font-medium'
+ ? 'bg-primary text-primary-foreground font-medium'
                   : 'text-foreground hover:bg-accent hover:text-accent-foreground'
                   }`}
               >

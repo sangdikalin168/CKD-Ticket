@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
 import { useMemberPaymentDetailLazyQuery } from "../../../../generated/graphql";
 import { useReactToPrint } from "react-to-print";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/money";
 
 type MemberPayment = {
@@ -33,42 +33,48 @@ export const MemberPayment = (props: any) => {
   const columns = [
     columnHelper.accessor((row) => row.payment_id, {
       id: "ID",
-      cell: (info) => <span className="text-ink-soft">{info.getValue()}</span>,
+      meta: { nowrap: true },
+      cell: (info) => <span className="figure text-ink-soft">{info.getValue()}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.payment_date, {
       id: "ថ្ងៃបង់ប្រាក់",
-      cell: (info) => datetime_format(info.getValue()),
+      meta: { nowrap: true },
+      cell: (info) => <span className="figure">{datetime_format(info.getValue())}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.promotion, {
       id: "Promotion",
       cell: (info) => info.getValue(),
-      header: (info) => <span>{info.column.id}</span>,
+      header: () => <span>ប្រូម៉ូសិន</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.price, {
       id: "តម្លៃ",
-      cell: (info) => <span className="font-medium">{formatMoney(info.getValue())}</span>,
+      meta: { align: "right", nowrap: true },
+      cell: (info) => <span className="figure font-medium">{formatMoney(info.getValue())}</span>,
       header: (info) => <span>{info.column.id}</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.old_end, {
       id: "Old",
-      cell: (info) => info.getValue(),
-      header: (info) => <span>{info.column.id}</span>,
+      meta: { nowrap: true, hideBelow: "md" },
+      cell: (info) => <span className="figure">{info.getValue()}</span>,
+      header: () => <span>សុពលភាពចាស់</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.new_end, {
       id: "New",
-      cell: (info) => info.getValue(),
-      header: (info) => <span>{info.column.id}</span>,
+      meta: { nowrap: true, hideBelow: "md" },
+      cell: (info) => <span className="figure">{info.getValue()}</span>,
+      header: () => <span>សុពលភាពថ្មី</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.payment_id, {
       id: "Action",
+      meta: { align: "right" },
       cell: (info) => (
         <Button
           type="button"
@@ -82,7 +88,7 @@ export const MemberPayment = (props: any) => {
           <Printer aria-hidden="true" />
         </Button>
       ),
-      header: () => <span>Action</span>,
+      header: () => <span>សកម្មភាព</span>,
       footer: (info) => info.column.id,
     }),
   ];

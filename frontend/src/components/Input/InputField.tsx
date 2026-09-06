@@ -1,11 +1,11 @@
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 const InputField = ({ value, type, label, readOnly, classNames, onChange }: any) => {
     return (
         <div className={cn("space-y-2", classNames)}>
-            <Label className="text-sm font-medium leading-6 text-gray-900">
+            <Label className="text-sm font-medium leading-6 text-ink">
                 {label}
             </Label>
             <Input

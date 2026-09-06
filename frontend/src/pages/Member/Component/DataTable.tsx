@@ -17,7 +17,7 @@ import {
 } from "@tanstack/react-table";
 import type { RowData } from "@tanstack/react-table";
 import { rankItem } from "@tanstack/match-sorter-utils";
-import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpDown, Inbox } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonRows } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+/**
+ * What a column may declare about its own presentation. Column priority and
+ * figure alignment live here rather than in every cell renderer, so a ledger
+ * column says "this is money" once and the table shell does the rest.
+ */
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Right-align the column — for a tabular figure. */
+    align?: "right";
+    /** Never wrap the cell: a figure that wraps stops being comparable. */
+    nowrap?: boolean;
+    /** Drop the column out of the way below this breakpoint. */
+    hideBelow?: "sm" | "md";
+  }
+}
 
 // ─── Fuzzy filter ─────────────────────────────────────────────────────────────
 
@@ -64,10 +83,29 @@ function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
 interface IChildProps {
   data: RowData[];
   columns: any;
+  /** Draw skeleton rows in the table's own shape instead of the body. */
+  loading?: boolean;
+  /** What this ledger is called when it is still empty. */
+  emptyTitle?: string;
+  /** One line teaching where the first row comes from. */
+  emptyHint?: string;
 }
 
-/** The member's ledgers: a compact tanstack table in the board's table shell. */
-export default function DataTable({ columns, data }: IChildProps) {
+/**
+ * The member's ledgers: a compact tanstack table in the system's table shell —
+ * a quiet wash header band, hairline rows and a wash hover.
+ *
+ * A column may carry `meta: { align: "right" }` to right-align a tabular
+ * figure, and `meta: { hideBelow: "sm" | "md" }` to drop out of the way on a
+ * narrow screen; both are read here so a caller never restyles a cell itself.
+ */
+export default function DataTable({
+  columns,
+  data,
+  loading = false,
+  emptyTitle = "គ្មានទិន្នន័យ",
+  emptyHint,
+}: IChildProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
@@ -92,6 +130,20 @@ export default function DataTable({ columns, data }: IChildProps) {
 
   useEffect(() => { table.setPageSize(20); }, [table]);
 
+  // Column priority and figure alignment, declared on the column rather than
+  // hand-written into every cell.
+  const colClass = (column: any) => {
+    const meta = column?.columnDef?.meta ?? {};
+    return cn(
+      meta.align === "right" && "text-right",
+      meta.nowrap && "whitespace-nowrap",
+      meta.hideBelow === "sm" && "hidden sm:table-cell",
+      meta.hideBelow === "md" && "hidden md:table-cell"
+    );
+  };
+
+  const visibleColumnCount = table.getVisibleFlatColumns().length || columns.length;
+
   return (
     <div className="overflow-hidden rounded-lg border border-rule bg-card">
       <div className="overflow-x-auto">
@@ -100,10 +152,14 @@ export default function DataTable({ columns, data }: IChildProps) {
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id} className="hover:bg-transparent">
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className={colClass(header.column)}>
                     {header.isPlaceholder ? null : (
                       <div
-                        className={`flex items-center ${header.column.getCanSort() ? "cursor-pointer select-none hover:text-ink" : ""}`}
+                        className={cn(
+                          "flex items-center",
+                          header.column.columnDef.meta?.align === "right" && "justify-end",
+                          header.column.getCanSort() && "cursor-pointer select-none hover:text-ink"
+                        )}
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -118,17 +174,23 @@ export default function DataTable({ columns, data }: IChildProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-ink-soft">
-                  គ្មានទិន្នន័យ
+            {loading ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={visibleColumnCount} className="p-0">
+                  <SkeletonRows rows={5} />
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={visibleColumnCount} className="p-0">
+                  <EmptyState icon={Inbox} title={emptyTitle} description={emptyHint} />
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className={colClass(cell.column)}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

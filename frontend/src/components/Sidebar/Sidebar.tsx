@@ -1,14 +1,23 @@
 /**
- * Primary navigation: the board's index.
+ * Primary navigation: the app's index.
  *
  * Mechanics are the shadcn sidebar primitives in ui/sidebar.tsx (offcanvas
  * panel on desktop, a Sheet on mobile, the `b` shortcut, collapsible groups
  * that auto-expand onto the active route) with the sign-out action in the
  * footer.
  *
- * Access is the coarse role string in localStorage ("Admin" / "Sale"), which
- * is what the previous sidebar used, so the same items stay visible to the
- * same people. Labels come from i18next (menu.* keys).
+ * Access — the MENU table and its role matching — lives in lib/access.ts and
+ * is shared with every other screen that needs to know what a role may
+ * reach (the dashboard's quick actions, admin-only tabs and buttons
+ * elsewhere). Labels come from i18next (menu.* keys); icons are looked up
+ * here by the item's key since MENU itself carries no JSX.
+ *
+ * A role that cannot be resolved to one of the known values (missing,
+ * blank, unrecognized) renders no menu items — the server's permissions
+ * are a whitelist, so guessing which items to show would either hide
+ * legitimate access or imply access the server will refuse. Instead the
+ * group shows an explicit "role not recognized" state with a sign-in-again
+ * control, so there is always a visible way forward.
  */
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,13 +29,13 @@ import {
   ClipboardList,
   LogOut,
   Printer,
+  ShieldAlert,
   Ticket,
   UserCog,
   Users,
 } from "lucide-react";
 import { useAuthContext } from "../../context/AuthContext";
 import JWTManager from "../../utils/jwt";
-import { cn } from "@/lib/utils";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -43,7 +52,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { gql, useMutation } from "@apollo/client";
+import { normalizeRole, visibleMenu, type SubMenuItem } from "@/lib/access";
 
 // Ends the session server-side: bumps the user's tokenVersion and clears the
 // refresh cookie, so AuthContext.checkAuth cannot silently log them back in.
@@ -55,100 +66,17 @@ const LOGOUT_MUTATION = gql`
   }
 `;
 
-type Role = "Admin" | "Sale";
-
-interface SubMenuItem {
-  nameKey: string;
-  path: string;
-}
-
-interface MenuItem {
-  /** Stable identifier for React keys and open-menu state. */
-  key: string;
-  nameKey: string;
-  path?: string;
-  icon: React.ReactNode;
-  access: Role[];
-  subItems?: SubMenuItem[];
-}
-
-const MENU: MenuItem[] = [
-  {
-    key: "ticket",
-    nameKey: "menu.sellTicket",
-    path: "/ticket",
-    access: ["Sale", "Admin"],
-    icon: <Ticket />,
-  },
-  {
-    key: "member",
-    nameKey: "menu.member",
-    path: "/member",
-    access: ["Sale", "Admin"],
-    icon: <Users />,
-  },
-  {
-    key: "price",
-    nameKey: "menu.priceTable",
-    access: ["Admin", "Sale"],
-    icon: <CircleDollarSign />,
-    subItems: [
-      { nameKey: "menu.memberPrice", path: "/member_price_table" },
-      { nameKey: "menu.couponPrice", path: "/coupon_price_table" },
-    ],
-  },
-  {
-    key: "request",
-    nameKey: "menu.request",
-    access: ["Admin", "Sale"],
-    icon: <ClipboardList />,
-    subItems: [
-      { nameKey: "menu.holdRequest", path: "/hold_request" },
-      { nameKey: "menu.transferRequest", path: "/transfer_request" },
-    ],
-  },
-  {
-    key: "report",
-    nameKey: "menu.report",
-    access: ["Admin"],
-    icon: <BarChart3 />,
-    subItems: [
-      { nameKey: "menu.incomeReport", path: "/income_report" },
-      { nameKey: "menu.customerReport", path: "/customer_report" },
-      { nameKey: "menu.customerTypeReport", path: "/customer_type_report" },
-    ],
-  },
-  {
-    key: "printer",
-    nameKey: "menu.printer",
-    path: "/printers",
-    access: ["Sale", "Admin"],
-    icon: <Printer />,
-  },
-  {
-    key: "user",
-    nameKey: "menu.user",
-    access: ["Admin"],
-    icon: <UserCog />,
-    subItems: [
-      { nameKey: "menu.userList", path: "/user" },
-      { nameKey: "menu.permissions", path: "/user_authorize" },
-    ],
-  },
-];
-
-/** The small magnet at the end of an index line; ink when the line is the current page. */
-function IndexDot({ active }: { active: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "ml-auto h-2 w-2 shrink-0 rounded-full transition-colors",
-        active ? "bg-ink" : "bg-rule"
-      )}
-    />
-  );
-}
+/** Icons are presentation, not access control, so they stay here keyed by
+ *  MENU's item key rather than living on the shared (JSX-free) access table. */
+const MENU_ICONS: Record<string, React.ReactNode> = {
+  ticket: <Ticket />,
+  member: <Users />,
+  price: <CircleDollarSign />,
+  request: <ClipboardList />,
+  report: <BarChart3 />,
+  printer: <Printer />,
+  user: <UserCog />,
+};
 
 export default function SideBar() {
   const { t } = useTranslation();
@@ -158,12 +86,12 @@ export default function SideBar() {
 
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
 
-  const role = localStorage.getItem("role") as Role | null;
+  const role = normalizeRole(localStorage.getItem("role"));
 
-  const visibleByRole = useMemo(
-    () => MENU.filter((item) => !!role && item.access.includes(role)),
-    [role]
-  );
+  // The access table lives in lib/access.ts and is shared with the dashboard
+  // and other screens — see that module's doc comment for why an unresolved
+  // role deliberately reaches nothing rather than guessing.
+  const visibleByRole = useMemo(() => visibleMenu(role), [role]);
 
   const handleNavigate = () => {
     if (isMobile) setOpenMobile(false);
@@ -196,84 +124,97 @@ export default function SideBar() {
 
   return (
     <SidebarRoot collapsible="offcanvas" id="primary-sidebar" aria-label="Primary navigation">
-      <SidebarHeader className="px-4 pb-0 pt-4">
+      <SidebarHeader className="h-12 justify-center border-b border-rule px-4 py-0">
         <Link
           to="/"
           onClick={handleNavigate}
           className="block rounded-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
         >
-          <span className="block text-caption font-black uppercase leading-tight tracking-[0.12em]">CKD · Ticket</span>
-          <span className="block truncate text-caption text-ink-soft">{t("board.club")}</span>
+          <span className="block text-base font-semibold leading-tight">CKD Ticket</span>
         </Link>
-        <div className="marker-rule mt-3" />
       </SidebarHeader>
 
       <SidebarContent className="pt-1">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-2 text-caption font-black uppercase tracking-[0.12em] text-ink">
+          <SidebarGroupLabel className="px-2 text-caption font-medium tracking-wider text-ink-soft">
             {t("menu.label")}
           </SidebarGroupLabel>
-          <SidebarMenu>
-            {visibleByRole.map((item) => {
-              const isActiveParent =
-                isActiveSubMenu(item.subItems) ||
-                (!!item.path && location.pathname === item.path);
-
-              if (item.subItems) {
-                const isExpanded = openSubMenu === item.key;
-                return (
-                  <Collapsible
-                    key={item.key}
-                    asChild
-                    open={isExpanded}
-                    onOpenChange={() =>
-                      setOpenSubMenu((prev) => (prev === item.key ? null : item.key))
-                    }
-                    className="group/collapsible"
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton isActive={isActiveParent} tooltip={t(item.nameKey)}>
-                          {item.icon}
-                          <span className="flex-1 truncate">{t(item.nameKey)}</span>
-                          <ChevronDown className="ml-auto size-4 text-ink-soft transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="overflow-hidden">
-                        <SidebarMenuSub>
-                          {item.subItems.map((subItem) => {
-                            const active = location.pathname === subItem.path;
-                            return (
-                              <SidebarMenuSubItem key={subItem.path}>
-                                <SidebarMenuSubButton asChild isActive={active}>
-                                  <Link to={subItem.path} onClick={handleNavigate}>
-                                    <span className="flex-1 truncate">{t(subItem.nameKey)}</span>
-                                    <IndexDot active={active} />
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            );
-                          })}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                );
+          {visibleByRole.length === 0 ? (
+            <EmptyState
+              icon={ShieldAlert}
+              title={t("menu.sessionIncomplete.title")}
+              description={t("menu.sessionIncomplete.description")}
+              action={
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-md border border-rule bg-card px-3 text-sm font-medium text-ink transition-colors hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {t("menu.sessionIncomplete.action")}
+                </button>
               }
+            />
+          ) : (
+            <SidebarMenu>
+              {visibleByRole.map((item) => {
+                const isActiveParent =
+                  isActiveSubMenu(item.subItems) ||
+                  (!!item.path && location.pathname === item.path);
 
-              return (
-                <SidebarMenuItem key={item.key}>
-                  <SidebarMenuButton asChild isActive={isActiveParent} tooltip={t(item.nameKey)}>
-                    <Link to={item.path!} onClick={handleNavigate}>
-                      {item.icon}
-                      <span className="flex-1 truncate">{t(item.nameKey)}</span>
-                      <IndexDot active={isActiveParent} />
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
+                if (item.subItems) {
+                  const isExpanded = openSubMenu === item.key;
+                  return (
+                    <Collapsible
+                      key={item.key}
+                      asChild
+                      open={isExpanded}
+                      onOpenChange={() =>
+                        setOpenSubMenu((prev) => (prev === item.key ? null : item.key))
+                      }
+                      className="group/collapsible"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton isActive={isActiveParent} tooltip={t(item.nameKey)}>
+                            {MENU_ICONS[item.key]}
+                            <span className="flex-1 truncate">{t(item.nameKey)}</span>
+                            <ChevronDown className="ml-auto size-4 text-ink-soft transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="overflow-hidden">
+                          <SidebarMenuSub>
+                            {item.subItems.map((subItem) => {
+                              const active = location.pathname === subItem.path;
+                              return (
+                                <SidebarMenuSubItem key={subItem.path}>
+                                  <SidebarMenuSubButton asChild isActive={active}>
+                                    <Link to={subItem.path} onClick={handleNavigate}>
+                                      <span className="flex-1 truncate">{t(subItem.nameKey)}</span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  );
+                }
+
+                return (
+                  <SidebarMenuItem key={item.key}>
+                    <SidebarMenuButton asChild isActive={isActiveParent} tooltip={t(item.nameKey)}>
+                      <Link to={item.path!} onClick={handleNavigate}>
+                        {MENU_ICONS[item.key]}
+                        <span className="flex-1 truncate">{t(item.nameKey)}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          )}
         </SidebarGroup>
       </SidebarContent>
 
@@ -283,7 +224,7 @@ export default function SideBar() {
             <SidebarMenuButton
               tooltip={t("common.logout")}
               onClick={handleLogout}
-              className="text-magnet-rejected hover:bg-magnet-rejected/10 hover:text-magnet-rejected active:bg-magnet-rejected/15 active:text-magnet-rejected"
+              className="text-void-deep hover:bg-void-tint hover:text-void-deep active:bg-void-tint active:text-void-deep"
             >
               <LogOut />
               <span>{t("common.logout")}</span>

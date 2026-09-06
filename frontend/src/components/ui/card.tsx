@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-/** A white card pinned flat on the board: 1px rule, 12px radius, no shadow at rest. */
+/** A resting surface: white on the floor, one hairline, 8px corner, no shadow. */
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-xl border border-rule bg-card text-card-foreground',
+      'rounded-lg border border-rule bg-card text-card-foreground',
       className
     )}
     {...props}
@@ -35,7 +35,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('text-title font-black leading-snug text-ink', className)}
+    className={cn('text-lg font-semibold leading-snug text-ink', className)}
     {...props}
   />
 ));

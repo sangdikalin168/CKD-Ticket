@@ -16,6 +16,7 @@ import AuthContextProvider from "./context/AuthContext.tsx";
 import JWTManager from "./utils/jwt.ts";
 import { toastify } from "./utils/toastify.tsx";
 import SideBarContextProvider from "./context/SideBarContext.tsx";
+import ErrorBoundary from "./components/ErrorBoundary.tsx";
 
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -56,14 +57,15 @@ const client = new ApolloClient({
 });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <SideBarContextProvider>
-    <ApolloProvider client={client}>
-      <AuthContextProvider>
-        <App />
-      </AuthContextProvider>
-    </ApolloProvider>
-  </SideBarContextProvider>
-
+  <ErrorBoundary>
+    <SideBarContextProvider>
+      <ApolloProvider client={client}>
+        <AuthContextProvider>
+          <App />
+        </AuthContextProvider>
+      </ApolloProvider>
+    </SideBarContextProvider>
+  </ErrorBoundary>
 );
 
 postMessage({ payload: "removeLoading" }, "*");

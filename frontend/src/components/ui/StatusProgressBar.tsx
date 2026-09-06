@@ -26,9 +26,9 @@ export function StatusProgressBar({
 }: StatusProgressBarProps) {
   const value = Math.min(100, Math.max(0, percent ?? PERCENT_BY_STATUS[status]));
   const fill =
-    status === 'done' ? 'bg-emerald-500'
-      : status === 'error' ? 'bg-rose-500'
-        : 'bg-primary';
+    status === 'done' ? 'bg-paid'
+      : status === 'error' ? 'bg-void'
+        : 'bg-ink';
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
@@ -52,7 +52,7 @@ export function StatusProgressBar({
         </div>
       </div>
       {showLabel && (
-        <span className="w-9 shrink-0 text-right text-caption tabular-nums text-muted-foreground">
+        <span className="w-9 shrink-0 text-right figure text-caption text-ink-soft">
           {Math.round(value)}%
         </span>
       )}

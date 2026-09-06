@@ -9,7 +9,7 @@ import { useCreateTrainningPaymentMutation, useGetTranningPriceQuery } from "../
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { CouponInvoice } from "../../../../components/ComponentToPrint/CouponInvoice";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -64,18 +64,21 @@ export const TrainingPaymentForm = ((props) => {
         }),
         columnHelperPriceTable.accessor((row) => row.month_qty, {
             id: "ចំនួនខែ",
-            cell: (info) => info.getValue(),
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => <span className="font-semibold">{formatMoney(info.getValue())}</span>,
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure font-semibold">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.id, {
             id: "Action",
+            meta: { align: "right" },
             cell: (info) => (
                 <Button
                     type="button"
@@ -116,11 +119,11 @@ export const TrainingPaymentForm = ((props) => {
                 </DialogHeader>
 
                 {!isShowConfirmModal ? (
-                    loading_price_table ? (
-                        <p className="text-sm text-ink-soft">Loading...</p>
-                    ) : (
-                        <DataTable columns={columns_price_table} data={data?.GetTranningPrice ?? []} />
-                    )
+                    <DataTable
+                        columns={columns_price_table}
+                        data={data?.GetTranningPrice ?? []}
+                        loading={loading_price_table}
+                    />
                 ) : (
                     <ConfirmModal
                         setIsShowConfirmModal={setIsShowConfirmModal}
@@ -212,7 +215,7 @@ const ConfirmModal = ((props) => {
             <button className="hidden" ref={buttonRef} type="button" onClick={handlePrint}>Print</button>
 
             {/* The slip as it will print, so the cashier checks it before committing. */}
-            <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+            <div className="overflow-x-auto rounded-lg border border-rule bg-wash p-3">
                 <p className="mb-2 text-caption text-ink-soft">វិក្កយបត្រ</p>
                 <CouponInvoice ref={componentRef}
                     invoice_id={payment_id}

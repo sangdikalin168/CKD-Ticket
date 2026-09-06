@@ -11,7 +11,7 @@ import {
 import { TypeOptions, toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { MemberInvoice } from "../../../../components/ComponentToPrint/MemberInvoice";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -73,19 +73,22 @@ export const FruitPayment = (props) => {
         }),
         columnHelperPriceTable.accessor((row) => row.month_qty, {
             id: "ចំនួនខែ",
-            cell: (info) => info.getValue(),
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure">{info.getValue()}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
 
         columnHelperPriceTable.accessor((row) => row.price, {
             id: "តម្លៃ",
-            cell: (info) => <span className="font-semibold">{formatMoney(info.getValue())}</span>,
+            meta: { align: "right", nowrap: true },
+            cell: (info) => <span className="figure font-semibold">{formatMoney(info.getValue())}</span>,
             header: (info) => <span>{info.column.id}</span>,
             footer: (info) => info.column.id,
         }),
         columnHelperPriceTable.accessor((row) => row.id, {
             id: "Action",
+            meta: { align: "right" },
             cell: (info) => (
                 <Button
                     type="button"
@@ -162,21 +165,18 @@ export const FruitPayment = (props) => {
                                     onClick={() => FilterPriceTableByMonth(m)}
                                     className={cn(
                                         "inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                        activeMonth === m ? "border-ink bg-ink text-white" : "border-rule bg-card text-ink hover:bg-tray"
+                                        activeMonth === m ? "border-ink bg-ink text-chalk" : "border-rule bg-card text-ink hover:bg-wash"
                                     )}
                                 >
                                     {m}ខែ
                                 </button>
                             ))}
                         </div>
-                        {!loading ? (
-                            <DataTable
-                                columns={columns_price_table}
-                                data={member_price_table}
-                            />
-                        ) : (
-                            <p className="text-sm text-ink-soft">Loading...</p>
-                        )}
+                        <DataTable
+                            columns={columns_price_table}
+                            data={member_price_table}
+                            loading={loading}
+                        />
                     </div>
                 ) : (
                     <ConfirmModal
@@ -311,16 +311,16 @@ const ConfirmModal = (props: any) => {
             <dl className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-rule p-3">
                     <dt className="text-caption text-ink-soft">សុពលភាពចាស់</dt>
-                    <dd className="text-title font-black text-ink">{props.old_end || "—"}</dd>
+                    <dd className="figure text-lg font-semibold text-ink">{props.old_end || "—"}</dd>
                 </div>
                 <div className="rounded-lg border border-rule p-3">
                     <dt className="text-caption text-ink-soft">ថ្ងៃបង់ប្រាក់បន្ទាប់</dt>
-                    <dd className="text-title font-black text-ink">{date_format(renewalDate)}</dd>
+                    <dd className="figure text-lg font-semibold text-ink">{date_format(renewalDate)}</dd>
                 </div>
             </dl>
 
             {/* The slip as it will print. */}
-            <div className="overflow-x-auto rounded-lg border border-rule bg-tray p-3">
+            <div className="overflow-x-auto rounded-lg border border-rule bg-wash p-3">
                 <p className="mb-2 text-caption text-ink-soft">វិក្កយបត្រ</p>
                 <MemberInvoice
                     ref={componentRef}
