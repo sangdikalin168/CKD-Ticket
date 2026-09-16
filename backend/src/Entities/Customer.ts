@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { Field, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
 import { CustomerStatus } from "./enums";
 
 /**
@@ -84,4 +84,10 @@ export class Customer extends BaseEntity {
     @Field(() => CustomerStatus)
     @Column({ type: "enum", enum: CustomerStatus, default: CustomerStatus.ACTIVE })
     status!: CustomerStatus;
+
+    // ─── Computed, not persisted ────────────────────────────────────────────
+    /** month_qty of this customer's LATEST MemberPayment. Populated by report
+     * resolvers (e.g. CustomerReport.ts) via a separate query; not a DB column. */
+    @Field(() => Int, { nullable: true })
+    month_qty?: number | null;
 }

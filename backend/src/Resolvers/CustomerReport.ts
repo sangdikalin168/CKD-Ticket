@@ -108,6 +108,38 @@ class CustomersByMembershipDurationReport {
 
 @Resolver()
 export class CustomerReportResolver {
+    // Attach each customer's LATEST MemberPayment.month_qty in ONE extra query.
+    // "Latest" reuses the same definition as customersByMembershipDuration:
+    // MAX(payment_id) per customer_id (tie-break not needed, payment_id is unique).
+    private async attachLatestMonthQty(customers: Customer[]): Promise<void> {
+        const ids = customers.map(c => c.customer_id);
+        if (ids.length === 0) return;
+
+        const rows: { customer_id: number; month_qty: number }[] = await MemberPayment
+            .createQueryBuilder("mp")
+            .select("mp.customer_id", "customer_id")
+            .addSelect("mp.month_qty", "month_qty")
+            .where("mp.customer_id IN (:...ids)", { ids })
+            .andWhere(qb => {
+                const sub = qb.subQuery()
+                    .select("MAX(s.payment_id)")
+                    .from(MemberPayment, "s")
+                    .where("s.customer_id = mp.customer_id")
+                    .getQuery();
+                return "mp.payment_id = " + sub;
+            })
+            .getRawMany();
+
+        const latestByCustomer = new Map<number, number>();
+        for (const row of rows) {
+            latestByCustomer.set(Number(row.customer_id), Number(row.month_qty));
+        }
+
+        for (const customer of customers) {
+            customer.month_qty = latestByCustomer.get(customer.customer_id) ?? null;
+        }
+    }
+
     @Query(() => ActiveCustomerReport)
     async activeCustomers(): Promise<ActiveCustomerReport> {
         try {
@@ -119,6 +151,8 @@ export class CustomerReportResolver {
                     end_membership_date: MoreThan(currentDate), // Ensure the membership is still active
                 },
             });
+
+            await this.attachLatestMonthQty(customers);
 
             // Count total active customers
             const total = await Customer.count({
@@ -151,6 +185,8 @@ export class CustomerReportResolver {
                 },
                 order: { end_membership_date: "ASC" },
             });
+
+            await this.attachLatestMonthQty(customers);
 
             // Count total customers expiring on the provided date
             const total = customers.length;
