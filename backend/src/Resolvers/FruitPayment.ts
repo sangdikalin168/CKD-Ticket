@@ -46,7 +46,7 @@ export class FruitPaymentResolver {
         // retry from creating duplicate fruit payments + duplicate dual-writes.
         const current_date = moment().format('YYYY-MM-DD');
         const isDuplicate = await FruitPayment.findBy({
-            payment_date: Between(new Date(current_date + ' 00:00:00'), new Date(current_date + ' 23:00:00')),
+            payment_date: Between(new Date(current_date + ' 00:00:00'), new Date(current_date + ' 23:59:59.999')),
             customer_id: customer_id,
         });
         if (isDuplicate.length > 0) {

@@ -156,8 +156,8 @@
     "permissions": "Permissions",
     "printer": "Printer",
     "sessionIncomplete": {
-      "title": "Role not recognized",
-      "description": "We can't tell what you're allowed to see. Sign in again to continue.",
+      "title": "No pages assigned",
+      "description": "Your account can't open any page yet. Ask an admin, or sign in again.",
       "action": "Sign in again"
     }
   },
@@ -489,5 +489,135 @@
   "price": {
     "sell": "Sell",
     "oneEntry": "1 entry"
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Staff accounts that can sign in to the counter.",
+    "addNew": "New user",
+    "searchPlaceholder": "Search name, username or phone",
+    "emptyTitle": "No users match",
+    "emptyHint": "Try a different name, username or phone.",
+    "columnName": "Name",
+    "columnUsername": "Username",
+    "columnPhone": "Phone",
+    "columnRole": "Role",
+    "columnActions": "Actions",
+    "you": "you",
+    "permissions": "Permissions",
+    "resetPassword": "Reset password",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "cannotDeactivateSelf": "You can't deactivate your own account",
+    "kioskManaged": "Gate kiosk — set up on the server",
+    "createTitle": "New user",
+    "editTitle": "Edit user",
+    "fieldName": "Name",
+    "fieldUsername": "Username",
+    "fieldPhone": "Phone",
+    "fieldRole": "Role",
+    "fieldPassword": "Password",
+    "fieldNewPassword": "New password",
+    "fieldConfirmPassword": "Confirm new password",
+    "passwordHint": "At least {{n}} characters. They can't change it themselves yet — reset it here.",
+    "passwordTooShort": "Password must be at least {{n}} characters",
+    "passwordMismatch": "The two passwords don't match",
+    "fillAll": "Name, username and phone are required",
+    "saveFailed": "Couldn't save. Try again.",
+    "created": "User created",
+    "updated": "User updated",
+    "resetTitle": "Reset password for {{name}}",
+    "resetHint": "They'll be signed out everywhere and must use the new password.",
+    "passwordReset": "Password reset",
+    "deactivateTitle": "Deactivate {{name}}?",
+    "deactivateHint": "They'll be signed out and can't sign in again until reactivated. Their past sales and requests stay.",
+    "activateTitle": "Activate {{name}}?",
+    "activateHint": "They'll be able to sign in again with their current password.",
+    "deactivated": "User deactivated",
+    "activated": "User activated",
+    "roles": {
+      "Admin": "Admin",
+      "Sale": "Sale",
+      "Checker": "Checker",
+      "kiosk": "Kiosk"
+    },
+    "roleHint": {
+      "Admin": "Everything, including reports, approvals and users.",
+      "Sale": "Selling, members, prices, printers; can raise hold and transfer requests.",
+      "Checker": "Reviews transfer requests only."
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "Each person starts with their role's access. Tick or untick to give one person more or less.",
+    "pickUser": "Choose a user",
+    "noUser": "No active staff accounts",
+    "roleLine": "Role: {{role}}",
+    "usingDefaults": "role defaults",
+    "customised": "customised",
+    "reset": "Reset to role",
+    "resetHint": "Go back to exactly what their role gives",
+    "saved": "Permissions saved",
+    "added": "added",
+    "removed": "removed",
+    "cannotRemoveOwn": "You can't remove this from yourself — ask another admin.",
+    "groups": {
+      "sales": "Counter",
+      "requests": "Requests",
+      "admin": "Administration"
+    },
+    "items": {
+      "ticket.sell": {
+        "label": "Sell tickets",
+        "description": "Open the ticket sale screen."
+      },
+      "ticket.price": {
+        "label": "Ticket price setup",
+        "description": "Change ticket prices and which places they open."
+      },
+      "member.manage": {
+        "label": "Members",
+        "description": "Register members, renew memberships, sell coupons and training."
+      },
+      "price.manage": {
+        "label": "Membership & coupon prices",
+        "description": "View and change the price tables."
+      },
+      "hold.request": {
+        "label": "Raise hold requests",
+        "description": "Ask to pause a membership, and apply approved holds."
+      },
+      "hold.decide": {
+        "label": "Approve hold requests",
+        "description": "Approve or reject other people's hold requests."
+      },
+      "transfer.request": {
+        "label": "Raise transfer requests",
+        "description": "Ask to move a membership, and carry out approved transfers."
+      },
+      "transfer.check": {
+        "label": "Check transfer requests",
+        "description": "First review of a transfer request."
+      },
+      "transfer.approve": {
+        "label": "Approve transfer requests",
+        "description": "Final approval of a checked transfer."
+      },
+      "report.view": {
+        "label": "Reports",
+        "description": "Income, customer and member-type reports."
+      },
+      "printer.manage": {
+        "label": "Printer",
+        "description": "Printer status and test prints."
+      },
+      "user.manage": {
+        "label": "Users & permissions",
+        "description": "Add users, reset passwords and change what people can do."
+      }
+    }
+  },
+  "access": {
+    "deniedTitle": "You don't have access to this page",
+    "deniedBody": "Ask an admin to give you access on the Permissions page."
   }
 }

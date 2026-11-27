@@ -25,6 +25,8 @@ router.get("/", async (req, res) => {
 
     if (
       !existingUser ||
+      // Deactivated accounts must not keep minting tokens for 30 days.
+      !existingUser.is_active ||
       existingUser.tokenVersion !== decodedUser.tokenVersion
     ) {
       return res.sendStatus(401);

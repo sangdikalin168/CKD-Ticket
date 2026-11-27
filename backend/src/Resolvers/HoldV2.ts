@@ -6,6 +6,7 @@ import { extendMembershipEntitlement } from "../Utils/access";
 import { checkAuth } from "../MiddleWare/checkAuth";
 import { Context } from "../Context/Context";
 import { emitChange } from "../Utils/changeFeed";
+import { NOT_PERMITTED, hasPermission } from "../Utils/permissionCatalog";
 
 /**
  * v2 hold workflow. Every rule the v1 resolver left to the browser is
@@ -73,10 +74,9 @@ const asISODate = (v: unknown): string | undefined => {
 const isDuplicateActive = (e: unknown) =>
     e instanceof Error && /uq_one_active|ER_DUP_ENTRY|Duplicate entry/i.test(e.message);
 
-async function requireAdmin(user_id: number): Promise<boolean> {
-    const u = await Users.findOne({ where: { user_id } });
-    return !!u && u.is_active === 1 && u.role === "Admin";
-}
+// Workflow permissions (Utils/permissionCatalog.ts): deciding needs
+// "hold.decide" (Admin by default); requesting and processing need
+// "hold.request" (Sale and Admin by default).
 
 @Resolver()
 export class HoldV2Resolver {
@@ -123,6 +123,7 @@ export class HoldV2Resolver {
         @Arg("to_date") to_date: string,
         @Ctx() { user }: Context
     ): Promise<HoldV2Response> {
+        if (!(await hasPermission(user.user_id, "hold.request"))) return fail(NOT_PERMITTED);
         if (!reason.trim()) return fail("មូលហេតុត្រូវតែបំពេញ"); // reason required
         if (from_date > to_date) return fail("ថ្ងៃចាប់ផ្ដើមត្រូវមុនថ្ងៃបញ្ចប់"); // from must precede to
 
@@ -150,7 +151,7 @@ export class HoldV2Resolver {
         @Arg("note", { nullable: true }) note: string,
         @Ctx() { user }: Context
     ): Promise<HoldV2Response> {
-        if (!(await requireAdmin(user.user_id))) return fail("អ្នកមិនមានសិទ្ធិទេ"); // not permitted
+        if (!(await hasPermission(user.user_id, "hold.decide"))) return fail(NOT_PERMITTED);
 
         // CAS from PENDING; the WHERE also refuses self-decision so the
         // answer is a clean message instead of a CHECK-violation error.
@@ -181,6 +182,7 @@ export class HoldV2Resolver {
         @Arg("fee", { nullable: true }) fee: number,
         @Ctx() { user }: Context
     ): Promise<HoldV2Response> {
+        if (!(await hasPermission(user.user_id, "hold.request"))) return fail(NOT_PERMITTED);
         const runner = MysqlDataSource.createQueryRunner();
         await runner.connect();
         await runner.startTransaction();

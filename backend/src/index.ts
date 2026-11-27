@@ -53,9 +53,12 @@ export const MysqlDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   logging: false,
-  // Auto-sync schema in dev only. In production a stray entity change must never
-  // auto-alter the live DB — use migrations (and ensure prod schema exists first).
-  synchronize: !isProd,
+  // Never in production: a stray entity change must never auto-alter the live
+  // DB — use migrations. In development it is opt-in (DB_SYNCHRONIZE=true):
+  // run against a restored production dump, auto-sync tries to rewrite the
+  // migration-managed schema (it fails on transfer_request's FK indexes) and
+  // leaves half-applied DDL behind, since MariaDB auto-commits DDL.
+  synchronize: !isProd && process.env.DB_SYNCHRONIZE === "true",
   entities: [...entities],
   // __dirname-relative, matching either extension: production runs this
   // codebase from src/ via ts-node with no dist/, so the old cwd-relative

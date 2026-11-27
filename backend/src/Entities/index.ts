@@ -5,6 +5,7 @@
 
 // Core + workflow
 import { Users } from "./Users";
+import { UserPermission } from "./UserPermission";
 import { Customer } from "./Customer";
 import { Hold } from "./Hold";
 import { HoldRequest } from "./HoldRequest";
@@ -39,7 +40,7 @@ import { PrintJob } from "./PrintJob";
 import "./enums";
 
 export const entities = [
-  Users,
+  Users, UserPermission,
   Customer,
   // workflow
   Hold, HoldRequest, Transfer, TransferRequest,

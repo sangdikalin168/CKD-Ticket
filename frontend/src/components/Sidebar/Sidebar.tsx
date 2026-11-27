@@ -54,7 +54,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { gql, useMutation } from "@apollo/client";
-import { normalizeRole, visibleMenu, type SubMenuItem } from "@/lib/access";
+import { usePermissions, visibleMenu, type SubMenuItem } from "@/lib/access";
 
 // Ends the session server-side: bumps the user's tokenVersion and clears the
 // refresh cookie, so AuthContext.checkAuth cannot silently log them back in.
@@ -86,12 +86,10 @@ export default function SideBar() {
 
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
 
-  const role = normalizeRole(localStorage.getItem("role"));
-
-  // The access table lives in lib/access.ts and is shared with the dashboard
-  // and other screens — see that module's doc comment for why an unresolved
-  // role deliberately reaches nothing rather than guessing.
-  const visibleByRole = useMemo(() => visibleMenu(role), [role]);
+  // The signed-in user's permissions (lib/access.ts) decide the menu; a user
+  // with none (an unrecognized or kiosk account) gets the empty state below.
+  const permissions = usePermissions();
+  const visibleByRole = useMemo(() => visibleMenu(permissions), [permissions]);
 
   const handleNavigate = () => {
     if (isMobile) setOpenMobile(false);

@@ -26,6 +26,10 @@ const TODAY_FIGURES = gql`
       price
       qty
     }
+    GetFruitPayments(dateFrom: $dateFrom, dateTo: $dateTo, userId: $userId) {
+      price
+      qty
+    }
   }
 `;
 
@@ -63,7 +67,8 @@ export function useTodayFigures(): TodayFigures {
     sum(ticketRows) +
     sum(data?.GetMemberPayments) +
     sum(data?.GetCouponPayments) +
-    sum(data?.GetTrainningPayments);
+    sum(data?.GetTrainningPayments) +
+    sum(data?.GetFruitPayments);
 
   return {
     ticketsToday,

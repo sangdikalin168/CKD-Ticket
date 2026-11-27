@@ -18,7 +18,7 @@ import { Section } from "@/components/ui/Section";
 import { FacilityDot, FacilityMarks } from "@/components/ui/FacilityMark";
 import { FACILITIES, FACILITY_ORDER, facilityGroup, type FacilityRef } from "@/lib/facility";
 import { formatMoney, formatTime, todayIso } from "@/lib/money";
-import { currentRole } from "@/lib/access";
+import { can, usePermissions } from "@/lib/access";
 import TicketPriceConfigPage from "../TicketConfig/TicketPriceConfig";
 
 /** The desktop shell's print bridge; absent in a plain browser. */
@@ -379,14 +379,17 @@ function TicketSale() {
   );
 }
 
-// ─── Page: Sale + Config tabs (Config is Admin-only) ─────────────────────────
+// ─── Page: Sale + Config tabs (Config needs "ticket.price") ──────────────────
 
 export default function Ticket() {
   const { t } = useTranslation();
-  const isAdmin = currentRole() === "Admin";
+  const permissions = usePermissions();
+  const canSell = can(permissions, "ticket.sell");
+  const canPrice = can(permissions, "ticket.price");
 
-  // Non-admins (Sale role) only ever see the sale screen — no tabs.
-  if (!isAdmin) return <TicketSale />;
+  // One of the two alone shows just that screen — no tabs.
+  if (!canPrice) return <TicketSale />;
+  if (!canSell) return <TicketPriceConfigPage />;
 
   return (
     <Tabs defaultValue="sale" className="space-y-4">

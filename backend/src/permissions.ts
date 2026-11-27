@@ -4,6 +4,7 @@ import { Context } from "./Context/Context";
 import { UserAuthPayload } from "./Context/UserAuthPayload";
 
 import { KIOSK_ROLE } from "./Utils/roles";
+import { Permission, effectivePermissions } from "./Utils/permissionCatalog";
 
 export { KIOSK_ROLE };
 
@@ -37,6 +38,87 @@ const isStaff = rule({ cache: "contextual" })(
   }
 );
 
+/** Effective permissions for this request's caller, loaded once per request
+ *  (several rules may ask) and read fresh from the database, so a change made
+ *  on the Permissions page applies on the user's next request. */
+const PERMS_KEY = Symbol("effectivePermissions");
+function callerPermissions(ctx: Context): Promise<Permission[]> {
+  const bag = ctx as unknown as Record<symbol, Promise<Permission[]>>;
+  if (!bag[PERMS_KEY]) {
+    const user = decodeToken(ctx);
+    bag[PERMS_KEY] = user ? effectivePermissions(user.user_id) : Promise.resolve([]);
+  }
+  return bag[PERMS_KEY];
+}
+
+/** Staff login that holds `permission` (see Utils/permissionCatalog.ts).
+ *  One rule instance per permission: graphql-shield refuses two different
+ *  rules sharing a name. */
+const canRules = new Map<Permission, ReturnType<typeof makeCan>>();
+function can(permission: Permission) {
+  let r = canRules.get(permission);
+  if (!r) {
+    r = makeCan(permission);
+    canRules.set(permission, r);
+  }
+  return r;
+}
+function makeCan(permission: Permission) {
+  return rule(`can:${permission}`, { cache: "contextual" })(
+    async (_parent, _args, ctx: Context) => {
+      const user = decodeToken(ctx);
+      if (!user) return new Error("Not authenticated");
+      if (user.role === KIOSK_ROLE) return new Error("Not authorized for kiosk accounts");
+      return (await callerPermissions(ctx)).includes(permission)
+        ? true
+        : new Error("អ្នកមិនមានសិទ្ធិទេ (not permitted)");
+    }
+  );
+}
+
+function gate(permission: Permission, names: string[]): Record<string, ReturnType<typeof can>> {
+  const r = can(permission);
+  return names.reduce<Record<string, ReturnType<typeof can>>>((acc, name) => {
+    acc[name] = r;
+    return acc;
+  }, {});
+}
+
+// Operations that need a specific permission, not just a staff login.
+// Everything else stays at "any staff login" ("*" below) — notably the income
+// queries, which the dashboard and the till call for every staff member, and
+// price reads, which selling needs. The hold / transfer workflow steps check
+// their permission inside the resolver instead (HoldV2.ts, Transfer.ts), so
+// they keep returning their friendly in-app messages.
+const PERMISSION_QUERIES = {
+  ...gate("user.manage", ["users", "get_user", "user_permissions"]),
+  ...gate("report.view", [
+    "activeCustomers",
+    "expiringCustomersOnDate",
+    "customerScanReport",
+    "customersByMembershipDuration",
+    "GetSeller",
+  ]),
+};
+const PERMISSION_MUTATIONS = {
+  ...gate("user.manage", [
+    "create_user",
+    "update_user",
+    "set_user_active",
+    "reset_user_password",
+    "set_user_permissions",
+  ]),
+  ...gate("price.manage", [
+    "createMemberPrice",
+    "updatePrice",
+    "deleteMemberPrice",
+    "CreateCouponCard",
+    "UpdateCouponCard",
+    "DeleteCouponCard",
+  ]),
+  ...gate("ticket.price", ["UpsertTicketPriceConfig", "DeleteTicketPriceConfig"]),
+};
+
 // The operations a gate kiosk actually calls — see CKD-Check-In/ckd_checkin/api.py,
 // CKD-Check-Out/ckd_checkout/api.py and both apps' fingerprint.py. Anything not
 // listed here falls through to the staff-only "*" rule below. Note that
@@ -69,10 +151,12 @@ export const permissions = shield(
       // Staff-only by default; a field listed explicitly below overrides "*".
       "*": isStaff,
       ...allowKiosk(KIOSK_QUERIES),
+      ...PERMISSION_QUERIES,
     },
     Mutation: {
       "*": isStaff,
       ...allowKiosk(KIOSK_MUTATIONS),
+      ...PERMISSION_MUTATIONS,
       // Public — no token needed. `login` is the ONLY unauthenticated mutation:
       // it is the one operation that cannot require a token, because obtaining
       // the token is its whole purpose.

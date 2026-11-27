@@ -23,7 +23,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { FigureStrip } from '@/components/ui/FigureStrip';
 import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import { formatCount } from '@/lib/money';
-import { currentRole, hasRole } from '@/lib/access';
+import { can, currentPermissions } from '@/lib/access';
 import { cn } from '@/lib/utils';
 import { exportToExcel } from '@/utils/excelExport';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
@@ -179,12 +179,10 @@ const TransferRequest = () => {
     }
 
     const HandleCheckerApprove = async () => {
-        // Mirrors the server's own check (Transfer.ts requireRole(["Admin",
-        // "Checker"])) — a UI convenience so a Checker isn't invited into a
-        // dialog the mutation will reject; normalized so a stray case or
-        // whitespace difference in the stored role can't hide this button
-        // from a real Checker.
-        if (hasRole(currentRole(), ["Admin", "Checker"])) {
+        // Mirrors the server's own check (Transfer.ts, "transfer.check") — a
+        // UI convenience so nobody is invited into a dialog the mutation
+        // will reject.
+        if (can(currentPermissions(), "transfer.check")) {
             // Clear the previous request's comment — the input is controlled, so
             // stale text can no longer be submitted invisibly.
             setDescription("")
@@ -195,8 +193,8 @@ const TransferRequest = () => {
     }
 
     const CheckApproverRole = async () => {
-        // Mirrors the server's own check (Transfer.ts requireAdmin).
-        if (hasRole(currentRole(), ["Admin"])) {
+        // Mirrors the server's own check (Transfer.ts, "transfer.approve").
+        if (can(currentPermissions(), "transfer.approve")) {
             setDescription("")
             setOpenApprover(true)
             return;
