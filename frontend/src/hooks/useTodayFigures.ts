@@ -50,15 +50,19 @@ export interface TodayFigures {
   refetch: () => Promise<unknown>;
 }
 
-export function useTodayFigures(): TodayFigures {
+/** Whole-gym figures for today. Pass `enabled: false` for a user without the
+ *  "dashboard.view" permission: nothing is fetched (the server would refuse). */
+export function useTodayFigures({ enabled = true }: { enabled?: boolean } = {}): TodayFigures {
   const today = todayIso();
   const { data, loading, refetch } = useQuery(TODAY_FIGURES, {
     variables: { dateFrom: today, dateTo: today, userId: 0 },
     fetchPolicy: "network-only",
+    skip: !enabled,
   });
   const { data: countData, loading: countLoading } = useGetCustomersCountQuery({
     variables: { search: "" },
     fetchPolicy: "network-only",
+    skip: !enabled,
   });
 
   const ticketRows: Row[] = data?.GetTicketPayment ?? [];

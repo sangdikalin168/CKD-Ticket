@@ -33,7 +33,7 @@ import { Button } from "@/components/ui/button";
 import { FigureStrip } from "@/components/ui/FigureStrip";
 import { useTodayFigures } from "./hooks/useTodayFigures";
 import { formatCount, formatMoney } from "./lib/money";
-import { canReachPath, currentRole, setPermissions, usePermissions } from "./lib/access";
+import { can, canReachPath, currentRole, setPermissions, usePermissions } from "./lib/access";
 import UsersPage from "./pages/Users/Users";
 import Permissions from "./pages/Users/Permissions";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -67,7 +67,9 @@ function Dashboard() {
   const role = currentRole();
   const permissions = usePermissions();
   const displayName = localStorage.getItem("display_name");
-  const figures = useTodayFigures();
+  // Whole-gym figures are a permission of their own ("dashboard.view").
+  const showFigures = can(permissions, "dashboard.view");
+  const figures = useTodayFigures({ enabled: showFigures });
 
   // Either piece can be missing (a stale or incomplete session — see
   // Sidebar.tsx) and the greeting must not print "Welcome, ·" around a gap:
@@ -97,16 +99,19 @@ function Dashboard() {
         subtitle={welcome}
       />
 
-      {/* Today's figures: one ruled strip, never a grid of same-size cards. */}
-      <FigureStrip
-        aria-label={t("dashboard.figures")}
-        loading={figures.loading}
-        items={[
-          { label: t("dashboard.today.tickets"), value: formatCount(figures.ticketsToday) },
-          { label: t("dashboard.today.members"), value: formatCount(figures.members) },
-          { label: t("dashboard.today.income"), value: formatMoney(figures.incomeToday) },
-        ]}
-      />
+      {/* Today's figures: one ruled strip, never a grid of same-size cards.
+          Only with "dashboard.view" — it is the whole gym's takings. */}
+      {showFigures && (
+        <FigureStrip
+          aria-label={t("dashboard.figures")}
+          loading={figures.loading}
+          items={[
+            { label: t("dashboard.today.tickets"), value: formatCount(figures.ticketsToday) },
+            { label: t("dashboard.today.members"), value: formatCount(figures.members) },
+            { label: t("dashboard.today.income"), value: formatMoney(figures.incomeToday) },
+          ]}
+        />
+      )}
 
       {/* Quick actions: a row of ordinary secondary buttons, not tiles.
           Hidden, not empty, when the role reaches none of them — an

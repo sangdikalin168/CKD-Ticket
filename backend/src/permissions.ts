@@ -84,13 +84,41 @@ function gate(permission: Permission, names: string[]): Record<string, ReturnTyp
   }, {});
 }
 
+/** The income queries take a userId (0 = every seller). A cashier may always
+ *  read their OWN sales (the till's tally); everyone's, or someone else's,
+ *  needs "dashboard.view" or "report.view". Cached per argument set, since
+ *  the answer depends on userId. */
+const ownIncomeOrFigures = rule("income:own-or-figures", { cache: "strict" })(
+  async (_parent, args: { userId?: number }, ctx: Context) => {
+    const user = decodeToken(ctx);
+    if (!user) return new Error("Not authenticated");
+    if (user.role === KIOSK_ROLE) return new Error("Not authorized for kiosk accounts");
+    if (Number(args.userId) === Number(user.user_id) && Number(args.userId) !== 0) return true;
+    const perms = await callerPermissions(ctx);
+    return perms.includes("dashboard.view") || perms.includes("report.view")
+      ? true
+      : new Error("អ្នកមិនមានសិទ្ធិទេ (not permitted)");
+  }
+);
+const INCOME_QUERIES = [
+  "GetTicketPayment",
+  "GetMemberPayments",
+  "GetCouponPayments",
+  "GetTrainningPayments",
+  "GetFruitPayments",
+].reduce<Record<string, typeof ownIncomeOrFigures>>((acc, name) => {
+  acc[name] = ownIncomeOrFigures;
+  return acc;
+}, {});
+
 // Operations that need a specific permission, not just a staff login.
-// Everything else stays at "any staff login" ("*" below) — notably the income
-// queries, which the dashboard and the till call for every staff member, and
-// price reads, which selling needs. The hold / transfer workflow steps check
+// Everything else stays at "any staff login" ("*" below) — notably price
+// reads, which selling needs. The income queries are scoped by
+// ownIncomeOrFigures above. The hold / transfer workflow steps check
 // their permission inside the resolver instead (HoldV2.ts, Transfer.ts), so
 // they keep returning their friendly in-app messages.
 const PERMISSION_QUERIES = {
+  ...INCOME_QUERIES,
   ...gate("user.manage", ["users", "get_user", "user_permissions"]),
   ...gate("report.view", [
     "activeCustomers",

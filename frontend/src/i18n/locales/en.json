@@ -442,7 +442,8 @@
       "customer": "Customer",
       "facility": "Facility",
       "printed": "Printed"
-    }
+    },
+    "soldTodayMine": "Your sales today"
   },
   "members": {
     "title": "Members",
@@ -613,6 +614,10 @@
       "user.manage": {
         "label": "Users & permissions",
         "description": "Add users, reset passwords and change what people can do."
+      },
+      "dashboard.view": {
+        "label": "Dashboard figures",
+        "description": "Today's whole-gym tickets, members and income on the dashboard and the Sell Tickets tally. Without it, people see only their own sales."
       }
     }
   },
