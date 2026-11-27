@@ -94,7 +94,7 @@ export class MemberPaymentResolver {
         const current_date = moment().format('YYYY-MM-DD');
 
         const isDuplicate = await MemberPayment.findBy({
-            payment_date: Between(new Date(current_date + ' 00:00:00'), new Date(current_date + ' 23:00:00')),
+            payment_date: Between(new Date(current_date + ' 00:00:00'), new Date(current_date + ' 23:59:59.999')),
             customer_id: customer_id
         })
 

@@ -55,6 +55,26 @@ const GET_TRAINNING_PAYMENT = gql`
   }
 `;
 
+// Fruit / "other" sales (FruitPayment) — previously left out of the report.
+const GET_FRUIT_PAYMENT = gql`
+  query GetFruitPayments($dateFrom: String!, $dateTo: String!, $userId: Float!) {
+    GetFruitPayments(dateFrom: $dateFrom, dateTo: $dateTo, userId: $userId) {
+      promotion
+      price
+      qty
+    }
+  }
+`;
+
+const GET_FRUIT_PAYMENT_DETAIL = gql`
+  query GetFruitPaymentDetail($dateTo: String!, $dateFrom: String!) {
+  GetFruitPaymentDetail(dateTo: $dateTo, dateFrom: $dateFrom) {
+    customer_name
+    promotion
+  }
+}
+`;
+
 const GET_SELLER = gql`
   query GetSeller($dateFrom: String!, $dateTo: String!) {
     GetSeller(dateFrom: $dateFrom, dateTo: $dateTo) {
@@ -140,7 +160,7 @@ const memberDetailColumns: ColumnDef<DetailRow>[] = [
   { key: "promotion", header: "Description", sortable: true },
 ];
 
-type DetailKind = "member" | "coupon" | "training";
+type DetailKind = "member" | "coupon" | "training" | "fruit";
 
 /**
  * One option in a filter row: an ordinary outline control at rest, the amber
@@ -176,6 +196,12 @@ function IncomeReport() {
     fetchPolicy: "no-cache",
   });
   const [GetCouponPayment] = useLazyQuery(GET_COUPON_PAYMENT, {
+    fetchPolicy: "no-cache",
+  });
+  const [GetFruitPayment] = useLazyQuery(GET_FRUIT_PAYMENT, {
+    fetchPolicy: "no-cache",
+  });
+  const [GetFruitPaymentDetail, { data: fruit_payments }] = useLazyQuery(GET_FRUIT_PAYMENT_DETAIL, {
     fetchPolicy: "no-cache",
   });
   const [GetMemberPaymentDetail, { data: member_payments }] = useLazyQuery(GET_MEMBER_PAYMENT_DETAIL, {
@@ -279,6 +305,25 @@ function IncomeReport() {
       });
     }
 
+    const result5 = await GetFruitPayment({
+      variables: {
+        dateFrom: selectedDateFrom,
+        dateTo: selectedDateTo,
+        userId: seller_id,
+      },
+    });
+
+    if (!result5.loading) {
+      result5.data.GetFruitPayments.forEach((data: any) => {
+        tmp_report.push({
+          item: data.promotion,
+          price: data.price,
+          qty: data.qty,
+          total: data.qty * data.price,
+        });
+      });
+    }
+
     const sum = tmp_report.reduce((acc: any, object: any) => {
       return acc + object.total;
     }, 0);
@@ -343,10 +388,13 @@ function IncomeReport() {
     return () => clearInterval(intervalId);
   }, [selectedDateFrom, selectedDateTo]);
 
+  // Reload the figures whenever the range changes. This used to run once on
+  // mount only, so picking new dates refreshed the seller list but left the
+  // previous range's figures on screen until a seller was clicked. The
+  // chosen seller is kept.
   useEffect(() => {
-    setLoading(true);
-    CombineData(0);
-  }, []);
+    CombineData(activeSeller);
+  }, [selectedDateFrom, selectedDateTo]);
 
   const range = { dateTo: selectedDateTo, dateFrom: selectedDateFrom };
   const showDetail = (kind: DetailKind) => {
@@ -354,6 +402,7 @@ function IncomeReport() {
     if (kind === "member") GetMemberPaymentDetail({ variables: range });
     if (kind === "coupon") GetCouopnPaymentDetail({ variables: range });
     if (kind === "training") GetTrainningPaymentDetail({ variables: range });
+    if (kind === "fruit") GetFruitPaymentDetail({ variables: range });
   };
 
   const detailRows: DetailRow[] =
@@ -363,10 +412,12 @@ function IncomeReport() {
         ? (coupon_payments?.GetCouponPaymentDetails ?? []).map((r: any) => ({ customer_name: r.customer_name, promotion: r.card_name }))
         : detail === "training"
           ? trainning_payments?.GetTrainningPaymentDetail ?? []
-          : [];
+          : detail === "fruit"
+            ? fruit_payments?.GetFruitPaymentDetail ?? []
+            : [];
 
   const detailTitle =
-    detail === "member" ? "សមាជិក" : detail === "coupon" ? "គូប៉ុន" : detail === "training" ? "ហ្វឹកហាត់" : "";
+    detail === "member" ? "សមាជិក" : detail === "coupon" ? "គូប៉ុន" : detail === "training" ? "ហ្វឹកហាត់" : detail === "fruit" ? "ផ្សេងៗ" : "";
 
   // The strip carries two figures and the scope they were counted over.
   const totalQty = data.reduce((n, row) => n + Number(row.qty ?? 0), 0);
@@ -433,7 +484,7 @@ function IncomeReport() {
       />
 
       {/* The ledger. DataTable draws skeleton rows in its own shape while the
-          four payment queries land, so nothing reflows when they do. */}
+          five payment queries land, so nothing reflows when they do. */}
       <Section title="ចំណូល">
         <DataTable<IncomeRow>
           data={data}
@@ -466,6 +517,7 @@ function IncomeReport() {
             <FilterToggle active={detail === "member"} onClick={() => showDetail("member")}>សមាជិក</FilterToggle>
             <FilterToggle active={detail === "coupon"} onClick={() => showDetail("coupon")}>គូប៉ុន</FilterToggle>
             <FilterToggle active={detail === "training"} onClick={() => showDetail("training")}>ហ្វឹកហាត់</FilterToggle>
+            <FilterToggle active={detail === "fruit"} onClick={() => showDetail("fruit")}>ផ្សេងៗ</FilterToggle>
           </div>
         }
       >
@@ -496,7 +548,7 @@ function IncomeReport() {
             <EmptyState
               icon={Users}
               title="លម្អិត"
-              description="ជ្រើសរើស សមាជិក / គូប៉ុន / ហ្វឹកហាត់ ដើម្បីមើលអ្នកទិញក្នុងចន្លោះថ្ងៃនេះ"
+              description="ជ្រើសរើស សមាជិក / គូប៉ុន / ហ្វឹកហាត់ / ផ្សេងៗ ដើម្បីមើលអ្នកទិញក្នុងចន្លោះថ្ងៃនេះ"
             />
           </div>
         )}
