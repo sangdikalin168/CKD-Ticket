@@ -33,6 +33,7 @@ export const PERMISSIONS = [
   "transfer.check",    // Transfer requests: checker review
   "transfer.approve",  // Transfer requests: final approval
   "report.view",       // Income / customer / customer-type reports
+  "dashboard.view",    // Whole-gym figures: dashboard panel, Sell Tickets tally, any seller's income
   "printer.manage",    // Printers page
   "user.manage",       // Users and permissions pages
 ] as const;
@@ -51,6 +52,7 @@ export const ROLE_DEFAULTS: Record<StaffRole, readonly Permission[]> = {
     "hold.request",
     "transfer.request",
     "printer.manage",
+    "dashboard.view",
   ],
   Checker: ["transfer.check"],
 };

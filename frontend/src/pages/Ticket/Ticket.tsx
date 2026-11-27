@@ -119,8 +119,12 @@ function TicketSale() {
   });
 
   const today = todayIso();
+  // Every seller's tally needs "dashboard.view"; without it the till shows
+  // this cashier's own sales (the server allows only that).
+  const allSellers = can(usePermissions(), "dashboard.view");
+  const myId = parseInt(localStorage.getItem("user_id") ?? "0");
   const { data: tallyData, loading: tallyLoading, refetch: refetchTally } = useQuery(TODAY_TALLY, {
-    variables: { dateFrom: today, dateTo: today, userId: 0 },
+    variables: { dateFrom: today, dateTo: today, userId: allSellers ? 0 : myId },
     fetchPolicy: "network-only",
   });
 
@@ -290,12 +294,12 @@ function TicketSale() {
         title={t("ticket.todaySales")}
         aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-            <span className="text-caption text-ink-soft">{t("ticket.allCounters")}</span>
+            {allSellers && <span className="text-caption text-ink-soft">{t("ticket.allCounters")}</span>}
             {tallyLoading && tally.length === 0 ? (
               <Skeleton className="h-4 w-24" />
             ) : (
               <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
-                <span className="text-caption text-ink-soft">{t("ticket.soldToday")}</span>
+                <span className="text-caption text-ink-soft">{allSellers ? t("ticket.soldToday") : t("ticket.soldTodayMine")}</span>
                 <span className="figure font-semibold text-ink">{soldToday}</span>
                 <span className="text-caption text-ink-soft">{t("common.total")}</span>
                 <span className="figure font-semibold text-ink">{formatMoney(totalToday)}</span>

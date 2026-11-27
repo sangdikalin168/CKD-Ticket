@@ -32,6 +32,7 @@ export const PERMISSIONS = [
   "transfer.check",
   "transfer.approve",
   "report.view",
+  "dashboard.view",
   "printer.manage",
   "user.manage",
 ] as const;
@@ -42,12 +43,12 @@ export type Permission = (typeof PERMISSIONS)[number];
 export const PERMISSION_GROUPS: { key: string; permissions: Permission[] }[] = [
   { key: "sales", permissions: ["ticket.sell", "ticket.price", "member.manage", "price.manage"] },
   { key: "requests", permissions: ["hold.request", "hold.decide", "transfer.request", "transfer.check", "transfer.approve"] },
-  { key: "admin", permissions: ["report.view", "printer.manage", "user.manage"] },
+  { key: "admin", permissions: ["report.view", "dashboard.view", "printer.manage", "user.manage"] },
 ];
 
 export const ROLE_DEFAULTS: Record<Role, Permission[]> = {
   Admin: [...PERMISSIONS],
-  Sale: ["ticket.sell", "member.manage", "price.manage", "hold.request", "transfer.request", "printer.manage"],
+  Sale: ["ticket.sell", "member.manage", "price.manage", "hold.request", "transfer.request", "printer.manage", "dashboard.view"],
   Checker: ["transfer.check"],
 };
 
