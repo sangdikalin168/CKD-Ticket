@@ -8,6 +8,7 @@ import { Arg, Ctx, Field, Float, InterfaceType, Mutation, ObjectType, Query, Res
 import { checkAuth } from "../MiddleWare/checkAuth";
 import { Context } from "../Context/Context";
 import { emitChange } from "../Utils/changeFeed";
+import { NOT_PERMITTED, Permission, hasPermission } from "../Utils/permissionCatalog";
 
 /**
  * Membership transfers, rewritten after a production incident.
@@ -103,15 +104,13 @@ function addDays(ymd: string, days: number): string {
     return d.toLocaleDateString("fr-CA");
 }
 
-/** Server-side role gate. The JWT carries only user_id, so the role is read
- *  from the users table — a localStorage string on the client is not a
- *  permission system. */
-async function requireRole(userId: number, roles: string[]): Promise<Users> {
-    const user = await Users.findOne({ where: { user_id: userId } });
-    if (!user || !roles.includes(user.role)) {
-        throw new Error("អ្នកមិនមានសិទ្ធិទេ (insufficient role)");
+/** Server-side permission gate (Utils/permissionCatalog.ts), read from the
+ *  database on every call — a localStorage string on the client is not a
+ *  permission system. Throws so callers keep their existing 403 handling. */
+async function requirePermission(userId: number, permission: Permission): Promise<void> {
+    if (!(await hasPermission(userId, permission))) {
+        throw new Error(NOT_PERMITTED);
     }
-    return user;
 }
 
 @Resolver()
@@ -149,6 +148,9 @@ export class TransferResolver {
         @Arg("reason") reason: string,
         @Ctx() { user }: Context
     ): Promise<TransferMutationResponse> {
+        if (!(await hasPermission(user.user_id, "transfer.request"))) {
+            return { code: 403, success: false, message: NOT_PERMITTED };
+        }
         if (sender_id === receiver_id) {
             return { code: 400, success: false, message: "Sender and receiver are the same customer" };
         }
@@ -184,7 +186,7 @@ export class TransferResolver {
             return { code: 400, success: false, message: "A review cannot set the status back to Pending" };
         }
         try {
-            await requireRole(user.user_id, ["Admin", "Checker"]);
+            await requirePermission(user.user_id, "transfer.check");
         } catch (err) {
             return { code: 403, success: false, message: err instanceof Error ? err.message : String(err) };
         }
@@ -223,7 +225,7 @@ export class TransferResolver {
             return { code: 400, success: false, message: "A review cannot set the status back to Pending" };
         }
         try {
-            await requireRole(user.user_id, ["Admin"]);
+            await requirePermission(user.user_id, "transfer.approve");
         } catch (err) {
             return { code: 403, success: false, message: err instanceof Error ? err.message : String(err) };
         }
@@ -264,7 +266,7 @@ export class TransferResolver {
         @Ctx() { user }: Context
     ): Promise<TransferMutationResponse> {
         try {
-            // Inside the try on purpose: requireRole throws, and an uncaught
+            // Inside the try on purpose: requirePermission throws, and an uncaught
             // throw here is masked to "Internal server error" by index.ts's
             // formatError in production — the operator would see a bare
             // failure on a button that looks live.
@@ -276,7 +278,7 @@ export class TransferResolver {
             // an Admin-only gate would lock out exactly the people who do this
             // job. The real protection is the approval state machine, not the
             // executor's job title.
-            await requireRole(user.user_id, ["Admin", "Sale"]);
+            await requirePermission(user.user_id, "transfer.request");
 
             // Customer ids to announce on the change feed once the transaction commits.
             let feedIds: number[] = [];

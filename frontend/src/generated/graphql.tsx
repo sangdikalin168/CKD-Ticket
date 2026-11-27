@@ -66,6 +66,7 @@ export type CheckinCoupon = {
   customer_id: Scalars['Float'];
   customer_name: Scalars['String'];
   gender: Scalars['String'];
+  image_path?: Maybe<Scalars['String']>;
   phone: Scalars['String'];
   price: Scalars['Float'];
   quantity: Scalars['Int'];
@@ -83,6 +84,7 @@ export type CheckinMember = {
   customer_id: Scalars['Float'];
   customer_name: Scalars['String'];
   gender: Scalars['String'];
+  image_path?: Maybe<Scalars['String']>;
   key_status: Scalars['String'];
   next_payment: Scalars['String'];
   phone: Scalars['String'];
@@ -134,6 +136,14 @@ export type CouponCard = {
   status: Scalars['String'];
 };
 
+export type CouponCardMutationResponse = {
+  __typename?: 'CouponCardMutationResponse';
+  code: Scalars['Float'];
+  couponCard?: Maybe<CouponCard>;
+  message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
+};
+
 export type CouponPayment = {
   __typename?: 'CouponPayment';
   card_name: Scalars['String'];
@@ -179,6 +189,7 @@ export type Customer = {
   gender: Scalars['String'];
   image_path?: Maybe<Scalars['String']>;
   key_status: Scalars['String'];
+  month_qty?: Maybe<Scalars['Int']>;
   phone: Scalars['String'];
   rfid_uid?: Maybe<Scalars['String']>;
   shift: Scalars['String'];
@@ -536,6 +547,7 @@ export type Mutation = {
   CancelHoldRequestV2: HoldV2Response;
   CheckHoldRequest: HoldMutationResponse;
   CheckTransferRequest: TransferMutationResponse;
+  CreateCouponCard: CouponCardMutationResponse;
   CreateCouponPayment: CouponPaymentMutationResponse;
   CreateCustomer: CustomerMutationResponse;
   CreateCustomerPayment: MemberPaymentMutationResponse;
@@ -548,8 +560,10 @@ export type Mutation = {
   CreateTransfer: TransferMutationResponse;
   CreateTransferRequest: TransferMutationResponse;
   DecideHoldRequestV2: HoldV2Response;
+  DeleteCouponCard: CouponCardMutationResponse;
   DeleteTicketPriceConfig: Scalars['Boolean'];
   ProcessHoldV2: HoldV2Response;
+  UpdateCouponCard: CouponCardMutationResponse;
   UpdateCustomer: CustomerMutationResponse;
   UpdateCustomerPhoto: CustomerMutationResponse;
   UpsertTicketPriceConfig: TicketPriceConfig;
@@ -565,7 +579,11 @@ export type Mutation = {
   login: UserMutationResponse;
   logout: UserMutationResponse;
   printSelfTest: PrintJobResponse;
+  reset_user_password: UserMutationResponse;
+  set_user_active: UserMutationResponse;
+  set_user_permissions: UserMutationResponse;
   updatePrice?: Maybe<MemberPriceTable>;
+  update_user: UserMutationResponse;
 };
 
 
@@ -601,6 +619,14 @@ export type MutationCheckTransferRequestArgs = {
   checker_comment: Scalars['String'];
   checker_status: ApprovalStatus;
   request_id: Scalars['Float'];
+};
+
+
+export type MutationCreateCouponCardArgs = {
+  card_name: Scalars['String'];
+  coupon_code: Scalars['String'];
+  price: Scalars['Float'];
+  quantity: Scalars['Int'];
 };
 
 
@@ -709,6 +735,11 @@ export type MutationDecideHoldRequestV2Args = {
 };
 
 
+export type MutationDeleteCouponCardArgs = {
+  id: Scalars['Int'];
+};
+
+
 export type MutationDeleteTicketPriceConfigArgs = {
   config_id: Scalars['Float'];
 };
@@ -717,6 +748,14 @@ export type MutationDeleteTicketPriceConfigArgs = {
 export type MutationProcessHoldV2Args = {
   fee?: InputMaybe<Scalars['Float']>;
   request_id: Scalars['Float'];
+};
+
+
+export type MutationUpdateCouponCardArgs = {
+  card_name?: InputMaybe<Scalars['String']>;
+  id: Scalars['Int'];
+  price?: InputMaybe<Scalars['Float']>;
+  quantity?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -812,6 +851,24 @@ export type MutationLogoutArgs = {
 };
 
 
+export type MutationReset_User_PasswordArgs = {
+  new_password: Scalars['String'];
+  user_id: Scalars['ID'];
+};
+
+
+export type MutationSet_User_ActiveArgs = {
+  active: Scalars['Boolean'];
+  user_id: Scalars['ID'];
+};
+
+
+export type MutationSet_User_PermissionsArgs = {
+  permissions: Array<Scalars['String']>;
+  user_id: Scalars['ID'];
+};
+
+
 export type MutationUpdatePriceArgs = {
   ageGroup?: InputMaybe<Scalars['String']>;
   customerType?: InputMaybe<Scalars['String']>;
@@ -823,6 +880,12 @@ export type MutationUpdatePriceArgs = {
   monthQty?: InputMaybe<Scalars['Float']>;
   price?: InputMaybe<Scalars['Float']>;
   shift?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdate_UserArgs = {
+  input: UpdateUserInput;
+  user_id: Scalars['ID'];
 };
 
 export type Package = {
@@ -947,6 +1010,7 @@ export type Query = {
   __typename?: 'Query';
   GetActiveHoldRequestV2: Array<HoldRequestV2>;
   GetCouponCard: Array<CouponCard>;
+  GetCouponCards: Array<CouponCard>;
   GetCouponPayment: Array<CouponPayment>;
   GetCouponPaymentDetails: Array<CouponType>;
   GetCouponPayments: Array<CouponType>;
@@ -984,7 +1048,9 @@ export type Query = {
   getAllMemberPriceTable: Array<MemberPriceTable>;
   getMemberPriceById?: Maybe<MemberPriceTable>;
   get_user: GetUser;
+  my_permissions: Array<Scalars['String']>;
   printerStatus: PrinterStatus;
+  user_permissions: UserPermissionsInfo;
   users: Array<Users>;
 };
 
@@ -996,6 +1062,12 @@ export type QueryGetActiveHoldRequestV2Args = {
 
 export type QueryGetCouponCardArgs = {
   coupon_code: Scalars['String'];
+};
+
+
+export type QueryGetCouponCardsArgs = {
+  search?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1103,6 +1175,12 @@ export type QueryMemberPaymentDetailArgs = {
 };
 
 
+export type QueryCheckinFingerprintsArgs = {
+  active_within_days?: InputMaybe<Scalars['Int']>;
+  customer_ids?: InputMaybe<Array<Scalars['Int']>>;
+};
+
+
 export type QueryCheckinLookupCouponArgs = {
   coupon_code: Scalars['String'];
 };
@@ -1149,6 +1227,11 @@ export type QueryGetMemberPriceByIdArgs = {
 
 
 export type QueryGet_UserArgs = {
+  user_id: Scalars['ID'];
+};
+
+
+export type QueryUser_PermissionsArgs = {
   user_id: Scalars['ID'];
 };
 
@@ -1337,13 +1420,29 @@ export type TransferResponse = {
   transfer_id?: Maybe<Scalars['Float']>;
 };
 
+export type UpdateUserInput = {
+  display_name: Scalars['String'];
+  phone: Scalars['String'];
+  role: Scalars['String'];
+  username: Scalars['String'];
+};
+
 export type UserMutationResponse = IMutationResponse & {
   __typename?: 'UserMutationResponse';
   accessToken?: Maybe<Scalars['String']>;
   code: Scalars['Float'];
   message?: Maybe<Scalars['String']>;
+  permissions?: Maybe<Array<Scalars['String']>>;
   success: Scalars['Boolean'];
   user?: Maybe<Users>;
+};
+
+export type UserPermissionsInfo = {
+  __typename?: 'UserPermissionsInfo';
+  permissions: Array<Scalars['String']>;
+  role: Scalars['String'];
+  role_defaults: Array<Scalars['String']>;
+  user_id: Scalars['ID'];
 };
 
 export type Users = {
@@ -1567,7 +1666,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserMutationResponse', code: number, success: boolean, message?: string | null, accessToken?: string | null, user?: { __typename?: 'Users', display_name: string, role: string, user_id: string } | null } };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserMutationResponse', code: number, success: boolean, message?: string | null, accessToken?: string | null, permissions?: Array<string> | null, user?: { __typename?: 'Users', display_name: string, role: string, user_id: string } | null } };
 
 export type CreateCustomerPaymentMutationVariables = Exact<{
   monthQty: Scalars['Float'];
@@ -2789,6 +2888,7 @@ export const LoginDocument = gql`
       user_id
     }
     accessToken
+    permissions
   }
 }
     `;

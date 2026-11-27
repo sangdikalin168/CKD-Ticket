@@ -1,3 +1,4 @@
+import { setPermissions } from "@/lib/access";
 import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
@@ -69,6 +70,7 @@ function Login() {
       // the literal string "undefined" into localStorage.
       if (res) JWTManager.SetUserDetail(res.display_name, res.role, res.user_id);
       JWTManager.setToken(data.login.accessToken as string);
+      setPermissions(data.login.permissions ?? []);
       // Leave isSubmitting on — the authenticated shell replaces this page.
       setIsAuthenticated(true);
       return;

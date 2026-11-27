@@ -33,7 +33,13 @@ import { Button } from "@/components/ui/button";
 import { FigureStrip } from "@/components/ui/FigureStrip";
 import { useTodayFigures } from "./hooks/useTodayFigures";
 import { formatCount, formatMoney } from "./lib/money";
-import { canReachPath, currentRole } from "./lib/access";
+import { canReachPath, currentRole, setPermissions, usePermissions } from "./lib/access";
+import UsersPage from "./pages/Users/Users";
+import Permissions from "./pages/Users/Permissions";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { gql, useQuery } from "@apollo/client";
+import { useLocation } from "react-router-dom";
+import { Lock } from "lucide-react";
 
 function NoMatch() {
   const { t } = useTranslation();
@@ -59,6 +65,7 @@ function Dashboard() {
   // shows a Checker or a stale session a working-looking link the server
   // would refuse.
   const role = currentRole();
+  const permissions = usePermissions();
   const displayName = localStorage.getItem("display_name");
   const figures = useTodayFigures();
 
@@ -73,7 +80,7 @@ function Dashboard() {
     { to: "/income_report", title: t("dashboard.reports.income.title"), description: t("dashboard.reports.income.description") },
     { to: "/customer_report", title: t("dashboard.reports.customer.title"), description: t("dashboard.reports.customer.description") },
     { to: "/customer_type_report", title: t("dashboard.reports.type.title"), description: t("dashboard.reports.type.description") },
-  ].filter((r) => canReachPath(role, r.to));
+  ].filter((r) => canReachPath(permissions, r.to));
 
   const quickActions = [
     { to: "/ticket", icon: TicketIcon, label: t("menu.sellTicket") },
@@ -81,7 +88,7 @@ function Dashboard() {
     { to: "/hold_request", icon: PauseCircle, label: t("menu.holdRequest") },
     { to: "/transfer_request", icon: ArrowLeftRight, label: t("dashboard.transfer") },
     { to: "/income_report", icon: BarChart3, label: t("menu.incomeReport") },
-  ].filter((a) => canReachPath(role, a.to));
+  ].filter((a) => canReachPath(permissions, a.to));
 
   return (
     <div className="space-y-6">
@@ -167,6 +174,8 @@ const router = createBrowserRouter([
       { path: "/customer_report", Component: CustomerReport },
       { path: "/customer_type_report", Component: CustomerTypeReport },
       { path: "/printers", Component: Printers },
+      { path: "/user", Component: UsersPage },
+      { path: "/user_authorize", Component: Permissions },
     ],
   },
 ]);
@@ -211,11 +220,45 @@ function Layout() {
       <SidebarInset className="min-w-0 bg-floor">
         <NavBar />
         <div className="p-3 md:p-4">
-          <Outlet />
+          <PermissionGate />
         </div>
       </SidebarInset>
     </SidebarProvider>
   )
+}
+
+const MY_PERMISSIONS = gql`
+  query MyPermissions {
+    my_permissions
+  }
+`;
+
+/** Renders the page only if the signed-in user may open it (lib/access.ts
+ *  MENU), so typing a URL doesn't open a page the menu hides. Also refreshes
+ *  the user's permissions from the server on every app load, so a change an
+ *  Admin made applies without signing out. The server checks every protected
+ *  operation regardless. */
+function PermissionGate() {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const permissions = usePermissions();
+  const { data } = useQuery<{ my_permissions: string[] }>(MY_PERMISSIONS, { fetchPolicy: "network-only" });
+
+  useEffect(() => {
+    if (data?.my_permissions) setPermissions(data.my_permissions);
+  }, [data]);
+
+  if (!canReachPath(permissions, location.pathname)) {
+    return (
+      <EmptyState
+        icon={Lock}
+        title={t("access.deniedTitle")}
+        description={t("access.deniedBody")}
+        action={{ label: t("notFound.home"), to: "/" }}
+      />
+    );
+  }
+  return <Outlet />;
 }
 
 export default App;
